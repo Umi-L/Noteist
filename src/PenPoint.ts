@@ -19,8 +19,8 @@ export class PenPoint {
         const udy = dy / length;
         const halfWidth = this.width / 2;
         return [
-            { x: this.x + halfWidth * udy, y: this.y - halfWidth * udx },
-            { x: this.x - halfWidth * udy, y: this.y + halfWidth * udx },
+            { x: Math.round(this.x + halfWidth * udy), y: Math.round(this.y - halfWidth * udx) },
+            { x: Math.round(this.x - halfWidth * udy), y: Math.round(this.y + halfWidth * udx) },
         ];
     }
 
@@ -32,8 +32,12 @@ export class PenPoint {
         const udy = dy / length;
         const halfWidth = this.width / 2;
         return [
-            { x: this.x + halfWidth * udx, y: this.y + halfWidth * udy },
-            { x: this.x - halfWidth * udx, y: this.y - halfWidth * udy },
+            { x: Math.round(this.x + halfWidth * udx), y: Math.round(this.y + halfWidth * udy) },
+            { x: Math.round(this.x - halfWidth * udx), y: Math.round(this.y - halfWidth * udy) },
         ];
+    }
+
+    equals(other: PenPoint): boolean {
+        return Math.round(this.x) === Math.round(other.x) && Math.round(this.y) === Math.round(other.y);
     }
 }

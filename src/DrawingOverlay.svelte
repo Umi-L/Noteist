@@ -7,7 +7,7 @@
 
     let isDrawing = false;
     let currentSVGElement: SVGElement;
-    let currentSVGStroke = '';
+    let currentSVGStroke: Array<string> = [];
     let points: PenPoint[] = [];
 
     const minWidth = 1;
@@ -25,27 +25,34 @@
         document.addEventListener('pointerup', handlePointerUp);
     });
 
-    function handlePointerDown(event: PointerEvent) {
-
-        let pressure = event.pressure;
-
+    function isValidPointerEvent(event: PointerEvent): boolean {
         // if pen is not selected, return
         if (event.pointerType == 'pen') {
             // if pen is not in contact with the screen, return
             if (!event.pressure) {
-                return;
+                return false;
             }
         } else {
-
             // if mouse
             if (event.pointerType != 'mouse') {
-                return
+                return false;
             }
+        }
 
-            // if pen is in contact with the screen, return
-            if (!event.pressure) {
-                pressure = 0.5;
-            }
+        return true;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+
+        let pressure = event.pressure;
+
+        if (!isValidPointerEvent(event)) {
+            return;
+        }
+
+        // if mouse use constant pressure
+        if (event.pointerType == 'mouse') {
+            pressure = 0.5;
         }
 
 
@@ -63,12 +70,17 @@
         // currentSVGElement.setAttribute('stroke-width', '1');
         currentSVGElement.setAttribute('fill', 'red');
 
+        let currentPoint = new PenPoint(event.clientX, event.clientY, determineStrokeWidth(event));
+
+        currentSVGStroke = [`M ${currentPoint.x} ${currentPoint.y}`];
+
+        points.push(currentPoint);
+
         console.log('drawing started');
     }
 
     function handlePointerMove(event: PointerEvent) {
         if (isDrawing) {
-            console.log('drawing');
 
             let currentPoint = new PenPoint(event.clientX, event.clientY, determineStrokeWidth(event));
 
@@ -91,55 +103,17 @@
             //     drawArea.appendChild(circle);
             // }
 
-            points.push(currentPoint);
+            // if previous point is the same as the current point, return
+            if (currentPoint.equals(points[points.length - 1])) {
 
-
-            let outsidePoints = []
-
-            for (let i = 0; i < points.length; i++) {
-
-                // if next point is the same as this point, skip both points
-                if (i < points.length - 1 && points[i].x == points[i + 1].x && points[i].y == points[i + 1].y) {
-                    i++;
-                    continue;
-                }
-
-
-                if (i == 0) {
-                    let parallelPoints = points[i].getPointsParallelToLineBetweenPoints(points[i + 1]);
-
-                    // push to front
-                    outsidePoints.unshift(parallelPoints[0]);
-
-                    continue;
-                } else if (i == points.length - 1) {
-                    let parallelPoints = points[i].getPointsParallelToLineBetweenPoints(points[i - 1]);
-
-                    // push to back
-                    outsidePoints.push(parallelPoints[0]);
-
-                    continue;
-                }
-
-                let perpendicularPointsPreviousDirection = points[i].getPointsPerpendicularToLineBetweenPoints(points[i - 1]);
-                let perpendicularPointsNextDirection = points[i].getPointsPerpendicularToLineBetweenPoints(points[i + 1]);
-
-
-                // push to front
-                outsidePoints.unshift(perpendicularPointsPreviousDirection[0]);
-
-                // push to back
-                outsidePoints.push(perpendicularPointsPreviousDirection[1]);
-
-                // push to front
-                outsidePoints.unshift(perpendicularPointsNextDirection[1]);
-
-                // push to back
-                outsidePoints.push(perpendicularPointsNextDirection[0]);
-
+                console.log('same point');
+                return;
             }
 
-            currentSVGStroke = `M ${outsidePoints[0].x} ${outsidePoints[0].y}`;
+            points.push(currentPoint);
+
+            let perpendicularPointsPreviousDirection = currentPoint.getPointsPerpendicularToLineBetweenPoints(points[points.length - 2]);
+            let parallelPoints = points[points.length - 2].getPointsParallelToLineBetweenPoints(currentPoint);
 
             // // debug
             // for (let i = 0; i < outsidePoints.length; i++) {
@@ -152,36 +126,34 @@
             //     drawArea.appendChild(circle);
             // }
 
-            // // Linear
-            // for (let i = 0; i < outsidePoints.length - 1; i += 1) {
-            //     currentSVGStroke += ` L ${outsidePoints[i].x} ${outsidePoints[i].y}`;
-            // }
+            let middleIndex = Math.ceil(currentSVGStroke.length / 2);
 
-            // // Quadratic
-            // for (let i = 0; i < outsidePoints.length - 1; i += 1) {
-            //     if (i == 0) {
-            //         currentSVGStroke += ` Q ${outsidePoints[i].x} ${outsidePoints[i].y} ${outsidePoints[i + 1].x} ${outsidePoints[i + 1].y}`;
-            //     } else {
-            //         currentSVGStroke += ` T ${outsidePoints[i].x} ${outsidePoints[i].y}`;
-            //     }
-            // }
+            // linear
+            currentSVGStroke.splice(middleIndex, 0, `L${perpendicularPointsPreviousDirection[0].x} ${perpendicularPointsPreviousDirection[0].y}`, `L${perpendicularPointsPreviousDirection[1].x} ${perpendicularPointsPreviousDirection[1].y}`);
 
-            // bezier
-            for (let i = 0; i < outsidePoints.length - 2; i += 2) {
-                let letter = i == 0 ? 'C' : 'C';
-                currentSVGStroke += ` ${letter} ${outsidePoints[i].x} ${outsidePoints[i].y} ${outsidePoints[i + 1].x} ${outsidePoints[i + 1].y} ${outsidePoints[i + 2].x} ${outsidePoints[i + 2].y}`;
-            }
+            // currentSVGStroke.splice(middleIndex, 0, `L${parallelPoints[0].x} ${parallelPoints[0].y}`, `L${parallelPoints[1].x} ${parallelPoints[1].y}`);
 
-            currentSVGElement.setAttribute('d', currentSVGStroke);
-
-
+            setSVGPath();
         }
     }
 
+    function setSVGPath() {
+        let finalString = "";
+        for (let part of currentSVGStroke) {
+            finalString += part;
+        }
+
+        currentSVGElement.setAttribute('d', finalString);
+    }
+
     function handlePointerUp(event: PointerEvent) {
+        if (!(event.pointerType == 'mouse' || event.pointerType == 'pen')) {
+            return;
+        }
+
         isDrawing = false;
 
-        currentSVGStroke = '';
+        currentSVGStroke = [];
         points = [];
 
         console.log('drawing stopped');

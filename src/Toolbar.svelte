@@ -77,7 +77,10 @@
                     toolbar.style.left = centerX > window.innerWidth / 2 ? "auto" : "10px";
                     toolbar.style.right = centerX > window.innerWidth / 2 ? "10px" : "auto";
                     toolbar.style.top = "50%";
-                    toolbar.style.transform = "translateY(-50%)";
+
+                    let translatePercent = centerX > window.innerWidth / 2 ? "translateY(-300%)" : "translateY(300%)";
+
+                    toolbar.style.transform = translatePercent;
 
                     isVertical = true;
                 }
@@ -92,53 +95,70 @@
 
 <div class="toolbar" bind:this={toolbar} class:vertical={isVertical} class:horizontal={!isVertical}>
 
-    <div class="handle" bind:this={handle} class:handle-vertical={isVertical} class:handle-horizontal={!isVertical}>
-        {#if isVertical}
-            <DotsSix size={size*1.25}/>
-        {:else}
-            <DotsSixVertical size={size*1.25}/>
-        {/if}
+    <div class="handle" bind:this={handle}>
+        <DotsSixVertical size={size*1.25}/>
     </div>
 
     <Toggle store={drawMode}>
-        <Pen size={size}/>
+        <div class:negative-vertical={isVertical}>
+            <Pen size={size}/>
+        </div>
     </Toggle>
 
-    {#if !isVertical}
-        <!-- vertical rule  -->
-        <div style="height: 1rem; width: 1px; background-color: var(--muted-foreground);"></div>
-    {:else}
-        <!-- horizontal rule -->
-        <div style="width: 1rem; height: 1px; background-color: var(--muted-foreground);"></div>
-    {/if}
+    <!-- vertical rule  -->
+    <div style="height: 1rem; width: 1px; background-color: var(--muted-foreground);"></div>
 
 
     <Toggle store={boldMode}>
-        <TextB size={size}/>
+        <div class:negative-vertical={isVertical}>
+            <TextB size={size}/>
+        </div>
     </Toggle>
 
     <Toggle store={italicMode}>
-        <TextItalic size={size}/>
+        <div class:negative-vertical={isVertical}>
+            <TextItalic size={size}/>
+        </div>
     </Toggle>
 
     <Toggle store={underlineMode}>
-        <TextUnderline size={size}/>
+        <div class:negative-vertical={isVertical}>
+            <TextUnderline size={size}/>
+        </div>
     </Toggle>
 
     <Toggle store={strikeMode}>
-        <TextStrikethrough size={size}/>
+        <div class:negative-vertical={isVertical}>
+            <TextStrikethrough size={size}/>
+        </div>
     </Toggle>
 
     <Toggle store={highlightMode}>
-        <Highlighter size={size}/>
+        <div class:negative-vertical={isVertical}>
+            <Highlighter size={size}/>
+        </div>
     </Toggle>
 
     <Toggle store={codeMode}>
-        <CodeBlock size={size}/>
+        <div class:negative-vertical={isVertical}>
+            <CodeBlock size={size}/>
+        </div>
     </Toggle>
 </div>
 
 <style>
+    .button-area {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .non-interactable {
+        pointer-events: none;
+        touch-action: none;
+    }
+
     .toolbar {
         position: absolute;
         bottom: 10px;
@@ -153,33 +173,28 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 
         border: 1px solid var(--border);
-    }
 
-    .vertical {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .horizontal {
         display: flex;
         flex-direction: row;
         align-items: center;
         gap: 10px;
+
+        transition: rotate 0.2s ease-out;
+    }
+
+    .vertical {
+        rotate: 90deg;
+    }
+
+    .negative-vertical {
+        rotate: -90deg;
     }
 
     .handle {
         cursor: move;
         user-select: none;
-    }
-
-    .handle-vertical {
-        padding: 0.5rem 0;
-    }
-
-    .handle-horizontal {
         padding: 0 0.5rem;
+
     }
 
 </style>
