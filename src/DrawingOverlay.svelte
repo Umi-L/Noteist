@@ -1,7 +1,7 @@
 <script lang="ts">
     import {onMount} from "svelte";
     import {PenPoint} from "./PenPoint";
-    import {drawMode} from "./globals";
+    import {currentDrawColor, drawMode} from "./globals";
 
     let drawArea: SVGElement;
 
@@ -9,6 +9,8 @@
     let currentSVGElement: SVGElement;
     let currentSVGStroke: Array<string> = [];
     let points: PenPoint[] = [];
+
+    let strokes: Array<SVGPathElement> = [];
 
     const minWidth = 1;
     const maxWidth = 20;
@@ -18,11 +20,29 @@
         enabled = value;
     });
 
+    let color = 'black';
+    currentDrawColor.subscribe(value => {
+        color = value;
+    });
+
     onMount(() => {
         // subscribe to pointer events on the drawArea
         drawArea.addEventListener('pointerdown', handlePointerDown);
         document.addEventListener('pointermove', handlePointerMove);
         document.addEventListener('pointerup', handlePointerUp);
+
+        // on two finger tap
+        drawArea.addEventListener('touchstart', (event) => {
+
+            // if two finger tap
+            if (event.touches.length == 2) {
+                // remove last stroke
+                if (strokes.length > 0) {
+                    strokes[strokes.length - 1].remove();
+                    strokes.pop();
+                }
+            }
+        });
     });
 
     function isValidPointerEvent(event: PointerEvent): boolean {
@@ -63,12 +83,14 @@
 
         drawArea.appendChild(currentSVGElement);
 
+        strokes.push(currentSVGElement);
+
         points.push(new PenPoint(event.clientX, event.clientY, determineStrokeWidth(event)));
 
         // set color red and stroke width 2
         // currentSVGElement.setAttribute('stroke', 'black');
         // currentSVGElement.setAttribute('stroke-width', '1');
-        currentSVGElement.setAttribute('fill', 'red');
+        currentSVGElement.setAttribute('fill', color);
 
         let currentPoint = new PenPoint(event.clientX, event.clientY, determineStrokeWidth(event));
 
@@ -113,7 +135,7 @@
             points.push(currentPoint);
 
             let perpendicularPointsPreviousDirection = currentPoint.getPointsPerpendicularToLineBetweenPoints(points[points.length - 2]);
-            let parallelPoints = points[points.length - 2].getPointsParallelToLineBetweenPoints(currentPoint);
+            let perpendicularPointsNextDirection = points[points.length - 2].getPointsPerpendicularToLineBetweenPoints(currentPoint);
 
             // // debug
             // for (let i = 0; i < outsidePoints.length; i++) {
@@ -126,12 +148,22 @@
             //     drawArea.appendChild(circle);
             // }
 
-            let middleIndex = Math.ceil(currentSVGStroke.length / 2);
+            let upperMiddleIndex = Math.ceil(currentSVGStroke.length / 2);
+            let lowerMiddleIndex = Math.floor(currentSVGStroke.length / 2);
 
             // linear
-            currentSVGStroke.splice(middleIndex, 0, `L${perpendicularPointsPreviousDirection[0].x} ${perpendicularPointsPreviousDirection[0].y}`, `L${perpendicularPointsPreviousDirection[1].x} ${perpendicularPointsPreviousDirection[1].y}`);
+            let firstElement = `L${perpendicularPointsPreviousDirection[1].x} ${perpendicularPointsPreviousDirection[1].y}`;
+            let secondElement = `L${perpendicularPointsPreviousDirection[0].x} ${perpendicularPointsPreviousDirection[0].y}`;
+            let thirdElement = `L${perpendicularPointsNextDirection[0].x} ${perpendicularPointsNextDirection[0].y}`;
+            let fourthElement = `L${perpendicularPointsNextDirection[1].x} ${perpendicularPointsNextDirection[1].y}`;
 
-            // currentSVGStroke.splice(middleIndex, 0, `L${parallelPoints[0].x} ${parallelPoints[0].y}`, `L${parallelPoints[1].x} ${parallelPoints[1].y}`);
+            // put third and 4th element on left and right of the item at leftOfMiddleIndex
+            if (currentSVGStroke.length > 1) {
+                currentSVGStroke.splice(lowerMiddleIndex, 0, thirdElement);
+                currentSVGStroke.splice(upperMiddleIndex, 0, firstElement, secondElement, fourthElement);
+            } else {
+                currentSVGStroke.splice(upperMiddleIndex, 0, firstElement, secondElement);
+            }
 
             setSVGPath();
         }

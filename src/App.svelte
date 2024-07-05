@@ -3,6 +3,12 @@ import {TextB} from "phosphor-svelte";
 import DrawingOverlay from "./DrawingOverlay.svelte";
 import Editor from "./Editor.svelte";
 import Toolbar from "./Toolbar.svelte";
+
+
+if ("virtualKeyboard" in navigator) {
+    navigator.virtualKeyboard.overlaysContent = true;
+}
+
 </script>
 
 <main>

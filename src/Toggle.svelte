@@ -10,10 +10,15 @@
         storeValue = value
     });
 
+    function click(event: MouseEvent) {
+        store.update((value) => {
+            return !value;
+        });
+    }
+
 </script>
 
-<button class={"btn btn-sm btn-square " + buttonType} on:click={()=>{store.update((value)=>{return !value})}}
-        class:btn-outline={!storeValue}>
+<button class={"btn btn-sm btn-square " + buttonType} on:click={click} class:btn-outline={!storeValue}>
     <slot></slot>
 </button>
 

@@ -29,6 +29,7 @@
     import Subscript from '@tiptap/extension-subscript'
     import Superscript from '@tiptap/extension-superscript'
     import Underline from '@tiptap/extension-underline'
+    import {boldMode, codeMode, currentEditor, highlightMode, italicMode, strikeMode, underlineMode} from "./globals";
 
     let element: HTMLDivElement;
     let editor: Editor;
@@ -85,9 +86,20 @@
             content: '<p>Hello World! 🌍️ </p>',
             onTransaction: () => {
                 // force re-render so `editor.isActive` works as expected
-                editor = editor
+                editor = editor;
+
+                boldMode.set(editor.isActive('bold'));
+                italicMode.set(editor.isActive('italic'));
+                strikeMode.set(editor.isActive('strike'));
+                underlineMode.set(editor.isActive('underline'))
+                highlightMode.set(editor.isActive('highlight'));
+                codeMode.set(editor.isActive('code'));
+
+
             },
         })
+
+        currentEditor.set(editor);
     })
 
     onDestroy(() => {
