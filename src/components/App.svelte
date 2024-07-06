@@ -1,4 +1,4 @@
-<script>import "./app.css";
+<script>import "../app.css";
 import {TextB} from "phosphor-svelte";
 import DrawingOverlay from "./DrawingOverlay.svelte";
 import Editor from "./Editor.svelte";

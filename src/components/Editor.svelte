@@ -1,5 +1,5 @@
 <script lang="ts">
-    import "./Posemirror.css"
+    import "../Posemirror.css"
 
     import {onMount, onDestroy} from 'svelte'
     import {Editor} from '@tiptap/core'
@@ -29,8 +29,9 @@
     import Subscript from '@tiptap/extension-subscript'
     import Superscript from '@tiptap/extension-superscript'
     import Underline from '@tiptap/extension-underline'
-    import {boldMode, codeMode, currentEditor, highlightMode, italicMode, strikeMode, underlineMode} from "./globals";
+    import {boldMode, codeMode, currentEditor, highlightMode, italicMode, strikeMode, underlineMode} from "../globals";
     import {History} from "@tiptap/extension-history";
+    import {HorizontalRule} from "@tiptap/extension-horizontal-rule";
 
     let element: HTMLDivElement;
     let editor: Editor;
@@ -84,6 +85,7 @@
                     },
                 }),
                 History,
+                HorizontalRule,
             ],
             content: '<p>Hello World! 🌍️ </p>',
             onTransaction: () => {

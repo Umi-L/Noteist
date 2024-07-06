@@ -1,7 +1,7 @@
 <script lang="ts">
     import {getContext} from "svelte";
     import type {Writable} from "svelte/store";
-    import {AnchorSide} from "./AnchorSide";
+    import {AnchorSide} from "../AnchorSide";
 
     export let wrapper;
     export let isOpen;

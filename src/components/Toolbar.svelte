@@ -2,7 +2,7 @@
     import {
         ArrowClockwise,
         ArrowCounterClockwise,
-        CodeBlock, DotsSix, DotsSixVertical,
+        CodeBlock, DotsSix, DotsSixVertical, Eraser,
         Highlighter,
         NotePencil,
         Pen,
@@ -15,21 +15,24 @@
     import {
         boldMode,
         codeMode, currentDrawColor,
-        currentEditor, drawingRedo, drawingUndo,
+        currentEditor, drawingRedo, drawingTool, drawingUndo,
         drawMode,
         highlightMode,
         italicMode,
         strikeMode,
         underlineMode
-    } from "./globals";
+    } from "../globals";
     import Toggle from "./Toggle.svelte";
     import {onMount, setContext} from "svelte";
     import type {Editor} from "@tiptap/core";
     import ColorPicker from 'svelte-awesome-color-picker';
     import ColorPickerWrapper from "./ColorPickerWrapper.svelte";
     import {type Writable, writable} from "svelte/store";
-    import {AnchorSide} from "./AnchorSide";
+    import {AnchorSide} from "../AnchorSide";
     import ToolbarButton from "./ToolbarButton.svelte";
+    import SetterToggle from "./SetterToggle.svelte";
+    import {EraserTool} from "../Tools/EraserTool";
+    import {PenTool} from "../Tools/PenTool";
 
     const size = 12;
 
@@ -216,42 +219,54 @@
     <!-- vertical rule  -->
     <div style="height: 1rem; width: 1px; background-color: var(--muted-foreground);"></div>
 
+    {#if !isDrawing}
+        <Toggle store={boldMode}>
+            <div class:negative-vertical={vertical}>
+                <TextB size={size}/>
+            </div>
+        </Toggle>
 
-    <Toggle store={boldMode}>
-        <div class:negative-vertical={vertical}>
-            <TextB size={size}/>
-        </div>
-    </Toggle>
+        <Toggle store={italicMode}>
+            <div class:negative-vertical={vertical}>
+                <TextItalic size={size}/>
+            </div>
+        </Toggle>
 
-    <Toggle store={italicMode}>
-        <div class:negative-vertical={vertical}>
-            <TextItalic size={size}/>
-        </div>
-    </Toggle>
+        <Toggle store={underlineMode}>
+            <div class:negative-vertical={vertical}>
+                <TextUnderline size={size}/>
+            </div>
+        </Toggle>
 
-    <Toggle store={underlineMode}>
-        <div class:negative-vertical={vertical}>
-            <TextUnderline size={size}/>
-        </div>
-    </Toggle>
+        <Toggle store={strikeMode}>
+            <div class:negative-vertical={vertical}>
+                <TextStrikethrough size={size}/>
+            </div>
+        </Toggle>
 
-    <Toggle store={strikeMode}>
-        <div class:negative-vertical={vertical}>
-            <TextStrikethrough size={size}/>
-        </div>
-    </Toggle>
+        <Toggle store={highlightMode}>
+            <div class:negative-vertical={vertical}>
+                <Highlighter size={size}/>
+            </div>
+        </Toggle>
 
-    <Toggle store={highlightMode}>
-        <div class:negative-vertical={vertical}>
-            <Highlighter size={size}/>
-        </div>
-    </Toggle>
-
-    <Toggle store={codeMode}>
-        <div class:negative-vertical={vertical}>
-            <CodeBlock size={size}/>
-        </div>
-    </Toggle>
+        <Toggle store={codeMode}>
+            <div class:negative-vertical={vertical}>
+                <CodeBlock size={size}/>
+            </div>
+        </Toggle>
+    {:else}
+        <SetterToggle store={drawingTool} value={new PenTool()} typeOnlyCheck={true}>
+            <div class:negative-vertical={vertical}>
+                <Pen size={size}/>
+            </div>
+        </SetterToggle>
+        <SetterToggle store={drawingTool} value={new EraserTool()} typeOnlyCheck={true}>
+            <div class:negative-vertical={vertical}>
+                <Eraser size={size}/>
+            </div>
+        </SetterToggle>
+    {/if}
 
     <!-- vertical rule  -->
     <div style="height: 1rem; width: 1px; background-color: var(--muted-foreground);"></div>
