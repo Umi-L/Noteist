@@ -1,30 +1,35 @@
 import {DrawingTool} from "../DrawingTool";
 import {PenPoint} from "../PenPoint";
+import type {Action} from "../Action";
+import {DrawingAction} from "../DrawingAction";
 
 export class PenTool extends DrawingTool {
     currentSVGStroke: string[] = [];
     points: PenPoint[] = [];
     currentSVGElement: SVGElement | null = null;
+    drawArea: SVGElement | null = null;
 
-    startDrawing(strokes: Array<SVGElement>, drawArea: SVGElement, event: PointerEvent, color: string) {
+    startDrawing(strokes: Array<SVGElement>, drawArea: SVGElement, event: PointerEvent, color: string, undoStack: Array<Action>, redoStack: Array<Action>) {
         this.points = [];
         this.currentSVGStroke = [];
         this.currentSVGElement = null;
+        this.drawArea = drawArea;
 
         this.currentSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         this.currentSVGElement.setAttribute('fill', color);
 
         drawArea.appendChild(this.currentSVGElement);
         strokes.push(this.currentSVGElement);
+        undoStack.push(new DrawingAction(this.currentSVGElement, this.drawArea, false));
 
-        let currentPoint = new PenPoint(event.clientX, event.clientY, this.determineStrokeWidth(event));
+        let currentPoint = new PenPoint(event, drawArea, this.determineStrokeWidth(event));
         this.points.push(currentPoint);
 
         this.currentSVGStroke = [`M ${currentPoint.x} ${currentPoint.y}`];
     }
 
-    drawingMove(event: PointerEvent) {
-        let currentPoint = new PenPoint(event.clientX, event.clientY, this.determineStrokeWidth(event));
+    drawingMove(event: PointerEvent, undoStack: Array<Action>, redoStack: Array<Action>) {
+        let currentPoint = new PenPoint(event, this.drawArea!, this.determineStrokeWidth(event));
 
         // // draw circle
         // let circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -99,6 +104,6 @@ export class PenTool extends DrawingTool {
             finalString += part;
         }
 
-        this.currentSVGElement.setAttribute('d', finalString);
+        this.currentSVGElement!.setAttribute('d', finalString);
     }
 }

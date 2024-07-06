@@ -68,6 +68,23 @@
     });
 
     onMount(() => {
+        new ResizeObserver((entries) => {
+
+            const rect = toolbar.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            if (Math.abs(centerX - window.innerWidth / 2) > Math.abs(centerY - window.innerHeight / 2)) {
+                let halfWidth = toolbar.offsetWidth / 2 - 25;
+
+                let translatePercent = centerX > window.innerWidth / 2 ? `translateY(-${halfWidth}px)` : `translateY(${halfWidth}px)`;
+
+                toolbar.style.transform = translatePercent;
+
+                console.log("horizontal");
+            }
+        }).observe(toolbar);
+
         handle.addEventListener("pointerdown", (e) => {
             e.preventDefault();
             isDragging = true;
@@ -79,8 +96,10 @@
             if (isDragging) {
                 e.preventDefault();
 
-                const x = e.clientX;
-                const y = e.clientY;
+                let parentRect = toolbar.parentElement!.getBoundingClientRect();
+
+                const x = e.clientX - parentRect.left;
+                const y = e.clientY - parentRect.top;
 
                 toolbar.style.left = `${x - toolbar.offsetWidth / 2}px`;
                 toolbar.style.top = `${y - toolbar.offsetHeight / 2}px`;
@@ -128,7 +147,9 @@
 
                     colorPickerAnchorSide.set(centerX > window.innerWidth / 2 ? AnchorSide.Right : AnchorSide.Left);
 
-                    let translatePercent = centerX > window.innerWidth / 2 ? "translateY(-500%)" : "translateY(500%)";
+                    let halfWidth = toolbar.offsetWidth / 2 - 25;
+
+                    let translatePercent = centerX > window.innerWidth / 2 ? `translateY(-${halfWidth}px)` : `translateY(${halfWidth}px)`;
 
                     toolbar.style.transform = translatePercent;
 

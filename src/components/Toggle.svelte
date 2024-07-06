@@ -14,6 +14,8 @@
         store.update((value) => {
             return !value;
         });
+
+        event.preventDefault();
     }
 
 </script>

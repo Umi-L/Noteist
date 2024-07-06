@@ -5,9 +5,11 @@ export class PenPoint {
     y: number;
     width: number;
 
-    constructor(public x: number, public y: number, width: number) {
-        this.x = x;
-        this.y = y;
+    constructor(event: PointerEvent, drawArea: SVGElement, width: number) {
+        let localX = event.clientX - drawArea.getBoundingClientRect().left;
+        let localY = event.clientY - drawArea.getBoundingClientRect().top;
+        this.x = localX;
+        this.y = localY;
         this.width = width;
     }
 

@@ -5,6 +5,8 @@
 
     function click(event: MouseEvent) {
         pressedCallback();
+
+        event.preventDefault();
     }
 
 </script>

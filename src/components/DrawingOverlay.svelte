@@ -4,13 +4,15 @@
     import {currentDrawColor, drawingRedo, drawingTool, drawingUndo, drawMode} from "../globals";
     import {PenTool} from "../Tools/PenTool";
     import type {DrawingTool} from "../DrawingTool";
+    import type {Action} from "../Action";
 
     let drawArea: SVGElement;
 
     let isDrawing = false;
 
     let strokes: Array<SVGElement> = [];
-    let redoStack: Array<SVGElement> = [];
+    let undoStack: Array<Action> = [];
+    let redoStack: Array<Action> = [];
 
     let tool: DrawingTool = new PenTool();
     drawingTool.subscribe(value => {
@@ -74,7 +76,9 @@
 
         isDrawing = true;
 
-        tool.startDrawing(strokes, drawArea, event, color);
+        let correctEvent = new PointerEvent('pointerdown', event);
+
+        tool.startDrawing(strokes, drawArea, event, color, undoStack, redoStack);
 
         console.log('drawing started');
     }
@@ -86,7 +90,7 @@
                 return;
             }
 
-            tool.drawingMove(event);
+            tool.drawingMove(event, undoStack, redoStack);
         }
     }
 
@@ -112,7 +116,12 @@
 
         if (strokes.length > 0) {
             strokes[strokes.length - 1].remove();
-            redoStack.push(strokes.pop()!);
+
+            let action = undoStack.pop()!;
+
+            redoStack.push(action);
+
+            action.undo();
         }
     }
 
@@ -121,9 +130,10 @@
         console.log('redo');
 
         if (redoStack.length > 0) {
-            let stroke = redoStack.pop()!;
-            strokes.push(stroke);
-            drawArea.appendChild(stroke);
+            let action = redoStack.pop()!;
+            undoStack.push(action);
+
+            action.redo();
         }
     }
 </script>
