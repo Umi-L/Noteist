@@ -1,7 +1,7 @@
 <script lang="ts">
     import {onMount} from "svelte";
     import {PenPoint} from "./PenPoint";
-    import {currentDrawColor, drawMode} from "./globals";
+    import {currentDrawColor, drawingRedo, drawingUndo, drawMode} from "./globals";
 
     let drawArea: SVGElement;
 
@@ -10,7 +10,8 @@
     let currentSVGStroke: Array<string> = [];
     let points: PenPoint[] = [];
 
-    let strokes: Array<SVGPathElement> = [];
+    let strokes: Array<SVGElement> = [];
+    let redoStack: Array<SVGElement> = [];
 
     const minWidth = 1;
     const maxWidth = 20;
@@ -26,6 +27,9 @@
     });
 
     onMount(() => {
+        drawingUndo.set(undo);
+        drawingRedo.set(redo);
+
         // subscribe to pointer events on the drawArea
         drawArea.addEventListener('pointerdown', handlePointerDown);
         document.addEventListener('pointermove', handlePointerMove);
@@ -84,6 +88,7 @@
         drawArea.appendChild(currentSVGElement);
 
         strokes.push(currentSVGElement);
+        redoStack = [];
 
         points.push(new PenPoint(event.clientX, event.clientY, determineStrokeWidth(event)));
 
@@ -179,6 +184,10 @@
     }
 
     function handlePointerUp(event: PointerEvent) {
+        if (!isDrawing) {
+            return;
+        }
+
         if (!(event.pointerType == 'mouse' || event.pointerType == 'pen')) {
             return;
         }
@@ -189,6 +198,27 @@
         points = [];
 
         console.log('drawing stopped');
+    }
+
+    function undo() {
+
+        console.log('undo');
+
+        if (strokes.length > 0) {
+            strokes[strokes.length - 1].remove();
+            redoStack.push(strokes.pop()!);
+        }
+    }
+
+    function redo() {
+
+        console.log('redo');
+
+        if (redoStack.length > 0) {
+            let stroke = redoStack.pop()!;
+            strokes.push(stroke);
+            drawArea.appendChild(stroke);
+        }
     }
 
     function determineStrokeWidth(event: PointerEvent): number {

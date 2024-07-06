@@ -30,6 +30,7 @@
     import Superscript from '@tiptap/extension-superscript'
     import Underline from '@tiptap/extension-underline'
     import {boldMode, codeMode, currentEditor, highlightMode, italicMode, strikeMode, underlineMode} from "./globals";
+    import {History} from "@tiptap/extension-history";
 
     let element: HTMLDivElement;
     let editor: Editor;
@@ -82,6 +83,7 @@
                         class: 'underline-text',
                     },
                 }),
+                History,
             ],
             content: '<p>Hello World! 🌍️ </p>',
             onTransaction: () => {

@@ -1,5 +1,7 @@
 <script lang="ts">
     import {
+        ArrowClockwise,
+        ArrowCounterClockwise,
         CodeBlock, DotsSix, DotsSixVertical,
         Highlighter,
         NotePencil,
@@ -13,7 +15,7 @@
     import {
         boldMode,
         codeMode, currentDrawColor,
-        currentEditor,
+        currentEditor, drawingRedo, drawingUndo,
         drawMode,
         highlightMode,
         italicMode,
@@ -27,6 +29,7 @@
     import ColorPickerWrapper from "./ColorPickerWrapper.svelte";
     import {type Writable, writable} from "svelte/store";
     import {AnchorSide} from "./AnchorSide";
+    import ToolbarButton from "./ToolbarButton.svelte";
 
     const size = 12;
 
@@ -39,6 +42,11 @@
     let vertical = false;
     isVertical.subscribe(value => {
         vertical = value;
+    });
+
+    let isDrawing = false;
+    drawMode.subscribe(value => {
+        isDrawing = value;
     });
 
     setContext("vertical", isVertical);
@@ -84,6 +92,10 @@
                 const centerY = rect.top + rect.height / 2;
 
                 isVertical.set(Math.abs(centerX - window.innerWidth / 2) > Math.abs(centerY - window.innerHeight / 2));
+
+                colorPickerAnchorSide.set(centerX > window.innerWidth / 2 ? AnchorSide.Right : AnchorSide.Left);
+                colorPickerAnchorSide.set(centerY > window.innerHeight / 2 ? AnchorSide.Bottom : AnchorSide.Top);
+
             }
         });
 
@@ -113,7 +125,7 @@
 
                     colorPickerAnchorSide.set(centerX > window.innerWidth / 2 ? AnchorSide.Right : AnchorSide.Left);
 
-                    let translatePercent = centerX > window.innerWidth / 2 ? "translateY(-300%)" : "translateY(300%)";
+                    let translatePercent = centerX > window.innerWidth / 2 ? "translateY(-500%)" : "translateY(500%)";
 
                     toolbar.style.transform = translatePercent;
 
@@ -131,7 +143,7 @@
         if (editor) {
             if (value) {
                 editor.chain().focus().setBold().run();
-            } else{
+            } else {
                 editor.chain().focus().unsetBold().run();
             }
         }
@@ -141,7 +153,7 @@
         if (editor) {
             if (value) {
                 editor.chain().focus().setItalic().run();
-            } else{
+            } else {
                 editor.chain().focus().unsetItalic().run();
             }
         }
@@ -151,7 +163,7 @@
         if (editor) {
             if (value) {
                 editor.chain().focus().setUnderline().run();
-            } else{
+            } else {
                 editor.chain().focus().unsetUnderline().run();
             }
         }
@@ -161,7 +173,7 @@
         if (editor) {
             if (value) {
                 editor.chain().focus().setStrike().run();
-            } else{
+            } else {
                 editor.chain().focus().unsetStrike().run();
             }
         }
@@ -171,7 +183,7 @@
         if (editor) {
             if (value) {
                 editor.chain().focus().setHighlight().run();
-            } else{
+            } else {
                 editor.chain().focus().unsetHighlight().run();
             }
         }
@@ -181,7 +193,7 @@
         if (editor) {
             if (value) {
                 editor.chain().focus().setCode().run();
-            } else{
+            } else {
                 editor.chain().focus().unsetCode().run();
             }
         }
@@ -240,6 +252,50 @@
             <CodeBlock size={size}/>
         </div>
     </Toggle>
+
+    <!-- vertical rule  -->
+    <div style="height: 1rem; width: 1px; background-color: var(--muted-foreground);"></div>
+
+    <ToolbarButton pressedCallback={() => {
+        if (!isDrawing) {
+            if (editor) {
+                editor.chain().focus().undo().run();
+            }
+        } else {
+            drawingUndo.update((func)=>{
+                if (func) {
+                    func();
+                }
+                return func;
+            });
+        }
+    }}>
+        <div class:negative-vertical={vertical}>
+
+            <ArrowCounterClockwise size={size}/>
+        </div>
+    </ToolbarButton>
+
+    <ToolbarButton pressedCallback={() => {
+        if (!isDrawing) {
+            if (editor) {
+                editor.chain().focus().redo().run();
+            }
+        } else {
+            drawingRedo.update((func)=>{
+                if (func) {
+                    func();
+                }
+                return func;
+            });
+        }
+    }}>
+        <div class:negative-vertical={vertical}>
+
+            <ArrowClockwise size={size}/>
+        </div>
+    </ToolbarButton>
+
 
     <ColorPicker components={{wrapper: ColorPickerWrapper}} label="" bind:hex={drawColor} on:input={(event)=>{
         if (event.detail.color)

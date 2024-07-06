@@ -12,3 +12,6 @@ export const codeMode = writable(false);
 export let currentEditor: Writable<Editor | null> = writable(null);
 
 export let currentDrawColor: Writable<string> = writable("pink");
+
+export let drawingUndo: Writable<()=>void | null> = writable(null);
+export let drawingRedo: Writable<()=>void | null> = writable(null);

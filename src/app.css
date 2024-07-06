@@ -81,6 +81,7 @@ html, body, #app {
   height: 100dvh;
   width: 100dvw;
   overscroll-behavior: none;
+  overscroll-behavior-x: none;
 
   overflow: hidden;
 
