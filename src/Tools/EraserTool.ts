@@ -7,7 +7,6 @@ import type {Point} from "../Point";
 export class EraserTool extends DrawingTool {
     strokes: Array<SVGElement> = [];
     drawArea: SVGElement | null = null;
-    svg: SVGElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 
     startDrawing(strokes: Array<SVGElement>, drawArea: SVGElement, event: PointerEvent, color: string, undoStack: Array<Action>, redoStack: Array<Action>) {
         this.strokes = strokes;

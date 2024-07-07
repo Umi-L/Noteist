@@ -32,6 +32,7 @@
     import {boldMode, codeMode, currentEditor, highlightMode, italicMode, strikeMode, underlineMode} from "../globals";
     import {History} from "@tiptap/extension-history";
     import {HorizontalRule} from "@tiptap/extension-horizontal-rule";
+    import SlashCommand from "../extensions/SlashCommand/slash-command";
 
     let element: HTMLDivElement;
     let editor: Editor;
@@ -43,7 +44,11 @@
                 Document,
                 Paragraph,
                 Text,
-                Blockquote,
+                Blockquote.configure({
+                    HTMLAttributes: {
+                        class: 'quote-block'
+                    }
+                }),
                 Heading.configure({
                     levels: [1, 2, 3],
                 }),
@@ -52,7 +57,11 @@
                         class: 'pl-5 list-disc',
                     },
                 }),
-                ListItem,
+                ListItem.configure({
+                    HTMLAttributes: {
+                        class: 'leading-normal -mb-2'
+                    }
+                }),
                 CodeBlock,
                 OrderedList.configure({
                     HTMLAttributes: {
@@ -66,14 +75,26 @@
                 TableRow,
                 TableHeader,
                 TableCell,
-                TaskList,
+                TaskList.configure({
+                    HTMLAttributes: {
+                        class: 'not-prose pl-2'
+                    }
+                }),
                 TaskItem.configure({
-                    nested: true,
+                    HTMLAttributes: {
+                        class: 'flex items-start my-1 checkbox-node',
+                    },
+                    nested: true
                 }),
                 Gapcursor,
                 Bold,
                 Code,
-                Highlight,
+                Highlight.configure({
+                    multicolor: true,
+                    HTMLAttributes: {
+                        class: 'rounded-sm opacity-80'
+                    }
+                }),
                 Italic,
                 Link,
                 Strike,
@@ -81,11 +102,17 @@
                 Superscript,
                 Underline.configure({
                     HTMLAttributes: {
-                        class: 'underline-text',
+                        class: 'underline-text pl-0.5',
                     },
                 }),
                 History,
                 HorizontalRule,
+                SlashCommand,
+                CodeBlock.configure({
+                    HTMLAttributes: {
+                        class: 'rounded-sm p-5 font-mono font-medium code-block my-2'
+                    }
+                })
             ],
             content: '<p>Hello World! 🌍️ </p>',
             onTransaction: () => {
@@ -101,6 +128,20 @@
 
 
             },
+            editorProps: {
+                handleDOMEvents: {
+                    keydown: (_view, event) => {
+                        // prevent default event listeners from firing when slash command is active
+                        if (['ArrowUp', 'ArrowDown', 'Enter'].includes(event.key)) {
+                            const slashCommand = document.querySelector('#slash-command');
+                            if (slashCommand) {
+                                return true;
+                            }
+                        }
+                    }
+                },
+            }
+
         })
 
         currentEditor.set(editor);
@@ -135,4 +176,20 @@
         border: none;
         outline: none;
     }
+
+    :global(.code-block) {
+        background-color: var(--muted);
+    }
+
+    :global(.checkbox-node input) {
+        @apply checkbox-sm;
+    }
+
+    :global(.quote-block) {
+        border-color: var(--foreground);
+
+        @apply p-2 my-2 border-s-2;
+
+    }
+
 </style>

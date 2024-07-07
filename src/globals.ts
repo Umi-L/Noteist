@@ -3,6 +3,8 @@ import type {Editor} from "@tiptap/core";
 import type {DrawingTool} from "./DrawingTool";
 import {PenTool} from "./Tools/PenTool";
 
+export const sidebarOpen = writable(true);
+
 export const drawMode = writable(false);
 export const boldMode = writable(false);
 export const italicMode = writable(false);

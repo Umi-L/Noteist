@@ -1,13 +1,15 @@
 <script lang="ts">
 
     import {Hamburger, LineSegments, List, Note} from "phosphor-svelte";
+    import {sidebarOpen} from "../globals";
 
     const size = 16;
 
     let isOpen = true;
+    sidebarOpen.subscribe(value => isOpen = value);
 
     function toggleSidebar() {
-        isOpen = !isOpen;
+        sidebarOpen.update(value => !value);
     }
 </script>
 
@@ -15,7 +17,7 @@
     <div class="header">
         <h2 class="font-bold">DrawNotes</h2>
 
-        <button class="btn btn-square btn-ghost" on:click={toggleSidebar}>
+        <button class="btn btn-square btn-ghost btn-sm" on:click={toggleSidebar}>
             <List size={size}/>
         </button>
     </div>
@@ -87,6 +89,29 @@
 
     }
 
+    @keyframes slideIn {
+
+        0% {
+            width: 0;
+            border-right: none;
+            padding: 0;
+
+        }
+
+        1% {
+            width: 0;
+            border-right: 1px solid var(--muted-foreground);
+            padding: 1rem 0;
+        }
+
+        100% {
+            width: 15rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+    }
+
     .sidebar {
 
         background-color: var(--color-bg);
@@ -98,10 +123,11 @@
         border-right: 1px solid var(--muted-foreground);
 
         transition: width 0.3s ease-out 0s;
+        box-shadow: var(--shadow);
     }
 
     .open {
-        width: 15rem;
+        animation: slideIn 0.3s ease-out 0s forwards;
     }
 
     .close {
@@ -117,5 +143,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+
+        margin-left: 1rem;
     }
 </style>

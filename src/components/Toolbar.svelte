@@ -6,7 +6,7 @@
         Highlighter,
         NotePencil,
         Pen,
-        Pencil,
+        Pencil, ScribbleLoop,
         TextB,
         TextItalic,
         TextStrikethrough,
@@ -34,7 +34,7 @@
     import {EraserTool} from "../Tools/EraserTool";
     import {PenTool} from "../Tools/PenTool";
 
-    const size = 12;
+    const size = 16;
 
     let handle: HTMLDivElement;
     let toolbar: HTMLDivElement;
@@ -233,7 +233,7 @@
 
     <Toggle store={drawMode}>
         <div class:negative-vertical={vertical}>
-            <Pen size={size}/>
+            <ScribbleLoop size={size}/>
         </div>
     </Toggle>
 
@@ -351,7 +351,7 @@
         background-color: var(--muted);
         padding: 5px;
         border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow);
 
         border: 1px solid var(--border);
 
@@ -378,6 +378,10 @@
         user-select: none;
         padding: 0 0.5rem;
 
+    }
+
+    :global(.toolbar .container){
+        padding: 0 !important;
     }
 
 </style>

@@ -21,8 +21,8 @@ export class PenPoint {
         const udy = dy / length;
         const halfWidth = this.width / 2;
         return [
-            { x: Math.round(this.x + halfWidth * udy), y: Math.round(this.y - halfWidth * udx) },
-            { x: Math.round(this.x - halfWidth * udy), y: Math.round(this.y + halfWidth * udx) },
+            { x: this.roundToPrecision(this.x + halfWidth * udy), y: this.roundToPrecision(this.y - halfWidth * udx) },
+            { x: this.roundToPrecision(this.x - halfWidth * udy), y: this.roundToPrecision(this.y + halfWidth * udx) },
         ];
     }
 
@@ -34,12 +34,18 @@ export class PenPoint {
         const udy = dy / length;
         const halfWidth = this.width / 2;
         return [
-            { x: Math.round(this.x + halfWidth * udx), y: Math.round(this.y + halfWidth * udy) },
-            { x: Math.round(this.x - halfWidth * udx), y: Math.round(this.y - halfWidth * udy) },
+            { x: this.roundToPrecision(this.x + halfWidth * udx), y: this.roundToPrecision(this.y + halfWidth * udy) },
+            { x: this.roundToPrecision(this.x - halfWidth * udx), y: this.roundToPrecision(this.y - halfWidth * udy) },
         ];
     }
 
     equals(other: PenPoint): boolean {
-        return Math.round(this.x) === Math.round(other.x) && Math.round(this.y) === Math.round(other.y);
+        return this.roundToPrecision(this.x) === this.roundToPrecision(other.x) && this.roundToPrecision(this.y) === this.roundToPrecision(other.y);
+    }
+    
+    roundToPrecision(value: number): number {
+        const decimals = 2;
+        const factor = Math.pow(10, decimals);
+        return Math.round(value * factor) / factor;
     }
 }

@@ -9,6 +9,9 @@
 
     --muted: #202020;
     --muted-foreground: #b2b2b2;
+
+    --double-muted: #292929;
+    --double-muted-foreground: #a2a2a2;
  
     --popover: hsl(0 0% 100%);
     --popover-foreground: hsl(222.2 84% 4.9%);
@@ -34,6 +37,8 @@
     --ring: #292929;
  
     --radius: 0.5rem;
+
+    --shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
   }
  
   .dark {
