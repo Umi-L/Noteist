@@ -363,6 +363,7 @@
         transition: rotate 0.2s ease-out;
 
         user-select: none;
+        pointer-events: all;
     }
 
     .vertical {

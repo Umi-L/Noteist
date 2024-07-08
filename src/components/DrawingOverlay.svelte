@@ -148,6 +148,7 @@
     .drawing-area {
         width: 100%;
         height: 100%;
+
         /*  stop dragging  */
         touch-action: none;
 
@@ -158,7 +159,6 @@
         z-index: 100;
 
         position: absolute;
-        left: 0;
         top: 0;
     }
 </style>

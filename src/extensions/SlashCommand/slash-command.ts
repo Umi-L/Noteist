@@ -10,7 +10,7 @@ import CommandList from './CommandList.svelte';
 import type { SvelteComponent } from 'svelte';
 import {
     CheckSquare,
-    CodeSimple,
+    CodeSimple, GridNine,
     ListBullets,
     ListNumbers,
     Quotes,
@@ -139,6 +139,14 @@ const getSuggestionItems = ({ query }: { query: string }) => {
             icon: CodeSimple,
             command: ({ editor, range }: CommandProps) =>
                 editor.chain().focus().deleteRange(range).toggleCodeBlock().run()
+        },
+        {
+            title: 'Table',
+            description: 'Create a table.',
+            searchTerms: ['table', 'chart'],
+            icon: GridNine,
+            command: ({ editor, range }: CommandProps) =>
+                editor.chain().focus().deleteRange(range).insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
         }
         // {
         // 	title: 'Image',

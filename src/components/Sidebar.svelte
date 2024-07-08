@@ -1,6 +1,6 @@
 <script lang="ts">
 
-    import {Hamburger, LineSegments, List, Note} from "phosphor-svelte";
+    import {ArrowLineRight, CaretRight, Folder, Hamburger, LineSegments, List, Note} from "phosphor-svelte";
     import {sidebarOpen} from "../globals";
 
     const size = 16;
@@ -27,9 +27,12 @@
     <!-- Links -->
     <ul class="menu p-0">
         <li>
-            <a>
-                <Note size={size}/>
+            <a class="item">
+                <div class="item-subwrapper">
+                <Folder size={size}/>
                 Home
+                </div>
+                <CaretRight/>
             </a>
         </li>
         <li>
@@ -145,5 +148,23 @@
         align-items: center;
 
         margin-left: 1rem;
+    }
+
+    .item{
+        display: flex;
+        align-items: center;
+
+        justify-content: space-between;
+    }
+
+    .item-subwrapper{
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    h2{
+        margin: 0;
+        font-size: 1.5rem;
     }
 </style>

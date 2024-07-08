@@ -22,6 +22,7 @@
     const navigationKeys = ['ArrowUp', 'ArrowDown', 'Enter'];
     const onKeyDown = (e: KeyboardEvent) => {
         console.log(e.key);
+        if (selectedIndex > items.length - 1) selectedIndex = 0;
         if (!navigationKeys.includes(e.key)) return;
         e.preventDefault();
         if (e.key === 'ArrowUp') {

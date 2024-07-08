@@ -61,7 +61,6 @@ export class PenTool extends DrawingTool {
 
         let perpendicularPointsPreviousDirection = currentPoint.getPointsPerpendicularToLineBetweenPoints(this.points[this.points.length - 2]);
         let perpendicularPointsNextDirection = this.points[this.points.length - 2].getPointsPerpendicularToLineBetweenPoints(currentPoint);
-
         // // debug
         // for (let i = 0; i < outsidePoints.length; i++) {
         //     // draw circle

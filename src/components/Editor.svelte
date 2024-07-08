@@ -29,10 +29,20 @@
     import Subscript from '@tiptap/extension-subscript'
     import Superscript from '@tiptap/extension-superscript'
     import Underline from '@tiptap/extension-underline'
-    import {boldMode, codeMode, currentEditor, highlightMode, italicMode, strikeMode, underlineMode} from "../globals";
+    import {
+        boldMode,
+        codeMode,
+        currentEditor,
+        editorChangeListeners,
+        highlightMode,
+        italicMode,
+        strikeMode,
+        underlineMode
+    } from "../globals";
     import {History} from "@tiptap/extension-history";
     import {HorizontalRule} from "@tiptap/extension-horizontal-rule";
     import SlashCommand from "../extensions/SlashCommand/slash-command";
+    import Placeholder from '@tiptap/extension-placeholder';
 
     let element: HTMLDivElement;
     let editor: Editor;
@@ -59,7 +69,7 @@
                 }),
                 ListItem.configure({
                     HTMLAttributes: {
-                        class: 'leading-normal -mb-2'
+                        class: 'leading-normal mb-1 mt-1'
                     }
                 }),
                 CodeBlock,
@@ -73,8 +83,28 @@
                     resizable: true,
                 }),
                 TableRow,
-                TableHeader,
-                TableCell,
+                TableHeader.configure(
+                    {
+                        HTMLAttributes: {
+                            class: 'p-2 border border-s-2 no-placeholder'
+                        },
+                    }
+                ),
+                TableCell.configure({
+                    HTMLAttributes: {
+                        class: 'p-2 border border-s-2 no-placeholder'
+                    }
+                }),
+                Placeholder.configure({
+                    placeholder: ({node}: any) => {
+                        if (node.type.name === 'heading') {
+                            return `Heading ${node.attrs.level}`;
+                        }
+                        return "Type or press / for commands";
+                    },
+
+                    includeChildren: true
+                }),
                 TaskList.configure({
                     HTMLAttributes: {
                         class: 'not-prose pl-2'
@@ -126,6 +156,7 @@
                 highlightMode.set(editor.isActive('highlight'));
                 codeMode.set(editor.isActive('code'));
 
+                editorChangeListeners.forEach(listener => listener(editor));
 
             },
             editorProps: {
@@ -187,9 +218,27 @@
 
     :global(.quote-block) {
         border-color: var(--foreground);
-
         @apply p-2 my-2 border-s-2;
+    }
 
+    :global(.no-placeholder) {
+        content: "";
+        position: relative;
+    }
+
+    :global(.no-placeholder .is-empty:first-child::before) {
+        content: "";
+        position: relative;
+    }
+
+    :global(.column-resize-handle){
+        background-color: var(--primary);
+        bottom: -2px;
+        pointer-events: none;
+        position: absolute;
+        right: -2px;
+        top: 0;
+        width: 4px;
     }
 
 </style>

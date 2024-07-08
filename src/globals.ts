@@ -21,3 +21,8 @@ export let drawingUndo: Writable<()=>void | null> = writable(null);
 export let drawingRedo: Writable<()=>void | null> = writable(null);
 
 export let drawingTool: Writable<DrawingTool> = writable(new PenTool());
+
+export let editorChangeListeners: Array<(editor: Editor) => void> = [];
+export let onEditorChange = (listener: (editor: Editor) => void) => {
+    editorChangeListeners.push(listener);
+}
