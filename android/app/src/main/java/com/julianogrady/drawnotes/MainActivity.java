@@ -1,4 +1,4 @@
-package com.julianogrady.drawnotes;
+package com.julianogrady.writeover;
 
 import com.getcapacitor.BridgeActivity;
 

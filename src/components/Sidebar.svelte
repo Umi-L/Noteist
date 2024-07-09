@@ -15,7 +15,7 @@
 
 <div class="sidebar" class:open={isOpen} class:close={!isOpen}>
     <div class="header">
-        <h2 class="font-bold">DrawNotes</h2>
+        <h2 class="font-bold">writeover</h2>
 
         <button class="btn btn-square btn-ghost btn-sm" on:click={toggleSidebar}>
             <List size={size}/>

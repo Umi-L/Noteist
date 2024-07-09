@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">drawnotes</string>
-    <string name="title_activity_main">drawnotes</string>
-    <string name="package_name">com.julianogrady.drawnotes</string>
-    <string name="custom_url_scheme">com.julianogrady.drawnotes</string>
+    <string name="app_name">writeover</string>
+    <string name="title_activity_main">writeover</string>
+    <string name="package_name">com.julianogrady.writeover</string>
+    <string name="custom_url_scheme">com.julianogrady.writeover</string>
 </resources>
