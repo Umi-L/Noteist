@@ -1,306 +1,92 @@
-import { mergeAttributes, Node, textblockTypeInputRule } from '@tiptap/core'
-import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
+import { mergeAttributes, Node, wrappingInputRule } from '@tiptap/core'
 
 export interface CalloutOptions {
     /**
-     * Adds a prefix to language classes that are applied to code tags.
-     * @default 'language-'
-     */
-    languageClassPrefix: string
-    /**
-     * Define whether the node should be exited on triple enter.
-     * @default true
-     */
-    exitOnTripleEnter: boolean
-    /**
-     * Define whether the node should be exited on arrow down if there is no node after it.
-     * @default true
-     */
-    exitOnArrowDown: boolean
-    /**
-     * Custom HTML attributes that should be added to the rendered HTML tag.
+     * HTML attributes to add to the Callout element
      * @default {}
      * @example { class: 'foo' }
      */
-    HTMLAttributes: Record<string, any>
+    HTMLAttributes: Record<string, any>,
 }
 
 declare module '@tiptap/core' {
     interface Commands<ReturnType> {
-        codeBlock: {
+        Callout: {
             /**
-             * Set a code block
-             * @param attributes Code block attributes
-             * @example editor.commands.setCodeBlock({ language: 'javascript' })
+             * Set a Callout node
              */
-            setCodeBlock: (attributes?: { language: string }) => ReturnType
+            setCallout: () => ReturnType,
             /**
-             * Toggle a code block
-             * @param attributes Code block attributes
-             * @example editor.commands.toggleCodeBlock({ language: 'javascript' })
+             * Toggle a Callout node
              */
-            toggleCodeBlock: (attributes?: { language: string }) => ReturnType
+            toggleCallout: () => ReturnType,
+            /**
+             * Unset a Callout node
+             */
+            unsetCallout: () => ReturnType,
         }
     }
 }
 
 /**
- * Matches a code block with backticks.
+ * Matches a Callout to a `>` as input.
  */
-export const backtickInputRegex = /^```([a-z]+)?[\s\n]$/
+export const inputRegex = /^\s*>\s$/
 
 /**
- * Matches a code block with tildes.
+ * This extension allows you to create Callouts.
+ * @see https://tiptap.dev/api/nodes/Callout
  */
-export const tildeInputRegex = /^~~~([a-z]+)?[\s\n]$/
+export const Callout = Node.create<CalloutOptions>({
 
-/**
- * This extension allows you to create code blocks.
- * @see https://tiptap.dev/api/nodes/code-block
- */
-export const CodeBlock = Node.create<CodeBlockOptions>({
-    name: 'codeBlock',
+    name: 'Callout',
 
     addOptions() {
         return {
-            languageClassPrefix: 'language-',
-            exitOnTripleEnter: true,
-            exitOnArrowDown: true,
             HTMLAttributes: {},
         }
     },
 
-    content: 'text*',
-
-    marks: '',
+    content: 'block+',
 
     group: 'block',
 
-    code: true,
-
     defining: true,
-
-    addAttributes() {
-        return {
-            language: {
-                default: null,
-                parseHTML: element => {
-                    const { languageClassPrefix } = this.options
-                    const classNames = [...(element.firstElementChild?.classList || [])]
-                    const languages = classNames
-                        .filter(className => className.startsWith(languageClassPrefix))
-                        .map(className => className.replace(languageClassPrefix, ''))
-                    const language = languages[0]
-
-                    if (!language) {
-                        return null
-                    }
-
-                    return language
-                },
-                rendered: false,
-            },
-        }
-    },
 
     parseHTML() {
         return [
-            {
-                tag: 'pre',
-                preserveWhitespace: 'full',
-            },
+            { tag: 'aside' },
         ]
     },
 
-    renderHTML({ node, HTMLAttributes }) {
-        return [
-            'pre',
-            mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
-            [
-                'code',
-                {
-                    class: node.attrs.language
-                        ? this.options.languageClassPrefix + node.attrs.language
-                        : null,
-                },
-                0,
-            ],
-        ]
+    renderHTML({ HTMLAttributes }) {
+        return ['aside', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0]
     },
 
     addCommands() {
         return {
-            setCodeBlock:
-                attributes => ({ commands }) => {
-                    return commands.setNode(this.name, attributes)
-                },
-            toggleCodeBlock:
-                attributes => ({ commands }) => {
-                    return commands.toggleNode(this.name, 'paragraph', attributes)
-                },
+            setCallout: () => ({ commands }) => {
+                return commands.wrapIn(this.name)
+            },
+            toggleCallout: () => ({ commands }) => {
+                return commands.toggleWrap(this.name)
+            },
+            unsetCallout: () => ({ commands }) => {
+                return commands.lift(this.name)
+            },
         }
     },
 
     addKeyboardShortcuts() {
         return {
-            'Mod-Alt-c': () => this.editor.commands.toggleCodeBlock(),
-
-            // remove code block when at start of document or code block is empty
-            Backspace: () => {
-                const { empty, $anchor } = this.editor.state.selection
-                const isAtStart = $anchor.pos === 1
-
-                if (!empty || $anchor.parent.type.name !== this.name) {
-                    return false
-                }
-
-                if (isAtStart || !$anchor.parent.textContent.length) {
-                    return this.editor.commands.clearNodes()
-                }
-
-                return false
-            },
-
-            // exit node on triple enter
-            Enter: ({ editor }) => {
-                if (!this.options.exitOnTripleEnter) {
-                    return false
-                }
-
-                const { state } = editor
-                const { selection } = state
-                const { $from, empty } = selection
-
-                if (!empty || $from.parent.type !== this.type) {
-                    return false
-                }
-
-                const isAtEnd = $from.parentOffset === $from.parent.nodeSize - 2
-                const endsWithDoubleNewline = $from.parent.textContent.endsWith('\n\n')
-
-                if (!isAtEnd || !endsWithDoubleNewline) {
-                    return false
-                }
-
-                return editor
-                    .chain()
-                    .command(({ tr }) => {
-                        tr.delete($from.pos - 2, $from.pos)
-
-                        return true
-                    })
-                    .exitCode()
-                    .run()
-            },
-
-            // exit node on arrow down
-            ArrowDown: ({ editor }) => {
-                if (!this.options.exitOnArrowDown) {
-                    return false
-                }
-
-                const { state } = editor
-                const { selection, doc } = state
-                const { $from, empty } = selection
-
-                if (!empty || $from.parent.type !== this.type) {
-                    return false
-                }
-
-                const isAtEnd = $from.parentOffset === $from.parent.nodeSize - 2
-
-                if (!isAtEnd) {
-                    return false
-                }
-
-                const after = $from.after()
-
-                if (after === undefined) {
-                    return false
-                }
-
-                const nodeAfter = doc.nodeAt(after)
-
-                if (nodeAfter) {
-                    return false
-                }
-
-                return editor.commands.exitCode()
-            },
         }
     },
 
     addInputRules() {
         return [
-            textblockTypeInputRule({
-                find: backtickInputRegex,
+            wrappingInputRule({
+                find: inputRegex,
                 type: this.type,
-                getAttributes: match => ({
-                    language: match[1],
-                }),
-            }),
-            textblockTypeInputRule({
-                find: tildeInputRegex,
-                type: this.type,
-                getAttributes: match => ({
-                    language: match[1],
-                }),
-            }),
-        ]
-    },
-
-    addProseMirrorPlugins() {
-        return [
-            // this plugin creates a code block for pasted content from VS Code
-            // we can also detect the copied code language
-            new Plugin({
-                key: new PluginKey('codeBlockVSCodeHandler'),
-                props: {
-                    handlePaste: (view, event) => {
-                        if (!event.clipboardData) {
-                            return false
-                        }
-
-                        // don’t create a new code block within code blocks
-                        if (this.editor.isActive(this.type.name)) {
-                            return false
-                        }
-
-                        const text = event.clipboardData.getData('text/plain')
-                        const vscode = event.clipboardData.getData('vscode-editor-data')
-                        const vscodeData = vscode ? JSON.parse(vscode) : undefined
-                        const language = vscodeData?.mode
-
-                        if (!text || !language) {
-                            return false
-                        }
-
-                        const { tr, schema } = view.state
-
-                        // prepare a text node
-                        // strip carriage return chars from text pasted as code
-                        // see: https://github.com/ProseMirror/prosemirror-view/commit/a50a6bcceb4ce52ac8fcc6162488d8875613aacd
-                        const textNode = schema.text(text.replace(/\r\n?/g, '\n'))
-
-                        // create a code block with the text node
-                        // replace selection with the code block
-                        tr.replaceSelectionWith(this.type.create({ language }, textNode))
-
-                        if (tr.selection.$from.parent.type !== this.type) {
-                            // put cursor inside the newly created code block
-                            tr.setSelection(TextSelection.near(tr.doc.resolve(Math.max(0, tr.selection.from - 2))))
-                        }
-
-                        // store meta information
-                        // this is useful for other plugins that depends on the paste event
-                        // like the paste rule plugin
-                        tr.setMeta('paste', true)
-
-                        view.dispatch(tr)
-
-                        return true
-                    },
-                },
             }),
         ]
     },

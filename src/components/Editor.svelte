@@ -43,6 +43,7 @@
     import {HorizontalRule} from "@tiptap/extension-horizontal-rule";
     import SlashCommand from "../extensions/SlashCommand/slash-command";
     import Placeholder from '@tiptap/extension-placeholder';
+    import {Callout} from "../extensions/Callout/callout";
 
     let element: HTMLDivElement;
     let editor: Editor;
@@ -137,6 +138,12 @@
                 }),
                 History,
                 HorizontalRule,
+                Callout.configure({
+                    HTMLAttributes:
+                        {
+                            class: 'callout-block'
+                        }
+                }),
                 SlashCommand,
                 CodeBlock.configure({
                     HTMLAttributes: {
@@ -145,33 +152,36 @@
                 })
             ],
             content: '<p>Hello World! 🌍️ </p>',
-            onTransaction: () => {
-                // force re-render so `editor.isActive` works as expected
-                editor = editor;
+            onTransaction:
+                () => {
+                    // force re-render so `editor.isActive` works as expected
+                    editor = editor;
 
-                boldMode.set(editor.isActive('bold'));
-                italicMode.set(editor.isActive('italic'));
-                strikeMode.set(editor.isActive('strike'));
-                underlineMode.set(editor.isActive('underline'))
-                highlightMode.set(editor.isActive('highlight'));
-                codeMode.set(editor.isActive('code'));
+                    boldMode.set(editor.isActive('bold'));
+                    italicMode.set(editor.isActive('italic'));
+                    strikeMode.set(editor.isActive('strike'));
+                    underlineMode.set(editor.isActive('underline'))
+                    highlightMode.set(editor.isActive('highlight'));
+                    codeMode.set(editor.isActive('code'));
 
-                editorChangeListeners.forEach(listener => listener(editor));
+                    editorChangeListeners.forEach(listener => listener(editor));
 
-            },
-            editorProps: {
-                handleDOMEvents: {
-                    keydown: (_view, event) => {
-                        // prevent default event listeners from firing when slash command is active
-                        if (['ArrowUp', 'ArrowDown', 'Enter'].includes(event.key)) {
-                            const slashCommand = document.querySelector('#slash-command');
-                            if (slashCommand) {
-                                return true;
+                },
+            editorProps:
+                {
+                    handleDOMEvents: {
+                        keydown: (_view, event) => {
+                            // prevent default event listeners from firing when slash command is active
+                            if (['ArrowUp', 'ArrowDown', 'Enter'].includes(event.key)) {
+                                const slashCommand = document.querySelector('#slash-command');
+                                if (slashCommand) {
+                                    return true;
+                                }
                             }
                         }
                     }
-                },
-            }
+                    ,
+                }
 
         })
 
@@ -231,7 +241,7 @@
         position: relative;
     }
 
-    :global(.column-resize-handle){
+    :global(.column-resize-handle) {
         background-color: var(--primary);
         bottom: -2px;
         pointer-events: none;
@@ -239,6 +249,13 @@
         right: -2px;
         top: 0;
         width: 4px;
+    }
+
+    :global(.callout-block) {
+        background-color: var(--muted);
+        border: 1px solid var(--muted-foreground);
+        border-radius: 5px;
+        @apply p-4 my-2;
     }
 
 </style>

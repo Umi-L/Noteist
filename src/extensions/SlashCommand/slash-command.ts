@@ -13,7 +13,7 @@ import {
     CodeSimple, GridNine,
     ListBullets,
     ListNumbers,
-    Quotes,
+    Quotes, Rectangle,
     TextAa,
     TextHOne,
     TextHThree,
@@ -117,6 +117,20 @@ const getSuggestionItems = ({ query }: { query: string }) => {
             command: ({ editor, range }: CommandProps) => {
                 editor.chain().focus().deleteRange(range).toggleOrderedList().run();
             }
+        },
+        {
+            title: 'Callout',
+            description: 'Highlight some information.',
+            searchTerms: ['callout'],
+            icon: Rectangle,
+            command: ({ editor, range }: CommandProps) =>
+                editor
+                    .chain()
+                    .focus()
+                    .deleteRange(range)
+                    .toggleNode('paragraph', 'paragraph')
+                    .toggleCallout()
+                    .run()
         },
         {
             title: 'Quote',

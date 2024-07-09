@@ -1,111 +1,119 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
 @layer base {
-  :root {
-    --background: #191919;
-    --foreground: #d4d4d4;
+    :root {
+        --background: #191919;
+        --foreground: #d4d4d4;
 
-    --muted: #202020;
-    --muted-foreground: #b2b2b2;
+        --muted: #202020;
+        --muted-foreground: #b2b2b2;
 
-    --double-muted: #292929;
-    --double-muted-foreground: #a2a2a2;
- 
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(222.2 84% 4.9%);
- 
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(222.2 84% 4.9%);
- 
-    --border: hsl(214.3 31.8% 91.4%);
-    --input: hsl(214.3 31.8% 91.4%);
+        --double-muted: #292929;
+        --double-muted-foreground: #a2a2a2;
 
-    --primary: #7480ff;
-    --primary-foreground: hsl(210 40% 98%);
- 
-    --secondary: rgb(167, 130, 149);
-    --secondary-foreground: hsl(222.2 47.4% 11.2%);
- 
-    --accent: hsl(210 40% 96.1%);
-    --accent-foreground: hsl(222.2 47.4% 11.2%);
- 
-    --destructive: hsl(0 72.2% 50.6%);
-    --destructive-foreground: 2hsl(10 40% 98%);
- 
-    --ring: #292929;
- 
-    --radius: 0.5rem;
+        --popover: hsl(0 0% 100%);
+        --popover-foreground: hsl(222.2 84% 4.9%);
 
-    --shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
-  }
- 
-  .dark {
-    --background: hsl(222.2 84% 4.9%);
-    --foreground: hsl(210 40% 98%);
- 
-    --muted: hsl(217.2 32.6% 17.5%);
-    --muted-foreground: hsl(215 20.2% 65.1%);
- 
-    --popover: hsl(222.2 84% 4.9%);
-    --popover-foreground: hsl(210 40% 98%);
- 
-    --card: hsl(222.2 84% 4.9%);
-    --card-foreground: hsl(210 40% 98%);
- 
-    --border: hsl(217.2 32.6% 17.5%);
-    --input: hsl(217.2 32.6% 17.5%);
+        --card: hsl(0 0% 100%);
+        --card-foreground: hsl(222.2 84% 4.9%);
 
-    --primary: hsl(210 40% 98%);
-    --primary-foreground: hsl(222.2 47.4% 11.2%);
- 
-    --secondary: hsl(217.2 32.6% 17.5%);
-    --secondary-foreground: hsl(210 40% 98%);
- 
-    --accent: hsl(217.2 32.6% 17.5%);
-    --accent-foreground: hsl(210 40% 98%);
- 
-    --destructive: hsl(0 62.8% 30.6%);
-    --destructive-foreground: hsl(210 40% 98%);
- 
-    --ring: hsl(212.7, 26.8%, 83.9%);
-  }
+        --border: hsl(214.3 31.8% 91.4%);
+        --input: hsl(214.3 31.8% 91.4%);
+
+        --primary: #7480ff;
+        --primary-foreground: hsl(210 40% 98%);
+
+        --secondary: rgb(167, 130, 149);
+        --secondary-foreground: hsl(222.2 47.4% 11.2%);
+
+        --accent: hsl(210 40% 96.1%);
+        --accent-foreground: hsl(222.2 47.4% 11.2%);
+
+        --destructive: hsl(0 72.2% 50.6%);
+        --destructive-foreground: 2 hsl(10 40% 98%);
+
+        --ring: #292929;
+
+        --radius: 0.5rem;
+
+        --shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .dark {
+        --background: hsl(222.2 84% 4.9%);
+        --foreground: hsl(210 40% 98%);
+
+        --muted: hsl(217.2 32.6% 17.5%);
+        --muted-foreground: hsl(215 20.2% 65.1%);
+
+        --popover: hsl(222.2 84% 4.9%);
+        --popover-foreground: hsl(210 40% 98%);
+
+        --card: hsl(222.2 84% 4.9%);
+        --card-foreground: hsl(210 40% 98%);
+
+        --border: hsl(217.2 32.6% 17.5%);
+        --input: hsl(217.2 32.6% 17.5%);
+
+        --primary: hsl(210 40% 98%);
+        --primary-foreground: hsl(222.2 47.4% 11.2%);
+
+        --secondary: hsl(217.2 32.6% 17.5%);
+        --secondary-foreground: hsl(210 40% 98%);
+
+        --accent: hsl(217.2 32.6% 17.5%);
+        --accent-foreground: hsl(210 40% 98%);
+
+        --destructive: hsl(0 62.8% 30.6%);
+        --destructive-foreground: hsl(210 40% 98%);
+
+        --ring: hsl(212.7, 26.8%, 83.9%);
+    }
 }
- 
+
 @layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
 }
 
 html, body, #app {
-  height: 100dvh;
-  width: 100dvw;
-  overscroll-behavior: none;
-  overscroll-behavior-x: none;
+    height: 100dvh;
+    width: 100dvw;
+    overscroll-behavior: none;
+    overscroll-behavior-x: none;
 
-  overflow: hidden;
+    overflow: hidden;
 
-  touch-action: none;
-  user-select: none;
+    touch-action: none;
+    user-select: none;
 }
 
-h1{
-  font-size: 2rem;
+h1 {
+    font-size: 2rem;
 }
 
-h2{
-  font-size: 1.5rem;
+h2 {
+    font-size: 1.5rem;
 }
 
-h3{
-  font-size: 1.25rem;
+h3 {
+    font-size: 1.25rem;
 }
 
-.underline-text{
-  text-decoration: underline;
+.underline-text {
+    text-decoration: underline;
 }
+
+* {
+  /* rounded */
+  scrollbar-width: thin;
+  scrollbar-color: var(--foreground) transparent;
+}
+

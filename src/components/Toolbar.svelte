@@ -67,6 +67,83 @@
         drawColor = value;
     });
 
+    function start(e: MouseEvent | TouchEvent): void{
+        e.preventDefault();
+        isDragging = true;
+
+        toolbar.style.transition = "";
+    }
+
+    function move(e: MouseEvent | TouchEvent): void{
+        if (isDragging) {
+            e.preventDefault();
+
+            let parentRect = toolbar.parentElement!.getBoundingClientRect();
+
+            const x = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
+            const y = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
+
+            toolbar.style.left = `${x - parentRect.left - toolbar.offsetWidth / 2}px`;
+            toolbar.style.top = `${y - parentRect.top - toolbar.offsetHeight / 2}px`;
+            toolbar.style.right = "auto";
+            toolbar.style.bottom = "auto";
+
+            toolbar.style.transform = "none";
+
+            // determine closest edge
+            const rect = toolbar.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            isVertical.set(Math.abs(centerX - window.innerWidth / 2) > Math.abs(centerY - window.innerHeight / 2));
+
+            colorPickerAnchorSide.set(centerX > window.innerWidth / 2 ? AnchorSide.Right : AnchorSide.Left);
+            colorPickerAnchorSide.set(centerY > window.innerHeight / 2 ? AnchorSide.Bottom : AnchorSide.Top);
+
+        }
+    }
+
+    function end(e: MouseEvent | TouchEvent): void {
+        if (isDragging) {
+            isDragging = false;
+
+            // snap to edge
+            const rect = toolbar.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            // top, bottom, left, right
+            if (Math.abs(centerX - window.innerWidth / 2) < Math.abs(centerY - window.innerHeight / 2)) {
+                toolbar.style.top = centerY > window.innerHeight / 2 ? "auto" : "10px";
+                toolbar.style.bottom = centerY > window.innerHeight / 2 ? "calc(env(keyboard-inset-height, 0px) + 10px)" : "auto";
+                toolbar.style.left = "50%";
+                toolbar.style.transform = "translateX(-50%)";
+
+                colorPickerAnchorSide.set(centerY > window.innerHeight / 2 ? AnchorSide.Bottom : AnchorSide.Top);
+
+                isVertical.set(false);
+            } else if (Math.abs(centerX - window.innerWidth / 2) > Math.abs(centerY - window.innerHeight / 2)) {
+                toolbar.style.left = centerX > window.innerWidth / 2 ? "auto" : "10px";
+                toolbar.style.right = centerX > window.innerWidth / 2 ? "10px" : "auto";
+                toolbar.style.top = "50%";
+
+                colorPickerAnchorSide.set(centerX > window.innerWidth / 2 ? AnchorSide.Right : AnchorSide.Left);
+
+                let halfWidth = toolbar.offsetWidth / 2 - 25;
+
+                let translatePercent = centerX > window.innerWidth / 2 ? `translateY(-${halfWidth}px)` : `translateY(${halfWidth}px)`;
+
+                toolbar.style.transform = translatePercent;
+
+                isVertical.set(true);
+            }
+
+
+            // play easing animation
+            toolbar.style.transition = "top 0.2s, bottom 0.2s, left 0.2s, right 0.2s, transform 0.2s";
+        }
+    }
+
     onMount(() => {
         new ResizeObserver((entries) => {
 
@@ -85,82 +162,15 @@
             }
         }).observe(toolbar);
 
-        handle.addEventListener("pointerdown", (e) => {
-            e.preventDefault();
-            isDragging = true;
+        // touch events
+        handle.addEventListener("touchstart", start);
+        window.addEventListener("touchmove", move);
+        window.addEventListener("touchend", end);
 
-            toolbar.style.transition = "";
-        });
-
-        window.addEventListener("pointermove", (e) => {
-            if (isDragging) {
-                e.preventDefault();
-
-                let parentRect = toolbar.parentElement!.getBoundingClientRect();
-
-                const x = e.clientX - parentRect.left;
-                const y = e.clientY - parentRect.top;
-
-                toolbar.style.left = `${x - toolbar.offsetWidth / 2}px`;
-                toolbar.style.top = `${y - toolbar.offsetHeight / 2}px`;
-                toolbar.style.right = "auto";
-                toolbar.style.bottom = "auto";
-
-                toolbar.style.transform = "none";
-
-                // determine closest edge
-                const rect = toolbar.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-
-                isVertical.set(Math.abs(centerX - window.innerWidth / 2) > Math.abs(centerY - window.innerHeight / 2));
-
-                colorPickerAnchorSide.set(centerX > window.innerWidth / 2 ? AnchorSide.Right : AnchorSide.Left);
-                colorPickerAnchorSide.set(centerY > window.innerHeight / 2 ? AnchorSide.Bottom : AnchorSide.Top);
-
-            }
-        });
-
-        window.addEventListener("pointerup", () => {
-            if (isDragging) {
-                isDragging = false;
-
-                // snap to edge
-                const rect = toolbar.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-
-                // top, bottom, left, right
-                if (Math.abs(centerX - window.innerWidth / 2) < Math.abs(centerY - window.innerHeight / 2)) {
-                    toolbar.style.top = centerY > window.innerHeight / 2 ? "auto" : "10px";
-                    toolbar.style.bottom = centerY > window.innerHeight / 2 ? "calc(env(keyboard-inset-height, 0px) + 10px)" : "auto";
-                    toolbar.style.left = "50%";
-                    toolbar.style.transform = "translateX(-50%)";
-
-                    colorPickerAnchorSide.set(centerY > window.innerHeight / 2 ? AnchorSide.Bottom : AnchorSide.Top);
-
-                    isVertical.set(false);
-                } else if (Math.abs(centerX - window.innerWidth / 2) > Math.abs(centerY - window.innerHeight / 2)) {
-                    toolbar.style.left = centerX > window.innerWidth / 2 ? "auto" : "10px";
-                    toolbar.style.right = centerX > window.innerWidth / 2 ? "10px" : "auto";
-                    toolbar.style.top = "50%";
-
-                    colorPickerAnchorSide.set(centerX > window.innerWidth / 2 ? AnchorSide.Right : AnchorSide.Left);
-
-                    let halfWidth = toolbar.offsetWidth / 2 - 25;
-
-                    let translatePercent = centerX > window.innerWidth / 2 ? `translateY(-${halfWidth}px)` : `translateY(${halfWidth}px)`;
-
-                    toolbar.style.transform = translatePercent;
-
-                    isVertical.set(true);
-                }
-
-
-                // play easing animation
-                toolbar.style.transition = "top 0.2s, bottom 0.2s, left 0.2s, right 0.2s, transform 0.2s";
-            }
-        });
+        // mouse events
+        handle.addEventListener("mousedown", start);
+        window.addEventListener("mousemove", move);
+        window.addEventListener("mouseup", end);
     });
 
     boldMode.subscribe(value => {

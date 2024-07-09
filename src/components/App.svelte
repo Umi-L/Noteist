@@ -46,7 +46,7 @@
 
     <Sidebar/>
 
-    <div class="note" bind:this={note}>
+    <div class="note scrollbar" bind:this={note}>
         <button class="btn btn-square btn-ghost top-left btn-sm overlay" class:btn-hidden={isSidebarOpen}
                 class:btn-shown={!isSidebarOpen}
                 on:click={()=>{sidebarOpen.update(value => !value)}}>
@@ -76,6 +76,7 @@
 
         display: grid;
         grid-template-columns: min-content auto;
+
     }
 
     .note {
@@ -90,6 +91,9 @@
         overflow-y: auto;
 
         position: relative;
+
+        /*pointer-events: none;*/
+        user-select: none;
     }
 
     .inner-note {
@@ -118,7 +122,7 @@
     }
 
     .overlay {
-        z-index: 1000;
+        z-index: 10000;
     }
 
     .toolbar-wrapper {
@@ -130,13 +134,16 @@
         height: 100%;
 
         pointer-events: none;
+        user-select: none;
     }
 
     .toolbar-subwrapper {
-        /*width: calc(100% - 15rem);*/
         height: 100%;
         position: absolute;
         right: 0;
+
+        user-select: none;
+        pointer-events: none;
     }
 
     .drawing-overlay-wrapper {
@@ -146,6 +153,7 @@
         width: 100%;
 
         pointer-events: none;
+        user-select: none;
 
         --note-bottom-padding: 7rem;
     }
