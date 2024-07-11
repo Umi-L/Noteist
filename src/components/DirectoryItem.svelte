@@ -1,12 +1,13 @@
 <script lang="ts">
 
-    import {CaretDown, CaretRight, DotsThreeVertical, Folder, Note, Plus} from "phosphor-svelte";
+    import {CaretDown, CaretRight, DotsThreeVertical, Folder, Note, Pen, Plus} from "phosphor-svelte";
     import {Directory, File} from "../filesystem";
+    import {hideContextMenu, showContextMenu} from "../contextmenu";
 
     export let directoryObject: Directory | File;
 
     const size = 16;
-    const innerSize = 12;
+    const innerSize = 16;
 
     let expanded = false;
 
@@ -17,14 +18,90 @@
     }
 
     function addNote(event: MouseEvent) {
+        if (!(directoryObject instanceof Directory)) {
+            return;
+        }
+
         event.preventDefault();
         event.stopPropagation();
 
-        directoryObject.Files.push(new File("New Note"));
+        hideContextMenu();
+
+        directoryObject.Files.push(new File("New Note", "", {} as Directory));
 
         directoryObject = directoryObject;
 
         expanded = true;
+    }
+
+    function addFolder(event: MouseEvent) {
+        if (!(directoryObject instanceof Directory)) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        hideContextMenu();
+
+        directoryObject.Directories.push(new Directory("New Folder", [], []));
+
+        directoryObject = directoryObject;
+
+        expanded = true;
+    }
+
+    function rename(event: MouseEvent) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        hideContextMenu();
+
+        const newName = prompt("Enter new name", directoryObject.name);
+
+        if (newName) {
+            directoryObject.name = newName;
+        }
+    }
+
+    function openContextMenuDir(event: MouseEvent) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        showContextMenu({x: event.clientX, y: event.clientY}, [
+            {
+                label: "Add Note",
+                action: addNote,
+                availableCheck: () => true,
+                icon: Note
+            },
+            {
+                label: "Add Folder",
+                action: addFolder,
+                availableCheck: () => true,
+                icon: Folder
+            },
+            {
+                label: "Rename",
+                action: rename,
+                availableCheck: () => true,
+                icon: Pen
+            }
+        ]);
+    }
+
+    function openContextMenuFile(event: MouseEvent) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        showContextMenu({x: event.clientX, y: event.clientY}, [
+            {
+                label: "Rename",
+                action: rename,
+                availableCheck: () => true,
+                icon: Pen
+            }
+        ]);
     }
 </script>
 
@@ -51,13 +128,23 @@
 
             <div class="item-subwrapper">
                 {#if directoryObject instanceof Directory}
-                    <button class="btn btn-xs btn-ghost btn-square">
-                        <DotsThreeVertical size={innerSize}/>
-                    </button>
+                    <div class="tooltip" data-tip="More options">
+                        <button class="btn btn-xs btn-ghost btn-square" on:click={openContextMenuDir}>
+                            <DotsThreeVertical size={innerSize}/>
+                        </button>
+                    </div>
 
-                    <button class="btn btn-xs btn-ghost btn-square" on:click={addNote}>
-                        <Plus size={innerSize}/>
-                    </button>
+                    <div class="tooltip" data-tip="Add note">
+                        <button class="btn btn-xs btn-ghost btn-square" on:click={addNote}>
+                            <Plus size={innerSize}/>
+                        </button>
+                    </div>
+                {:else}
+                    <div class="tooltip" data-tip="More options">
+                        <button class="btn btn-xs btn-ghost btn-square" on:click={openContextMenuFile}>
+                            <DotsThreeVertical size={innerSize}/>
+                        </button>
+                    </div>
                 {/if}
             </div>
         </a>

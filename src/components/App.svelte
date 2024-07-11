@@ -8,6 +8,7 @@
     import {onMount} from "svelte";
     import Editor from "./Editor.svelte";
     import type {Editor as EditorType} from "@tiptap/core";
+    import ContextMenu from "./ContextMenu.svelte";
 
     if ("virtualKeyboard" in navigator) {
         navigator.virtualKeyboard.overlaysContent = true;
@@ -45,6 +46,8 @@
 <main class="main">
 
     <Sidebar/>
+
+    <ContextMenu/>
 
     <div class="note scrollbar" bind:this={note}>
         <div class="drawing-overlay-wrapper" style={`height: calc(${noteHeight}px + var(--note-bottom-padding)`}>
