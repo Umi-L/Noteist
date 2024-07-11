@@ -47,12 +47,6 @@
     <Sidebar/>
 
     <div class="note scrollbar" bind:this={note}>
-        <button class="btn btn-square btn-ghost top-left btn-sm overlay" class:btn-hidden={isSidebarOpen}
-                class:btn-shown={!isSidebarOpen}
-                on:click={()=>{sidebarOpen.update(value => !value)}}>
-            <List size={16}/>
-        </button>
-
         <div class="drawing-overlay-wrapper" style={`height: calc(${noteHeight}px + var(--note-bottom-padding)`}>
             <DrawingOverlay/>
         </div>
@@ -61,6 +55,12 @@
             <div class="toolbar-subwrapper" style={`width: ${noteWidth}px;`}>
                 <Toolbar/>
             </div>
+
+            <button class="btn btn-square btn-ghost top-left btn-sm overlay" class:btn-hidden={isSidebarOpen}
+                    class:btn-shown={!isSidebarOpen}
+                    on:click={()=>{sidebarOpen.update(value => !value)}}>
+                <List size={16}/>
+            </button>
         </div>
 
         <div class="inner-note" bind:this={innerNote}>
@@ -99,11 +99,13 @@
     .inner-note {
         width: calc(100% - 3rem * 2);
         height: 100%;
+
+        margin-top: var(--safe-area-inset-top);
     }
 
     .top-left {
         position: absolute;
-        top: 1rem;
+        top: calc(1rem + var(--safe-area-inset-top));
         left: 1rem;
     }
 
@@ -123,6 +125,9 @@
 
     .overlay {
         z-index: 10000;
+
+        pointer-events: all;
+        user-select: none;
     }
 
     .toolbar-wrapper {

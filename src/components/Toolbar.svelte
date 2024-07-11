@@ -114,8 +114,8 @@
 
             // top, bottom, left, right
             if (Math.abs(centerX - window.innerWidth / 2) < Math.abs(centerY - window.innerHeight / 2)) {
-                toolbar.style.top = centerY > window.innerHeight / 2 ? "auto" : "10px";
-                toolbar.style.bottom = centerY > window.innerHeight / 2 ? "calc(env(keyboard-inset-height, 0px) + 10px)" : "auto";
+                toolbar.style.top = centerY > window.innerHeight / 2 ? "auto" : "calc(10px + var(--safe-area-inset-top))";
+                toolbar.style.bottom = centerY > window.innerHeight / 2 ? "calc(env(keyboard-inset-height, 0px) + env(keyboard-inset-bottom, 0px) + var(--safe-area-inset-bottom)*2 + 10px)" : "auto";
                 toolbar.style.left = "50%";
                 toolbar.style.transform = "translateX(-50%)";
 
@@ -352,7 +352,7 @@
 <style>
     .toolbar {
         position: absolute;
-        bottom: calc(calc(env(keyboard-inset-height, 0px) + env(keyboard-inset-bottom, 0px)) + 10px);
+        bottom: calc(env(keyboard-inset-height, 0px) + env(keyboard-inset-bottom, 0px) + var(--safe-area-inset-bottom)*2 + 10px);
         right: 50%;
         transform: translateX(50%);
 

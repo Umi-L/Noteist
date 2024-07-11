@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "android": "vite build && npx cap sync",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"
   },
@@ -26,8 +27,11 @@
   },
   "dependencies": {
     "@capacitor-community/electron": "^5.0.1",
+    "@capacitor-community/safe-area": "^6.0.0-alpha.6",
     "@capacitor/android": "^6.1.0",
+    "@capacitor/filesystem": "^6.0.0",
     "@capacitor/ios": "^6.1.0",
+    "@capacitor/status-bar": "^6.0.0",
     "@tiptap/core": "^2.4.0",
     "@tiptap/extension-highlight": "^2.4.0",
     "@tiptap/extension-history": "^2.4.0",
