@@ -1,39 +1,34 @@
-import {Directory as _Directory, Filesystem} from '@capacitor/filesystem';
+import {Directory as _Directory, Filesystem as FS} from '@capacitor/filesystem';
 import {Capacitor} from '@capacitor/core';
+import createFilesystem from "capacitor-fs";
+
+const Filesystem = createFilesystem(FS, {
+    directory: _Directory.Data,
+    rootDir: "/"
+});
 
 export class Note {
     name: string;
     HTMLPath: string;
-    textURI: string;
     SVGPath: string;
     directory: Directory;
 
-    constructor(name: string, path: string, textURI: string, drawingPath: string, directory: Directory) {
+    constructor(name: string, path: string, drawingPath: string, directory: Directory) {
         this.name = name;
         this.HTMLPath = path;
-        this.textURI = textURI;
         this.SVGPath = drawingPath;
         this.directory = directory;
     }
 
     async rename(name: string) {
         try {
-
-            await Filesystem.rename({
-                from: this.HTMLPath,
-                to: this.HTMLPath.replace(this.name, name),
-                directory: _Directory.Documents
-            });
+            await Filesystem.rename(this.HTMLPath, this.HTMLPath.replace(this.name, name));
         } catch (e) {
             console.error('Unable to rename directory', e);
         }
 
         try {
-            await Filesystem.rename({
-                from: this.SVGPath,
-                to: this.SVGPath.replace(this.name, name),
-                directory: _Directory.Documents
-            });
+            await Filesystem.rename(this.SVGPath, this.SVGPath.replace(this.name, name));
         } catch (e) {
             console.error('Unable to rename directory', e);
         }
@@ -43,19 +38,13 @@ export class Note {
 
     async delete() {
         try {
-            await Filesystem.deleteFile({
-                directory: _Directory.Documents,
-                path: this.HTMLPath
-            });
+            await Filesystem.unlink(this.HTMLPath);
         } catch (e) {
             console.error('Unable to delete file', e);
         }
 
         try {
-            await Filesystem.deleteFile({
-                directory: _Directory.Documents,
-                path: this.SVGPath
-            });
+            await Filesystem.unlink(this.SVGPath);
         } catch (e) {
             console.error('Unable to delete file', e);
         }
@@ -67,26 +56,9 @@ export class Note {
         try {
             console.log('Reading file', this.HTMLPath);
 
-            const ret = await Filesystem.readFile({
-                path: this.HTMLPath,
-                directory: _Directory.Documents
-            });
+            const ret = await Filesystem.readFile(this.HTMLPath);
 
-            let content = "";
-
-            // decode from b64
-            if (typeof ret.data === "string") {
-                content = atob(ret.data);
-            } else {
-                // decode from blob await
-                const reader = new FileReader();
-                reader.readAsText(ret.data);
-                content = await new Promise((resolve) => {
-                    reader.onload = () => {
-                        resolve(reader.result as string);
-                    }
-                });
-            }
+            let content = getDataFromArrayBuffer(ret);
 
             console.log('File read', content);
 
@@ -102,13 +74,7 @@ export class Note {
         try {
             console.log('Writing to file', this.HTMLPath, "content", content);
 
-            let b64 = btoa(content);
-
-            await Filesystem.writeFile({
-                data: b64,
-                path: this.HTMLPath,
-                directory: _Directory.Documents
-            });
+            await Filesystem.writeFile(this.HTMLPath, content);
         } catch (e) {
             console.error('Unable to write file', e);
         }
@@ -118,26 +84,9 @@ export class Note {
         try {
             console.log('Reading file', this.HTMLPath);
 
-            const ret = await Filesystem.readFile({
-                path: this.SVGPath,
-                directory: _Directory.Documents
-            });
+            const ret = await Filesystem.readFile(this.SVGPath);
 
-            let content = "";
-
-            // decode from b64
-            if (typeof ret.data === "string") {
-                content = atob(ret.data);
-            } else {
-                // decode from blob await
-                const reader = new FileReader();
-                reader.readAsText(ret.data);
-                content = await new Promise((resolve) => {
-                    reader.onload = () => {
-                        resolve(reader.result as string);
-                    }
-                });
-            }
+            let content = getDataFromArrayBuffer(ret);
 
             console.log('File read', content);
 
@@ -153,13 +102,7 @@ export class Note {
         try {
             console.log('Writing to file', this.SVGPath, "content", content);
 
-            let b64 = btoa(content);
-
-            await Filesystem.writeFile({
-                data: b64,
-                path: this.SVGPath,
-                directory: _Directory.Documents
-            });
+            await Filesystem.writeFile(this.SVGPath, content);
         } catch (e) {
             console.error('Unable to write file', e);
         }
@@ -182,22 +125,14 @@ export class Directory {
     async CreateNote(name: string) {
         // create svg file
         try {
-            await Filesystem.writeFile({
-                data: "<svg><svg/>",
-                path: this.path + "/" + name + ".svg",
-                directory: _Directory.Documents
-            });
+            await Filesystem.writeFile(this.path + "/" + name + ".svg", "");
         } catch (e) {
             console.error('Unable to create svg file', e);
         }
 
         // create html file
         try {
-            await Filesystem.writeFile({
-                data: "",
-                path: this.path + "/" + name + ".html",
-                directory: _Directory.Documents
-            });
+            await Filesystem.writeFile(this.path + "/" + name + ".html", "");
         } catch (e) {
             console.error('Unable to create svg file', e);
         }
@@ -205,10 +140,7 @@ export class Directory {
 
     async CreateDirectory(name: string) {
         try {
-            await Filesystem.mkdir({
-                path: this.path + "/" + name,
-                directory: _Directory.Documents
-            });
+            await Filesystem.mkdir(this.path + "/" + name);
         } catch (e) {
             console.error('Unable to create directory', e);
         }
@@ -217,11 +149,7 @@ export class Directory {
     async rename(name: string) {
         let newPath = this.path.replace(this.name, name);
         try {
-            await Filesystem.rename({
-                from: this.path,
-                to: newPath,
-                directory: _Directory.Documents
-            });
+            await Filesystem.rename(this.path, newPath);
         } catch (e) {
             console.error('Unable to rename directory', e);
 
@@ -243,10 +171,7 @@ export class Directory {
 
     async delete() {
         try {
-            await Filesystem.rmdir({
-                directory: _Directory.Documents,
-                path: this.path
-            });
+            await Filesystem.rmdir(this.path);
         } catch (e) {
             console.error('Unable to delete directory', e);
         }
@@ -255,11 +180,10 @@ export class Directory {
 
 export async function InitBaseDir() {
     if (Capacitor.isNativePlatform()) {
+
+        console.log('Creating base directory');
         try {
-            const ret = await Filesystem.mkdir({
-                path: "notes",
-                directory: _Directory.Documents,
-            });
+            const ret = await Filesystem.mkdir("notes");
         } catch (e) {
             console.error('Unable to create base directory', e);
         }
@@ -270,54 +194,45 @@ export async function InitBaseDir() {
 export async function ReadDirRecursive(path: string) {
     if (Capacitor.isNativePlatform()) {
         try {
-            const ret = await Filesystem.readdir({
-                path: path,
-                directory: _Directory.Documents,
-            });
+            const ret = await Filesystem.readdir(path);
 
             let dirSplit = path.split("/");
             let dirname = dirSplit[dirSplit.length - 1];
 
             let dir = new Directory(dirname, path, [], []);
 
-            for (let file of ret.files) {
-                if (file.type == "directory") {
-                    let relativePath = getRelativePathFromURI(file.uri);
+            for (let file: string of ret) {
 
-                    console.log('Reading dir', relativePath);
+                console.log('Reading file', file);
 
-                    dir.Directories.push(await ReadDirRecursive(relativePath));
+                let filePath = path + "/" + file;
+
+                // if it has a file extension, it is a file
+                let isDirectory = !file.includes('.');
+
+                if (isDirectory) {
+                    console.log('Reading dir', filePath);
+
+                    dir.Directories.push(await ReadDirRecursive(filePath));
                 } else {
                     // if not a html file, skip
-                    if (!file.name.endsWith('.html')) continue;
+                    if (!file.includes('.html'))
+                        continue;
 
                     // get companion svg file, same name as html file but with svg extension
-                    let svgFile = file.uri.replace('.html', '.svg');
+                    let svgFile = filePath.replace('.html', '.svg');
 
-                    let drawingRelativePath = getRelativePathFromURI(svgFile);
+                    // // determine if file exists
+                    // if (!(await Filesystem.exists(svgFile))) {
+                    //     // create svg file
+                    //     try {
+                    //         await Filesystem.writeFile(svgFile, "");
+                    //     } catch (e) {
+                    //         console.error('Unable to create svg file', e);
+                    //     }
+                    // }
 
-                    // determine if file exists
-                    try {
-                        await Filesystem.stat({
-                            path: drawingRelativePath,
-                            directory: _Directory.Documents,
-                        })
-                    } catch (e) {
-                        console.error('Unable to read svg file', e);
-
-                        // create svg file
-                        try {
-                            await Filesystem.writeFile({
-                                data: "<svg><svg/>",
-                                path: "",
-                                directory: _Directory.Documents
-                            });
-                        } catch (e) {
-                            console.error('Unable to create svg file', e);
-                        }
-                    }
-
-                    dir.Files.push(new Note(file.name.split(".html")[0], getRelativePathFromURI(file.uri), file.uri, drawingRelativePath, dir));
+                    dir.Files.push(new Note(file.split(".html")[0], filePath, svgFile, dir));
                 }
             }
 
@@ -345,6 +260,6 @@ export function getRelativePathFromURI(uri: string) {
     return decodeURI(relativePath);
 }
 
-export async function GetFileContent(path: string) {
-
+function getDataFromArrayBuffer(buffer: ArrayBuffer) {
+    return new TextDecoder().decode(buffer);
 }
