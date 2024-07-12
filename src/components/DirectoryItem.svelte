@@ -1,10 +1,20 @@
 <script lang="ts">
 
-    import {CaretDown, CaretRight, DotsThreeVertical, Folder, Note, Pen, Plus} from "phosphor-svelte";
-    import {Directory, File} from "../filesystem";
+    import {
+        CaretDown,
+        CaretRight,
+        DotsThreeVertical,
+        Folder,
+        Note as NoteIcon,
+        Pen,
+        Plus,
+        Trash
+    } from "phosphor-svelte";
+    import {Directory, Note, ReadDirRecursive} from "../filesystem";
     import {hideContextMenu, showContextMenu} from "../contextmenu";
+    import {currentNote} from "../globals";
 
-    export let directoryObject: Directory | File;
+    export let directoryObject: Directory | Note;
 
     const size = 16;
     const innerSize = 16;
@@ -14,10 +24,12 @@
     function click() {
         if (directoryObject instanceof Directory) {
             expanded = !expanded;
+        } else {
+            currentNote.set(directoryObject as Note);
         }
     }
 
-    function addNote(event: MouseEvent) {
+    async function addNote(event: MouseEvent) {
         if (!(directoryObject instanceof Directory)) {
             return;
         }
@@ -27,14 +39,29 @@
 
         hideContextMenu();
 
-        directoryObject.Files.push(new File("New Note", "", {} as Directory));
+        await directoryObject.CreateNote("New Note");
 
-        directoryObject = directoryObject;
+        directoryObject = (await ReadDirRecursive(directoryObject.path))!;
 
         expanded = true;
     }
 
-    function addFolder(event: MouseEvent) {
+    async function deleteNote() {
+
+        let type = "Note";
+        if (directoryObject instanceof Directory) {
+            type = "Folder";
+        }
+
+        // are you sure?
+        if (!confirm(`Are you sure you want to delete ${type} ${directoryObject.name}?`)) {
+            return;
+        }
+
+        await directoryObject.delete();
+    }
+
+    async function addFolder(event: MouseEvent) {
         if (!(directoryObject instanceof Directory)) {
             return;
         }
@@ -44,9 +71,9 @@
 
         hideContextMenu();
 
-        directoryObject.Directories.push(new Directory("New Folder", [], []));
+        await directoryObject.CreateDirectory("New Folder")
 
-        directoryObject = directoryObject;
+        directoryObject = (await ReadDirRecursive(directoryObject.path))!;
 
         expanded = true;
     }
@@ -60,7 +87,7 @@
         const newName = prompt("Enter new name", directoryObject.name);
 
         if (newName) {
-            directoryObject.name = newName;
+            directoryObject.rename(newName);
         }
     }
 
@@ -73,7 +100,7 @@
                 label: "Add Note",
                 action: addNote,
                 availableCheck: () => true,
-                icon: Note
+                icon: NoteIcon
             },
             {
                 label: "Add Folder",
@@ -86,6 +113,12 @@
                 action: rename,
                 availableCheck: () => true,
                 icon: Pen
+            },
+            {
+                label: "Delete",
+                action: deleteNote,
+                availableCheck: () => true,
+                icon: Trash
             }
         ]);
     }
@@ -100,6 +133,12 @@
                 action: rename,
                 availableCheck: () => true,
                 icon: Pen
+            },
+            {
+                label: "Delete",
+                action: deleteNote,
+                availableCheck: () => true,
+                icon: Trash
             }
         ]);
     }
@@ -121,7 +160,7 @@
                 {#if directoryObject instanceof Directory}
                     <Folder size={size}/>
                 {:else}
-                    <Note size={size}/>
+                    <NoteIcon size={size}/>
                 {/if}
                 {directoryObject.name}
             </div>

@@ -1,12 +1,34 @@
 <script lang="ts">
     import {onMount} from "svelte";
     import {PenPoint} from "../PenPoint";
-    import {currentDrawColor, drawingRedo, drawingTool, drawingUndo, drawMode} from "../globals";
+    import {currentDrawColor, currentNote, drawingRedo, drawingTool, drawingUndo, drawMode} from "../globals";
     import {PenTool} from "../Tools/PenTool";
     import type {DrawingTool} from "../DrawingTool";
     import type {Action} from "../Action";
+    import type {Note} from "../filesystem";
 
     let drawArea: SVGElement;
+
+    let hasFetchedContent = false;
+
+    let note: Note | null = null;
+    currentNote.subscribe(async (_note)=>{
+
+        hasFetchedContent = false;
+
+        if (_note != null){
+            let content = await _note.getSVGContent();
+
+            // strip outer svg tags
+            content.replace(/<svg[^>]*>|<\/svg>/gi, '');
+
+            drawArea.innerHTML = content;
+
+            hasFetchedContent = true;
+        }
+
+        note = _note;
+    });
 
     let isDrawing = false;
 
@@ -108,6 +130,10 @@
         tool.stopDrawing(event);
 
         console.log('drawing stopped');
+
+        if (note && hasFetchedContent){
+            note.setSVGContent(drawArea.outerHTML);
+        }
     }
 
     function undo() {

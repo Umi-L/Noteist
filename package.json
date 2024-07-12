@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "android": "vite build && npx cap sync",
+    "electron": "vite build && rm -rf electron/app && cp -r dist electron/app && npx cap sync && npx cap open electron",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"
   },
@@ -22,11 +23,11 @@
     "tailwindcss": "^3.4.4",
     "tslib": "^2.6.3",
     "typescript": "^5.2.2",
-    "vite": "^5.3.1",
-    "vite-plugin-mkcert": "^1.17.5"
+    "vite": "^5.3.1"
   },
   "dependencies": {
     "@capacitor-community/electron": "^5.0.1",
+    "@capacitor-community/filesystem": "github:Umi-L/capacitor-community-filesystem#capacitor6",
     "@capacitor-community/safe-area": "^6.0.0-alpha.6",
     "@capacitor/android": "^6.1.0",
     "@capacitor/filesystem": "^6.0.0",
@@ -51,12 +52,14 @@
     "@tiptap/pm": "^2.4.0",
     "@tiptap/starter-kit": "^2.4.0",
     "@tiptap/suggestion": "^2.4.0",
+    "capacitor-fs": "^0.1.1",
     "clsx": "^2.1.1",
     "perfect-freehand": "^1.2.2",
     "phosphor-svelte": "^2.0.1",
     "svelte-awesome-color-picker": "^3.1.0",
     "tailwind-merge": "^2.3.0",
     "tailwind-variants": "^0.2.1",
-    "tippy.js": "^6.3.7"
+    "tippy.js": "^6.3.7",
+    "vite-plugin-mkcert": "^1.17.5"
   }
 }

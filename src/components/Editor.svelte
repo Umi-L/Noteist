@@ -32,7 +32,7 @@
     import {
         boldMode,
         codeMode,
-        currentEditor,
+        currentEditor, currentNote,
         editorChangeListeners,
         highlightMode,
         italicMode,
@@ -44,9 +44,28 @@
     import SlashCommand from "../extensions/SlashCommand/slash-command";
     import Placeholder from '@tiptap/extension-placeholder';
     import {Callout} from "../extensions/Callout/callout";
+    import type {Note} from "../filesystem";
 
     let element: HTMLDivElement;
     let editor: Editor;
+    let note: Note | null = null;
+
+    let hasFetchedContent = false;
+
+    currentNote.subscribe(async (_note) => {
+        if (editor && _note) {
+            hasFetchedContent = false;
+            let content = await _note.getHTMLContent();
+
+            console.log("content", content);
+            editor.commands.setContent(content as string);
+
+            hasFetchedContent = true;
+
+        }
+
+        note = _note;
+    })
 
     onMount(() => {
         editor = new Editor({
@@ -165,6 +184,10 @@
                     codeMode.set(editor.isActive('code'));
 
                     editorChangeListeners.forEach(listener => listener(editor));
+
+                    if (note !== null && hasFetchedContent) {
+                        note.setHTMLContent(editor.getHTML());
+                    }
 
                 },
             editorProps:

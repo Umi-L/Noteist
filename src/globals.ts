@@ -2,6 +2,7 @@ import {type Writable, writable} from "svelte/store";
 import type {Editor} from "@tiptap/core";
 import type {DrawingTool} from "./DrawingTool";
 import {PenTool} from "./Tools/PenTool";
+import type {Note} from "./filesystem";
 
 export const sidebarOpen = writable(true);
 
@@ -26,3 +27,5 @@ export let editorChangeListeners: Array<(editor: Editor) => void> = [];
 export let onEditorChange = (listener: (editor: Editor) => void) => {
     editorChangeListeners.push(listener);
 }
+
+export let currentNote: Writable<Note | null> = writable(null);
