@@ -1,5 +1,13 @@
-import {Directory as _Directory, Filesystem} from '@capacitor/filesystem';
+import {Directory as _Directory, Filesystem as MainFilesystem} from '@capacitor/filesystem';
 import {Capacitor} from '@capacitor/core';
+import {Filesystem as ElectronFilesystem, RenameOptions} from '@capacitor-community/filesystem';
+
+let isElectron = Capacitor.getPlatform() === "electron";
+let Filesystem = isElectron ? ElectronFilesystem : MainFilesystem;
+
+console.log('Using filesystem', Filesystem);
+console.log('isElectron', isElectron);
+
 
 export class Note {
     name: string;
@@ -18,7 +26,6 @@ export class Note {
 
     async rename(name: string) {
         try {
-
             await Filesystem.rename({
                 from: this.HTMLPath,
                 to: this.HTMLPath.replace(this.name, name),
@@ -270,10 +277,13 @@ export async function InitBaseDir() {
 export async function ReadDirRecursive(path: string) {
     if (Capacitor.isNativePlatform()) {
         try {
+            console.log('Reading dir', path);
             const ret = await Filesystem.readdir({
                 path: path,
                 directory: _Directory.Documents,
             });
+            console.log('Read dir', path);
+
 
             let dirSplit = path.split("/");
             let dirname = dirSplit[dirSplit.length - 1];
