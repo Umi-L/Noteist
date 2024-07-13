@@ -1,11 +1,9 @@
-import {Directory as _Directory, Filesystem as MainFilesystem} from '@capacitor/filesystem';
+import {Directory as _Directory, Filesystem} from '@capacitor/filesystem';
 import {Capacitor} from '@capacitor/core';
-import {Filesystem as ElectronFilesystem, RenameOptions} from '@capacitor-community/filesystem';
-
-let isElectron = Capacitor.getPlatform() === "electron";
-let Filesystem = isElectron ? ElectronFilesystem : MainFilesystem;
 
 console.log('Using filesystem', Filesystem);
+//@ts-ignore
+let isElectron = !!window.IN_DESKTOP_ENV;
 console.log('isElectron', isElectron);
 
 

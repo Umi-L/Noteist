@@ -3,11 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "android": "vite build && npx cap sync",
-    "electron": "vite build && rm -rf electron/app && cp -r dist electron/app && npx cap sync && npx cap open electron",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"
   },
@@ -17,6 +17,7 @@
     "@tsconfig/svelte": "^5.0.4",
     "autoprefixer": "^10.4.19",
     "daisyui": "^4.12.10",
+    "electron": "^31.2.0",
     "postcss": "^8.4.39",
     "svelte": "^4.2.18",
     "svelte-check": "^3.8.1",
@@ -26,8 +27,6 @@
     "vite": "^5.3.1"
   },
   "dependencies": {
-    "@capacitor-community/electron": "^5.0.1",
-    "@capacitor-community/filesystem": "github:Umi-L/capacitor-community-filesystem#capacitor6",
     "@capacitor-community/safe-area": "^6.0.0-alpha.6",
     "@capacitor/android": "^6.1.0",
     "@capacitor/filesystem": "^6.0.0",
