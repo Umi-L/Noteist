@@ -6,4 +6,11 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 export default defineConfig({
   plugins: [svelte() ],
   preprocess: vitePreprocess(),
+  build: {
+    rollupOptions: {
+      external: [
+          "/js/neutralino.js"
+      ]
+    }
+  }
 })
