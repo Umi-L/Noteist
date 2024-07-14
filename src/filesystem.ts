@@ -1,360 +1,339 @@
-/// <reference path="./types/neutralino.ts" />
-import {Directory as _Directory, Filesystem} from '@capacitor/filesystem';
-import {Capacitor} from '@capacitor/core';
+import {
+    DeleteFileOptions,
+    Directory,
+    Filesystem,
+    MkdirOptions,
+    ReaddirOptions,
+    RenameOptions,
+    RmdirOptions,
+    StatOptions,
+    StatResult
+} from '@capacitor/filesystem';
+import {isNeutralino} from "./main";
+import {Capacitor} from "@capacitor/core";
+import type {Neutralino} from "./types/neutralino"
 
-console.log("cwd", NL_CWD);
-
-console.log("reading dir", NL_CWD);
-Neutralino.filesystem.writeFile(NL_CWD + "/test.txt", "test").then(() => {
-    console.log("file written");
-});
-
-export class Note {
+export interface FileInfo {
     name: string;
-    HTMLPath: string;
-    textURI: string;
-    SVGPath: string;
-    directory: Directory;
-
-    constructor(name: string, path: string, textURI: string, drawingPath: string, directory: Directory) {
-        this.name = name;
-        this.HTMLPath = path;
-        this.textURI = textURI;
-        this.SVGPath = drawingPath;
-        this.directory = directory;
-    }
-
-    async rename(name: string) {
-        try {
-            await Filesystem.rename({
-                from: this.HTMLPath,
-                to: this.HTMLPath.replace(this.name, name),
-                directory: _Directory.Documents
-            });
-        } catch (e) {
-            console.error('Unable to rename directory', e);
-        }
-
-        try {
-            await Filesystem.rename({
-                from: this.SVGPath,
-                to: this.SVGPath.replace(this.name, name),
-                directory: _Directory.Documents
-            });
-        } catch (e) {
-            console.error('Unable to rename directory', e);
-        }
-
-        await this.directory.refresh();
-    }
-
-    async delete() {
-        try {
-            await Filesystem.deleteFile({
-                directory: _Directory.Documents,
-                path: this.HTMLPath
-            });
-        } catch (e) {
-            console.error('Unable to delete file', e);
-        }
-
-        try {
-            await Filesystem.deleteFile({
-                directory: _Directory.Documents,
-                path: this.SVGPath
-            });
-        } catch (e) {
-            console.error('Unable to delete file', e);
-        }
-
-    }
-
-
-    async getHTMLContent() {
-        try {
-            console.log('Reading file', this.HTMLPath);
-
-            const ret = await Filesystem.readFile({
-                path: this.HTMLPath,
-                directory: _Directory.Documents
-            });
-
-            let content = "";
-
-            // decode from b64
-            if (typeof ret.data === "string") {
-                content = atob(ret.data);
-            } else {
-                // decode from blob await
-                const reader = new FileReader();
-                reader.readAsText(ret.data);
-                content = await new Promise((resolve) => {
-                    reader.onload = () => {
-                        resolve(reader.result as string);
-                    }
-                });
-            }
-
-            console.log('File read', content);
-
-            return content;
-        } catch (e) {
-            console.error('Unable to read file', e);
-
-            return ""
-        }
-    }
-
-    async setHTMLContent(content: string) {
-        try {
-            console.log('Writing to file', this.HTMLPath, "content", content);
-
-            let b64 = btoa(content);
-
-            await Filesystem.writeFile({
-                data: b64,
-                path: this.HTMLPath,
-                directory: _Directory.Documents
-            });
-        } catch (e) {
-            console.error('Unable to write file', e);
-        }
-    }
-
-    async getSVGContent() {
-        try {
-            console.log('Reading file', this.HTMLPath);
-
-            const ret = await Filesystem.readFile({
-                path: this.SVGPath,
-                directory: _Directory.Documents
-            });
-
-            let content = "";
-
-            // decode from b64
-            if (typeof ret.data === "string") {
-                content = atob(ret.data);
-            } else {
-                // decode from blob await
-                const reader = new FileReader();
-                reader.readAsText(ret.data);
-                content = await new Promise((resolve) => {
-                    reader.onload = () => {
-                        resolve(reader.result as string);
-                    }
-                });
-            }
-
-            console.log('File read', content);
-
-            return content;
-        } catch (e) {
-            console.error('Unable to read file', e);
-
-            return ""
-        }
-    }
-
-    async setSVGContent(content: string) {
-        try {
-            console.log('Writing to file', this.SVGPath, "content", content);
-
-            let b64 = btoa(content);
-
-            await Filesystem.writeFile({
-                data: b64,
-                path: this.SVGPath,
-                directory: _Directory.Documents
-            });
-        } catch (e) {
-            console.error('Unable to write file', e);
-        }
-    }
+    type: string;
+    size: number;
+    mtime: number;
+    ctime: number | undefined;
+    relativePath: string;
 }
 
-export class Directory {
-    name: string;
-    Files: Note[];
-    Directories: Directory[];
-    path: string;
+export function readDir(options: ReaddirOptions): Promise<{ files: FileInfo[] }> {
+    if (isNeutralino) {
+        return new Promise((resolve, reject) => {
+            let relativePath = options.path;
+            let directory: Directory | undefined = options.directory;
 
-    constructor(name: string, path: string, Files: Note[], Directories: Directory[]) {
-        this.name = name;
-        this.Files = Files;
-        this.Directories = Directories;
-        this.path = path;
-    }
+            let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
 
-    async CreateNote(name: string) {
-        // create svg file
-        try {
-            await Filesystem.writeFile({
-                data: "<svg><svg/>",
-                path: this.path + "/" + name + ".svg",
-                directory: _Directory.Documents
-            });
-        } catch (e) {
-            console.error('Unable to create svg file', e);
-        }
+            console.log('calling readdir with', path);
+            Neutralino.filesystem.readDirectory(path).then(async (result) => {
+                let fileInfos: Array<FileInfo> = [];
+                for (let file of result) {
 
-        // create html file
-        try {
-            await Filesystem.writeFile({
-                data: "",
-                path: this.path + "/" + name + ".html",
-                directory: _Directory.Documents
-            });
-        } catch (e) {
-            console.error('Unable to create svg file', e);
-        }
-    }
+                    let name = file.path.split('/').pop()!;
 
-    async CreateDirectory(name: string) {
-        try {
-            await Filesystem.mkdir({
-                path: this.path + "/" + name,
-                directory: _Directory.Documents
-            });
-        } catch (e) {
-            console.error('Unable to create directory', e);
-        }
-    }
+                    let stats: Neutralino.Stats;
 
-    async rename(name: string) {
-        let newPath = this.path.replace(this.name, name);
-        try {
-            await Filesystem.rename({
-                from: this.path,
-                to: newPath,
-                directory: _Directory.Documents
-            });
-        } catch (e) {
-            console.error('Unable to rename directory', e);
-
-            return;
-        }
-
-        this.replaceDirectory(await ReadDirRecursive(newPath));
-    }
-
-    replaceDirectory(newDir: Directory) {
-        // TODO not sure if working
-        //@ts-ignore
-        Object.assign(this, newDir);
-    }
-
-    async refresh() {
-        this.replaceDirectory(await ReadDirRecursive(this.path));
-    }
-
-    async delete() {
-        try {
-            await Filesystem.rmdir({
-                directory: _Directory.Documents,
-                path: this.path
-            });
-        } catch (e) {
-            console.error('Unable to delete directory', e);
-        }
-    }
-}
-
-export async function InitBaseDir() {
-    if (Capacitor.isNativePlatform()) {
-        try {
-            const ret = await Filesystem.mkdir({
-                path: "notes",
-                directory: _Directory.Documents,
-            });
-        } catch (e) {
-            console.error('Unable to create base directory', e);
-        }
-    }
-}
-
-
-export async function ReadDirRecursive(path: string) {
-    if (Capacitor.isNativePlatform()) {
-        try {
-            console.log('Reading dir', path);
-            const ret = await Filesystem.readdir({
-                path: path,
-                directory: _Directory.Documents,
-            });
-            console.log('Read dir', path);
-
-
-            let dirSplit = path.split("/");
-            let dirname = dirSplit[dirSplit.length - 1];
-
-            let dir = new Directory(dirname, path, [], []);
-
-            for (let file of ret.files) {
-                if (file.type == "directory") {
-                    let relativePath = getRelativePathFromURI(file.uri);
-
-                    console.log('Reading dir', relativePath);
-
-                    dir.Directories.push(await ReadDirRecursive(relativePath));
-                } else {
-                    // if not a html file, skip
-                    if (!file.name.endsWith('.html')) continue;
-
-                    // get companion svg file, same name as html file but with svg extension
-                    let svgFile = file.uri.replace('.html', '.svg');
-
-                    let drawingRelativePath = getRelativePathFromURI(svgFile);
-
-                    // determine if file exists
+                    console.log('calling getstats within readdir with', file.path);
                     try {
-                        await Filesystem.stat({
-                            path: drawingRelativePath,
-                            directory: _Directory.Documents,
-                        })
+                        stats = await Neutralino.filesystem.getStats(file.path);
                     } catch (e) {
-                        console.error('Unable to read svg file', e);
-
-                        // create svg file
-                        try {
-                            await Filesystem.writeFile({
-                                data: "<svg><svg/>",
-                                path: "",
-                                directory: _Directory.Documents
-                            });
-                        } catch (e) {
-                            console.error('Unable to create svg file', e);
-                        }
+                        console.error(e);
                     }
 
-                    dir.Files.push(new Note(file.name.split(".html")[0], getRelativePathFromURI(file.uri), file.uri, drawingRelativePath, dir));
+                    fileInfos.push({
+                        mtime: stats.modifiedAt,
+                        name: name,
+                        size: stats.size,
+                        ctime: stats.createdAt,
+                        type: stats.isDirectory ? 'directory' : 'file',
+                        relativePath: getRelativePathFromNutralinoPath(file.path).relativePath
+                    });
+
+                    console.log('added to fileInfos', fileInfos);
                 }
+
+                resolve({files: fileInfos});
+
+            }).catch(e => reject(e));
+        });
+    } else if (Capacitor.isNativePlatform()) {
+        return new Promise(async (resolve, reject) => {
+            let result = await Filesystem.readdir(options);
+
+            let fileInfos: Array<FileInfo> = [];
+
+            for (let file of result.files) {
+                fileInfos.push({
+                    mtime: file.mtime,
+                    name: file.name,
+                    size: file.size,
+                    ctime: file.ctime,
+                    type: file.type,
+                    relativePath: capacitorURIToRelativePath(file.uri)
+                });
+
             }
+        });
 
-            return dir;
-        } catch (e) {
-            console.error('Unable to read dir', e);
-        }
+
     } else {
-        console.error('This is not a native platform');
-
-        let dir = new Directory('notes', "", [], [
-            new Directory('Folder 1', "", [], [])
-        ]);
-
-        dir.Files.push(new Note("File 1", "notes/File 1", "notes/File 1", dir));
-
-        return dir;
+        throw new Error('readDir is not implemented for this platform');
     }
 }
 
-export function getRelativePathFromURI(uri: string) {
-    let relativePath = uri.split('Documents/')[1];
+function getHomeDirectoryNeutralino(): string {
+    if (NL_OS === 'Windows') {
+        // get current drive letter from some path X:\path\to\file
+        const driveLetter = NL_CWD.split(':')[0];
+        const userName = NL_CWD.split('/')[2];
 
-    // turn uri into path, make special characters work ie space -> %20
-    return decodeURI(relativePath);
+        return `${driveLetter}:/Users/${userName}`;
+    } else if (NL_OS === 'Linux') {
+        const userName = NL_CWD.split('/')[2];
+
+        return '/home/' + userName;
+    } else if (NL_OS === 'Darwin') {
+        const userName = NL_CWD.split('/')[2];
+
+        return '/Users/' + userName;
+    }
 }
 
-export async function GetFileContent(path: string) {
+function capacitorURIToRelativePath(uri: string): string {
+    return uri.split('://')[1];
+}
 
+function getNeutralinoPathFromCapacitorPath(relativePath: string, directory: Directory | undefined): string {
+
+    if (!directory) {
+        directory = Directory.Data;
+    }
+
+    if (directory === Directory.Documents) {
+        return getHomeDirectoryNeutralino() + '/Documents/' + relativePath;
+    } else if (directory === Directory.Data) {
+        return NL_CWD + '/' + relativePath;
+    } else if (directory === Directory.Cache) {
+        return NL_CWD + '/cache/' + relativePath;
+    } else if (directory === Directory.External) {
+        return NL_CWD + '/external/' + relativePath;
+    }
+}
+
+function getRelativePathFromNutralinoPath(path: string): { relativePath: string, directory: Directory } {
+    if (path.startsWith(getNeutralinoPathFromCapacitorPath("", Directory.Documents))) {
+        return {
+            relativePath: path.replace(getNeutralinoPathFromCapacitorPath("", Directory.Documents), ''),
+            directory: Directory.Documents
+        };
+    } else if (getNeutralinoPathFromCapacitorPath("", Directory.Cache)) {
+        return {
+            relativePath: path.replace(getNeutralinoPathFromCapacitorPath("", Directory.Cache), ''),
+            directory: Directory.Cache
+        };
+    } else if (path.startsWith(getNeutralinoPathFromCapacitorPath("", Directory.External))) {
+        return {
+            relativePath: path.replace(getNeutralinoPathFromCapacitorPath("", Directory.External), ''),
+            directory: Directory.External
+        };
+    } else {
+        return {
+            relativePath: path.replace(getNeutralinoPathFromCapacitorPath("", Directory.Data), ''),
+            directory: Directory.Data
+        };
+    }
+}
+
+export function stat(options: StatOptions): Promise<StatResult> {
+    if (isNeutralino) {
+        return new Promise((resolve, reject) => {
+            let relativePath = options.path;
+            let directory: Directory | undefined = options.directory;
+
+            let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
+
+            console.log('calling getstats with', path);
+
+            console.log('calling getstats with', path);
+            Neutralino.filesystem.getStats(path).then((result) => {
+
+                resolve({
+                    type: result.isDirectory === 'DIRECTORY' ? 'directory' : 'file',
+                    size: result.size,
+                    ctime: result.createdAt,
+                    mtime: result.modifiedAt,
+                    uri: ""
+                });
+            }).catch(e => reject(e));
+        });
+    } else if (Capacitor.isNativePlatform()) {
+        return Filesystem.stat(options);
+    } else {
+        throw new Error('stat is not implemented for this platform');
+    }
+}
+
+export function readFile(options: { path: string, directory?: Directory }): Promise<{ data: string }> {
+    if (isNeutralino) {
+        return new Promise((resolve, reject) => {
+            let relativePath = options.path;
+            let directory: Directory | undefined = options.directory;
+
+            let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
+
+            console.log('calling readfile with', path);
+            Neutralino.filesystem.readFile(path).then((result) => {
+                resolve({data: result});
+            }).catch(e => reject(e));
+        });
+    } else if (Capacitor.isNativePlatform()) {
+        return new Promise(async (resolve, reject) => {
+            let ret = await Filesystem.readFile(options);
+
+            let content = "";
+
+            // decode from b64
+            if (typeof ret.data === "string") {
+                content = atob(ret.data);
+            } else {
+                // decode from blob await
+                const reader = new FileReader();
+                reader.readAsText(ret.data);
+                content = await new Promise((resolve) => {
+                    reader.onload = () => {
+                        resolve(reader.result as string);
+                    }
+                });
+            }
+
+            resolve(content);
+        });
+    } else {
+        throw new Error('readFile is not implemented for this platform');
+    }
+}
+
+export function writeFile(options: { path: string, data: string, directory?: Directory }): Promise<{
+    relativePath: string
+}> {
+    if (isNeutralino) {
+        return new Promise((resolve, reject) => {
+            let relativePath = options.path;
+            let directory: Directory | undefined = options.directory;
+
+            let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
+
+            console.log('calling writefile with', path, options.data);
+            Neutralino.filesystem.writeFile(path, options.data).then(() => {
+                resolve({
+                    relativePath: getRelativePathFromNutralinoPath(path).relativePath
+                });
+            }).catch(e => reject(e));
+        });
+    } else if (Capacitor.isNativePlatform()) {
+        return new Promise(async (resolve, reject) => {
+
+            // convert data to b64
+            options.data = btoa(options.data);
+
+            let result = await Filesystem.writeFile(options);
+
+            resolve({
+                relativePath: result.uri
+            });
+        });
+    } else {
+        throw new Error('writeFile is not implemented for this platform');
+    }
+}
+
+export function mkdir(options: MkdirOptions): Promise<void> {
+    if (isNeutralino) {
+        return new Promise((resolve, reject) => {
+            let relativePath = options.path;
+            let directory: Directory | undefined = options.directory;
+
+            let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
+
+            console.log('calling createDirectory with', path);
+            Neutralino.filesystem.createDirectory(path).then(() => {
+                resolve();
+            }).catch(e => reject(e));
+        });
+    } else if (Capacitor.isNativePlatform()) {
+        return Filesystem.mkdir(options);
+    } else {
+        throw new Error('mkdir is not implemented for this platform');
+    }
+}
+
+export function rmdir(options: RmdirOptions): Promise<void> {
+    if (isNeutralino) {
+        return new Promise((resolve, reject) => {
+            let relativePath = options.path;
+            let directory: Directory | undefined = options.directory;
+
+            let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
+
+            console.log('calling remove with', path);
+            Neutralino.filesystem.remove(path).then(() => {
+                resolve();
+            }).catch(e => reject(e));
+        });
+    } else if (Capacitor.isNativePlatform()) {
+        return Filesystem.rmdir(options);
+    } else {
+        throw new Error('rmdir is not implemented for this platform');
+    }
+}
+
+export function rename(options: RenameOptions): Promise<void> {
+    if (isNeutralino) {
+        return new Promise((resolve, reject) => {
+            let relativePath = options.from;
+            let directory: Directory | undefined = options.directory;
+
+            let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
+
+            let relativeNewPath = options.to;
+            let newDirectory: Directory | undefined = options.directory;
+
+            let newPath = getNeutralinoPathFromCapacitorPath(relativeNewPath, newDirectory);
+
+            console.log('calling move with', path, newPath);
+            Neutralino.filesystem.move(path, newPath).then(() => {
+                resolve();
+            }).catch(e => reject(e));
+        });
+    } else if (Capacitor.isNativePlatform()) {
+        return Filesystem.rename(options);
+    } else {
+        throw new Error('rename is not implemented for this platform');
+    }
+}
+
+export function deleteFile(options: DeleteFileOptions): Promise<void> {
+    if (isNeutralino) {
+        return new Promise((resolve, reject) => {
+            let relativePath = options.path;
+            let directory: Directory | undefined = options.directory;
+
+            let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
+
+            console.log('calling remove with', path);
+            Neutralino.filesystem.remove(path).then(() => {
+                resolve();
+            }).catch(e => reject(e));
+        });
+    } else if (Capacitor.isNativePlatform()) {
+        return Filesystem.deleteFile(options);
+    } else {
+        throw new Error('deleteFile is not implemented for this platform');
+    }
 }

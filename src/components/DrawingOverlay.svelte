@@ -5,7 +5,7 @@
     import {PenTool} from "../Tools/PenTool";
     import type {DrawingTool} from "../DrawingTool";
     import type {Action} from "../Action";
-    import type {Note} from "../filesystem";
+    import type {Note} from "../noteUtils";
 
     let drawArea: SVGElement;
 

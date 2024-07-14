@@ -10,7 +10,7 @@
         Plus,
         Trash
     } from "phosphor-svelte";
-    import {Directory, Note, ReadDirRecursive} from "../filesystem";
+    import {Directory, Note, ReadDirRecursive} from "../noteUtils";
     import {hideContextMenu, showContextMenu} from "../contextmenu";
     import {currentNote} from "../globals";
 

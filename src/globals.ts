@@ -2,7 +2,7 @@ import {type Writable, writable} from "svelte/store";
 import type {Editor} from "@tiptap/core";
 import type {DrawingTool} from "./DrawingTool";
 import {PenTool} from "./Tools/PenTool";
-import type {Note} from "./filesystem";
+import type {Note} from "./noteUtils";
 
 export const sidebarOpen = writable(true);
 

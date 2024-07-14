@@ -44,7 +44,7 @@
     import SlashCommand from "../extensions/SlashCommand/slash-command";
     import Placeholder from '@tiptap/extension-placeholder';
     import {Callout} from "../extensions/Callout/callout";
-    import type {Note} from "../filesystem";
+    import type {Note} from "../noteUtils";
 
     let element: HTMLDivElement;
     let editor: Editor;

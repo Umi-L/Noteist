@@ -3,7 +3,7 @@
     import {ArrowLineRight, CaretRight, Folder, Hamburger, LineSegments, List, Note} from "phosphor-svelte";
     import {sidebarOpen} from "../globals";
     import {onMount} from "svelte";
-    import {Directory, InitBaseDir, ReadDirRecursive} from "../filesystem";
+    import {Directory, InitBaseDir, ReadDirRecursive} from "../noteUtils";
     import DirectoryItem from "./DirectoryItem.svelte";
 
     const size = 16;
@@ -20,7 +20,7 @@
     onMount(async () => {
         await InitBaseDir();
 
-        fs = await ReadDirRecursive("");
+        fs = await ReadDirRecursive("notes");
 
         console.log("file system", fs);
     })
