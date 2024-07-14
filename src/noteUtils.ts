@@ -3,8 +3,6 @@ import {Capacitor} from '@capacitor/core';
 import {readDir, readFile, stat, writeFile, rename, mkdir, rmdir, deleteFile} from "./filesystem";
 import {isNeutralino} from "./main";
 
-console.log("cwd", NL_CWD);
-
 export class Note {
     name: string;
     HTMLPath: string;
@@ -263,6 +261,7 @@ export async function ReadDirRecursive(path: string) {
 
                     // determine if file exists
                     try {
+                        console.log('Checking if svg file exists', svgFile);
                         await stat({
                             path: svgFile,
                             directory: _Directory.Documents,

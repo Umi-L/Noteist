@@ -3,11 +3,11 @@ import {
     Directory,
     Filesystem,
     MkdirOptions,
-    ReaddirOptions,
+    ReaddirOptions, ReaddirResult, ReadFileResult,
     RenameOptions,
     RmdirOptions,
     StatOptions,
-    StatResult
+    StatResult, WriteFileResult
 } from '@capacitor/filesystem';
 import {isNeutralino} from "./main";
 import {Capacitor} from "@capacitor/core";
@@ -64,7 +64,13 @@ export function readDir(options: ReaddirOptions): Promise<{ files: FileInfo[] }>
         });
     } else if (Capacitor.isNativePlatform()) {
         return new Promise(async (resolve, reject) => {
-            let result = await Filesystem.readdir(options);
+            let result: ReaddirResult;
+            try {
+                result = await Filesystem.readdir(options);
+            } catch (e) {
+                reject(e);
+                return;
+            }
 
             let fileInfos: Array<FileInfo> = [];
 
@@ -77,8 +83,9 @@ export function readDir(options: ReaddirOptions): Promise<{ files: FileInfo[] }>
                     type: file.type,
                     relativePath: capacitorURIToRelativePath(file.uri)
                 });
-
             }
+
+            resolve({files: fileInfos});
         });
 
 
@@ -106,7 +113,10 @@ function getHomeDirectoryNeutralino(): string {
 }
 
 function capacitorURIToRelativePath(uri: string): string {
-    return uri.split('://')[1];
+    let relativePath = uri.split('Documents/')[1];
+
+    // turn uri into path, make special characters work ie space -> %20
+    return decodeURI(relativePath);
 }
 
 function getNeutralinoPathFromCapacitorPath(relativePath: string, directory: Directory | undefined): string {
@@ -194,7 +204,15 @@ export function readFile(options: { path: string, directory?: Directory }): Prom
         });
     } else if (Capacitor.isNativePlatform()) {
         return new Promise(async (resolve, reject) => {
-            let ret = await Filesystem.readFile(options);
+            let ret: ReadFileResult;
+            try {
+                ret = await Filesystem.readFile(options);
+            } catch (e) {
+                reject(e);
+                return;
+            }
+
+            console.log("read data from", options.path, ret.data);
 
             let content = "";
 
@@ -212,7 +230,9 @@ export function readFile(options: { path: string, directory?: Directory }): Prom
                 });
             }
 
-            resolve(content);
+            console.log("decoded data from", options.path, ret.data);
+
+            resolve({data: content});
         });
     } else {
         throw new Error('readFile is not implemented for this platform');
@@ -242,7 +262,13 @@ export function writeFile(options: { path: string, data: string, directory?: Dir
             // convert data to b64
             options.data = btoa(options.data);
 
-            let result = await Filesystem.writeFile(options);
+            let result: WriteFileResult;
+            try {
+                result = await Filesystem.writeFile(options);
+            } catch (e) {
+                reject(e);
+                return;
+            }
 
             resolve({
                 relativePath: result.uri

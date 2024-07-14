@@ -19,8 +19,12 @@
         if (_note != null){
             let content = await _note.getSVGContent();
 
+            console.log(content);
+
             // strip outer svg tags
-            content.replace(/<svg[^>]*>|<\/svg>/gi, '');
+            content = content.replace(/<\/?svg[^>]*>/g, '');
+
+            console.log("replaced", content);
 
             drawArea.innerHTML = content;
 
