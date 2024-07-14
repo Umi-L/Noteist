@@ -22,8 +22,9 @@
     },
     "typeRoots": [
       "./src/types"
-    ]
+    ],
+    "declarationDir": "dist"
   },
-  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
+  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "src/**/*.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

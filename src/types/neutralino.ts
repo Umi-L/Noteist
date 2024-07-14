@@ -2,7 +2,7 @@
 // Project: https://github.com/neutralinojs
 // Definitions project: https://github.com/neutralinojs/neutralino.js
 
-declare namespace Neutralino {
+export declare namespace Neutralino {
 
     namespace filesystem {
         interface DirectoryEntry {

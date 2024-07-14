@@ -1,18 +1,13 @@
+/// <reference path="./types/neutralino.ts" />
 import {Directory as _Directory, Filesystem} from '@capacitor/filesystem';
 import {Capacitor} from '@capacitor/core';
 
-console.log('Using filesystem', Filesystem);
-let isNeutralino: boolean;
-try {
-    //@ts-ignore
-    isNeutralino = !!Neutralino;
-} catch (e) {
-    isNeutralino = false;
+console.log("cwd", NL_CWD);
 
-    console.error(e)
-}
-console.log('isNeutralino', isNeutralino);
-
+console.log("reading dir", NL_CWD);
+Neutralino.filesystem.writeFile(NL_CWD + "/test.txt", "test").then(() => {
+    console.log("file written");
+});
 
 export class Note {
     name: string;
