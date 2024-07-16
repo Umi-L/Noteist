@@ -1,7 +1,7 @@
-import {Directory as _Directory} from '@capacitor/filesystem';
-import {Capacitor} from '@capacitor/core';
-import {readDir, readFile, stat, writeFile, rename, mkdir, rmdir, deleteFile} from "./filesystem";
-import {isNeutralino} from "./main";
+import { Directory as _Directory } from '@capacitor/filesystem';
+import { Capacitor } from '@capacitor/core';
+import { readDir, readFile, stat, writeFile, rename, mkdir, rmdir, deleteFile } from "./filesystem";
+import { isNeutralino } from "./main";
 
 export class Note {
     name: string;
@@ -237,7 +237,7 @@ export async function InitBaseDir() {
 
 
 export async function ReadDirRecursive(path: string) {
-    if (Capacitor.isNativePlatform() || isNeutralino) {
+    if (Capacitor.isNativePlatform() || isNeutralino) { // if mobile or desktop
         try {
             console.log('Reading dir', path);
             const ret = await readDir({

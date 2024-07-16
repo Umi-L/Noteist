@@ -1,5 +1,8 @@
 {
   "scripts": {
     "start": "shx cp -r ../dist/* ./resources && node ./scripts/AddScriptTagToIndexHTML.js && neu run"
+  },
+  "devDependencies": {
+    "shx": "^0.3.4"
   }
 }
