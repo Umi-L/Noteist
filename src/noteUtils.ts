@@ -59,6 +59,7 @@ export class Note {
             console.error('Unable to delete file', e);
         }
 
+        await this.directory.refresh();
     }
 
 
@@ -97,7 +98,7 @@ export class Note {
 
     async getSVGContent() {
         try {
-            console.log('Reading file', this.HTMLPath);
+            console.log('Reading file', this.SVGPath);
 
             const ret = await readFile({
                 path: this.SVGPath,
@@ -191,7 +192,7 @@ export class Directory {
             return;
         }
 
-        this.replaceDirectory(await ReadDirRecursive(newPath));
+        await this.refresh();
     }
 
     replaceDirectory(newDir: Directory) {
@@ -202,6 +203,9 @@ export class Directory {
 
     async refresh() {
         this.replaceDirectory(await ReadDirRecursive(this.path));
+
+        this.Directories = this.Directories;
+        this.Files = this.Files;
     }
 
     async delete() {
@@ -213,6 +217,8 @@ export class Directory {
         } catch (e) {
             console.error('Unable to delete directory', e);
         }
+
+        await this.refresh();
     }
 }
 

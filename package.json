@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "android": "vite build && npx cap sync",
+    "desktop": "vite build && cd desktop && npm run start",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"
   },

@@ -4,11 +4,12 @@
     import DrawingOverlay from "./DrawingOverlay.svelte";
     import Toolbar from "./Toolbar.svelte";
     import Sidebar from "./Sidebar.svelte";
-    import {onEditorChange, sidebarOpen} from "../globals";
+    import {currentNote, onEditorChange, sidebarOpen} from "../globals";
     import {onMount} from "svelte";
     import Editor from "./Editor.svelte";
     import type {Editor as EditorType} from "@tiptap/core";
     import ContextMenu from "./ContextMenu.svelte";
+    import type {Note} from "../noteUtils";
 
     if ("virtualKeyboard" in navigator) {
         navigator.virtualKeyboard.overlaysContent = true;
@@ -41,6 +42,12 @@
 
     });
 
+    let _note: Note | null;
+    currentNote.subscribe(value => {
+        _note = value;
+    });
+
+
 </script>
 
 <main class="main">
@@ -50,9 +57,12 @@
     <ContextMenu/>
 
     <div class="note scrollbar" bind:this={note}>
-        <div class="drawing-overlay-wrapper" style={`height: calc(${noteHeight}px + var(--note-bottom-padding)`}>
-            <DrawingOverlay/>
-        </div>
+        {#if _note}
+            <div class="drawing-overlay-wrapper" style={`height: calc(${noteHeight}px + var(--note-bottom-padding)`}>
+                <DrawingOverlay/>
+            </div>
+        {/if}
+
 
         <div class="toolbar-wrapper">
             <div class="toolbar-subwrapper" style={`width: ${noteWidth}px;`}>
@@ -67,7 +77,13 @@
         </div>
 
         <div class="inner-note" bind:this={innerNote}>
-            <Editor/>
+            {#if _note}
+                <Editor/>
+            {:else }
+                <div class="text-center">
+                    <h1 class="text-2xl">No note selected</h1>
+                </div>
+            {/if}
         </div>
     </div>
 </main>
@@ -164,6 +180,13 @@
         user-select: none;
 
         --note-bottom-padding: 7rem;
+    }
+
+    .text-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
     }
 
 

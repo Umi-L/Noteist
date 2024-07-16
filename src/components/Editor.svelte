@@ -61,7 +61,6 @@
             editor.commands.setContent(content as string);
 
             hasFetchedContent = true;
-
         }
 
         note = _note;
@@ -170,7 +169,7 @@
                     }
                 })
             ],
-            content: '<p>Hello World! 🌍️ </p>',
+            content: ' ',
             onTransaction:
                 () => {
                     // force re-render so `editor.isActive` works as expected
@@ -207,6 +206,12 @@
                 }
 
         })
+
+        if (note && !hasFetchedContent){
+            note.getHTMLContent().then(content => {
+                editor.commands.setContent(content as string);
+            })
+        }
 
         currentEditor.set(editor);
     })
