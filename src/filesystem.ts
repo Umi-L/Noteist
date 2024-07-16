@@ -1,13 +1,16 @@
 import {
-    DeleteFileOptions,
+    type DeleteFileOptions,
     Directory,
     Filesystem,
-    MkdirOptions,
-    ReaddirOptions, ReaddirResult, ReadFileResult,
-    RenameOptions,
-    RmdirOptions,
-    StatOptions,
-    StatResult, WriteFileResult
+    type MkdirOptions,
+    type ReaddirOptions,
+    type ReaddirResult,
+    type ReadFileResult,
+    type RenameOptions,
+    type RmdirOptions,
+    type StatOptions,
+    type StatResult,
+    type WriteFileResult
 } from '@capacitor/filesystem';
 import {isNeutralino} from "./main";
 import {Capacitor} from "@capacitor/core";
