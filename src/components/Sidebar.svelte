@@ -9,10 +9,11 @@
         Note,
         Plus,
     } from "phosphor-svelte";
-    import { sidebarOpen } from "../globals";
-    import { onMount } from "svelte";
-    import { Directory, InitBaseDir, ReadDirRecursive } from "../noteUtils";
+    import {sidebarOpen} from "../globals";
+    import {onMount} from "svelte";
+    import {Directory, InitBaseDir, ReadDirRecursive} from "../noteUtils";
     import DirectoryItem from "./DirectoryItem.svelte";
+    import {writable, type Writable} from "svelte/store";
 
     const size = 16;
 
@@ -23,18 +24,22 @@
         sidebarOpen.update((value) => !value);
     }
 
-    let fs: Directory | undefined;
+    let filesystem: Directory | undefined;
+    let filesystemWritable: Writable<Directory | undefined> = writable(undefined);
+
+    filesystemWritable.subscribe((value) => filesystem = value);
 
     onMount(async () => {
         await InitBaseDir();
 
-        fs = await ReadDirRecursive("notes");
+        filesystemWritable.set(await ReadDirRecursive("notes", null));
+        filesystem!.selfWritable = filesystemWritable as any;
 
-        console.log("file system", fs);
+        console.log("file system", filesystem);
     });
 
     function addNewFolder() {
-        fs?.CreateDirectory("New Directory");
+        filesystem?.CreateDirectory("New Directory");
     }
 </script>
 
@@ -44,10 +49,10 @@
             <h2 class="font-bold">Writeover</h2>
 
             <button
-                class="btn btn-square btn-ghost btn-sm"
-                on:click={toggleSidebar}
+                    class="btn btn-square btn-ghost btn-sm"
+                    on:click={toggleSidebar}
             >
-                <List {size} />
+                <List {size}/>
             </button>
         </div>
 
@@ -55,20 +60,22 @@
 
         <!-- Links -->
         <ul class="menu p-0">
-            {#if fs}
-                {#each fs.Directories as dir}
-                    <DirectoryItem directoryObject={dir} />
-                {/each}
-                {#each fs.Files as file}
-                    <DirectoryItem directoryObject={file} />
-                {/each}
+            {#if filesystem}
+                {#key filesystem}
+                    {#each filesystem.Directories as dir (dir.path)}
+                        <DirectoryItem directoryObjectWritable={writable(dir)}/>
+                    {/each}
+                    {#each filesystem.Files as file (file.HTMLPath)}
+                        <DirectoryItem directoryObjectWritable={writable(file)}/>
+                    {/each}
+                {/key}
             {:else}
                 <p>Loading...</p>
             {/if}
         </ul>
     </div>
     <button class="addFolder btn btn-ghost" on:click={addNewFolder}>
-        <Plus />
+        <Plus/>
     </button>
 </class>
 

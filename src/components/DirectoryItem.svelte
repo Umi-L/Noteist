@@ -13,13 +13,37 @@
     import {Directory, Note, ReadDirRecursive} from "../noteUtils";
     import {hideContextMenu, showContextMenu} from "../contextmenu";
     import {currentNote} from "../globals";
+    import {writable, type Writable} from "svelte/store";
+    import {afterUpdate, onMount} from "svelte";
 
-    export let directoryObject: Directory | Note;
+    export let directoryObjectWritable: Writable<Directory | Note>;
 
     const size = 16;
     const innerSize = 16;
 
     let expanded = false;
+
+    let directoryObject: Directory | Note;
+    directoryObjectWritable.subscribe(value => {
+        value.selfWritable = directoryObjectWritable;
+        directoryObject = value;
+
+        console.log("selfWritable changed to ", directoryObjectWritable, "from", directoryObject.Name);
+    });
+
+    onMount(() => {
+        console.log("selfWritable changed to onMount", directoryObjectWritable, "from", directoryObject.Name);
+        directoryObject.selfWritable = directoryObjectWritable;
+    });
+
+    afterUpdate(() => {
+        directoryObjectWritable.update(value => {
+            console.log("selfWritable changed to afterUpdate", directoryObjectWritable, "from", directoryObject.Name);
+            value.selfWritable = directoryObjectWritable;
+
+            return value;
+        });
+    });
 
     function click() {
         if (directoryObject instanceof Directory) {
@@ -41,8 +65,6 @@
 
         await directoryObject.CreateNote("New Note");
 
-        directoryObject = (await ReadDirRecursive(directoryObject.path))!;
-
         expanded = true;
     }
 
@@ -54,7 +76,7 @@
         }
 
         // are you sure?
-        if (!confirm(`Are you sure you want to delete ${type} ${directoryObject.name}?`)) {
+        if (!confirm(`Are you sure you want to delete ${type} ${directoryObject.Name}?`)) {
             return;
         }
 
@@ -73,21 +95,19 @@
 
         await directoryObject.CreateDirectory("New Folder")
 
-        directoryObject = (await ReadDirRecursive(directoryObject.path))!;
-
         expanded = true;
     }
 
-    function rename(event: MouseEvent) {
+    async function rename(event: MouseEvent) {
         event.preventDefault();
         event.stopPropagation();
 
         hideContextMenu();
 
-        const newName = prompt("Enter new name", directoryObject.name);
+        const newName = prompt("Enter new name", directoryObject.Name);
 
         if (newName) {
-            directoryObject.rename(newName);
+            await directoryObject.rename(newName);
         }
     }
 
@@ -162,7 +182,7 @@
                 {:else}
                     <NoteIcon size={size}/>
                 {/if}
-                {directoryObject.name}
+                {directoryObject.Name}
             </div>
 
             <div class="item-subwrapper">
@@ -197,12 +217,14 @@
                         <p>Empty</p>
                     </li>
                 {:else}
-                    {#each directoryObject.Directories as dir}
-                        <svelte:self directoryObject={dir}/>
-                    {/each}
-                    {#each directoryObject.Files as file}
-                        <svelte:self directoryObject={file}/>
-                    {/each}
+                    {#key directoryObject}
+                        {#each directoryObject.Directories as dir (dir.path)}
+                            <svelte:self directoryObjectWritable={writable(dir)}/>
+                        {/each}
+                        {#each directoryObject.Files as file (file.HTMLPath)}
+                            <svelte:self directoryObjectWritable={writable(file)}/>
+                        {/each}
+                    {/key}
                 {/if}
             {/if}
         </ul>

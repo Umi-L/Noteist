@@ -2,25 +2,30 @@ import { Directory as _Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { readDir, readFile, stat, writeFile, rename, mkdir, rmdir, deleteFile } from "./filesystem";
 import { isNeutralino } from "./main";
+import type {Writable} from "svelte/store";
 
 export class Note {
-    name: string;
+    Name: string;
     HTMLPath: string;
     SVGPath: string;
-    directory: Directory;
+    Parent: Directory;
+    selfWritable: Writable<Directory | Note>
 
     constructor(name: string, path: string, drawingPath: string, directory: Directory) {
-        this.name = name;
+        this.Name = name;
         this.HTMLPath = path;
         this.SVGPath = drawingPath;
-        this.directory = directory;
+        this.Parent = directory;
     }
 
     async rename(name: string) {
         try {
+            let splitPath = this.HTMLPath.split("/");
+            let newPath = splitPath.slice(0, splitPath.length - 1).join("/") + "/" + name + ".html";
+
             await rename({
                 from: this.HTMLPath,
-                to: this.HTMLPath.replace(this.name, name),
+                to: newPath,
                 directory: _Directory.Documents
             });
         } catch (e) {
@@ -28,16 +33,19 @@ export class Note {
         }
 
         try {
+            let splitPath = this.SVGPath.split("/");
+            let newPath = splitPath.slice(0, splitPath.length - 1).join("/") + "/" + name + ".svg";
+
             await rename({
                 from: this.SVGPath,
-                to: this.SVGPath.replace(this.name, name),
+                to: newPath,
                 directory: _Directory.Documents
             });
         } catch (e) {
-            console.error('Unable to rename directory', e);
+            console.error('Unable to rename note', e);
         }
 
-        await this.directory.refresh();
+        await this.Parent.refresh();
     }
 
     async delete() {
@@ -59,7 +67,7 @@ export class Note {
             console.error('Unable to delete file', e);
         }
 
-        await this.directory.refresh();
+        await this.Parent.refresh();
     }
 
 
@@ -131,16 +139,19 @@ export class Note {
 }
 
 export class Directory {
-    name: string;
+    Name: string;
     Files: Note[];
     Directories: Directory[];
     path: string;
+    Parent: Directory | null;
+    selfWritable: Writable<Directory | Note>
 
-    constructor(name: string, path: string, Files: Note[], Directories: Directory[]) {
-        this.name = name;
+    constructor(name: string, path: string, Files: Note[], Directories: Directory[], parent: Directory | null) {
+        this.Name = name;
         this.Files = Files;
         this.Directories = Directories;
         this.path = path;
+        this.Parent = parent;
     }
 
     async CreateNote(name: string) {
@@ -165,6 +176,8 @@ export class Directory {
         } catch (e) {
             console.error('Unable to create svg file', e);
         }
+
+        await this.refresh();
     }
 
     async CreateDirectory(name: string) {
@@ -176,10 +189,12 @@ export class Directory {
         } catch (e) {
             console.error('Unable to create directory', e);
         }
+
+        await this.refresh();
     }
 
     async rename(name: string) {
-        let newPath = this.path.replace(this.name, name);
+        let newPath = this.path.split("/").slice(0, this.path.split("/").length - 1).join("/") + "/" + name;
         try {
             await rename({
                 from: this.path,
@@ -192,20 +207,27 @@ export class Directory {
             return;
         }
 
-        await this.refresh();
+        await this.refreshParent();
     }
 
     replaceDirectory(newDir: Directory) {
-        // TODO not sure if working
         //@ts-ignore
         Object.assign(this, newDir);
     }
 
     async refresh() {
-        this.replaceDirectory(await ReadDirRecursive(this.path));
+        let selfWritable = this.selfWritable;
 
-        this.Directories = this.Directories;
-        this.Files = this.Files;
+        console.log("selfWritable is pre", this.selfWritable, "from", this.Name);
+
+        this.replaceDirectory(await ReadDirRecursive(this.path, this.Parent));
+        this.selfWritable = selfWritable;
+
+        console.log("selfWritable is post", this.selfWritable, "from", this.Name);
+
+        this.selfWritable.set(this);
+
+        console.log('Refreshed dir', this.path);
     }
 
     async delete() {
@@ -218,7 +240,13 @@ export class Directory {
             console.error('Unable to delete directory', e);
         }
 
-        await this.refresh();
+        await this.refreshParent();
+    }
+
+    async refreshParent() {
+        if (this.Parent) {
+            await this.Parent.refresh();
+        }
     }
 }
 
@@ -236,7 +264,7 @@ export async function InitBaseDir() {
 }
 
 
-export async function ReadDirRecursive(path: string) {
+export async function ReadDirRecursive(path: string, parent: Directory | null) {
     if (Capacitor.isNativePlatform() || isNeutralino) { // if mobile or desktop
         try {
             console.log('Reading dir', path);
@@ -248,7 +276,7 @@ export async function ReadDirRecursive(path: string) {
             let dirSplit = path.split("/");
             let dirname = dirSplit[dirSplit.length - 1];
 
-            let dir = new Directory(dirname, path, [], []);
+            let dir = new Directory(dirname, path, [], [], parent);
 
             for (let file of ret.files) {
                 console.log('got file', file);
@@ -257,7 +285,7 @@ export async function ReadDirRecursive(path: string) {
 
                     console.log('Reading dir from relative path', relativePath);
 
-                    dir.Directories.push(await ReadDirRecursive(relativePath));
+                    dir.Directories.push(await ReadDirRecursive(relativePath, dir));
                 } else {
                     // if not a html file, skip
                     if (!file.name.endsWith('.html')) continue;
