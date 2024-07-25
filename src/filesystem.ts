@@ -12,9 +12,9 @@ import {
     type StatResult,
     type WriteFileResult
 } from '@capacitor/filesystem';
-import {isNeutralino} from "./main";
-import {Capacitor} from "@capacitor/core";
-import type {Neutralino} from "./types/neutralino"
+import { isNeutralino } from "./main";
+import { Capacitor } from "@capacitor/core";
+import type { Neutralino } from "./types/neutralino"
 
 export interface FileInfo {
     name: string;
@@ -33,16 +33,16 @@ export function readDir(options: ReaddirOptions): Promise<{ files: FileInfo[] }>
 
             let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
 
-            console.log('calling readdir with', path);
+            console.debug('calling readdir with', path);
             Neutralino.filesystem.readDirectory(path).then(async (result) => {
                 let fileInfos: Array<FileInfo> = [];
                 for (let file of result) {
 
                     let name = file.path.split('/').pop()!;
 
-                    let stats: Neutralino.Stats;
+                    let stats: Neutralino.Stats | undefined = undefined;
 
-                    console.log('calling getstats within readdir with', file.path);
+                    console.debug('calling getstats within readdir with', file.path);
                     try {
                         stats = await Neutralino.filesystem.getStats(file.path);
                     } catch (e) {
@@ -50,18 +50,18 @@ export function readDir(options: ReaddirOptions): Promise<{ files: FileInfo[] }>
                     }
 
                     fileInfos.push({
-                        mtime: stats.modifiedAt,
+                        mtime: stats!.modifiedAt,
                         name: name,
-                        size: stats.size,
-                        ctime: stats.createdAt,
-                        type: stats.isDirectory ? 'directory' : 'file',
+                        size: stats!.size,
+                        ctime: stats!.createdAt,
+                        type: stats!.isDirectory ? 'directory' : 'file',
                         relativePath: getRelativePathFromNutralinoPath(file.path).relativePath
                     });
 
-                    console.log('added to fileInfos', fileInfos);
+                    console.debug('added to fileInfos', fileInfos);
                 }
 
-                resolve({files: fileInfos});
+                resolve({ files: fileInfos });
 
             }).catch(e => reject(e));
         });
@@ -88,7 +88,7 @@ export function readDir(options: ReaddirOptions): Promise<{ files: FileInfo[] }>
                 });
             }
 
-            resolve({files: fileInfos});
+            resolve({ files: fileInfos });
         });
 
 
@@ -137,6 +137,8 @@ function getNeutralinoPathFromCapacitorPath(relativePath: string, directory: Dir
     } else if (directory === Directory.External) {
         return NL_CWD + '/external/' + relativePath;
     }
+
+    throw new Error('directory not supported' + directory);
 }
 
 function getRelativePathFromNutralinoPath(path: string): { relativePath: string, directory: Directory } {
@@ -171,9 +173,9 @@ export function stat(options: StatOptions): Promise<StatResult> {
 
             let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
 
-            console.log('calling getstats with', path);
+            console.debug('calling getstats with', path);
 
-            console.log('calling getstats with', path);
+            console.debug('calling getstats with', path);
             Neutralino.filesystem.getStats(path).then((result) => {
 
                 resolve({
@@ -200,9 +202,9 @@ export function readFile(options: { path: string, directory?: Directory }): Prom
 
             let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
 
-            console.log('calling readfile with', path);
+            console.debug('calling readfile with', path);
             Neutralino.filesystem.readFile(path).then((result) => {
-                resolve({data: result});
+                resolve({ data: result });
             }).catch(e => reject(e));
         });
     } else if (Capacitor.isNativePlatform()) {
@@ -215,7 +217,7 @@ export function readFile(options: { path: string, directory?: Directory }): Prom
                 return;
             }
 
-            console.log("read data from", options.path, ret.data);
+            console.debug("read data from", options.path, ret.data);
 
             let content = "";
 
@@ -233,9 +235,9 @@ export function readFile(options: { path: string, directory?: Directory }): Prom
                 });
             }
 
-            console.log("decoded data from", options.path, ret.data);
+            console.debug("decoded data from", options.path, ret.data);
 
-            resolve({data: content});
+            resolve({ data: content });
         });
     } else {
         throw new Error('readFile is not implemented for this platform');
@@ -252,7 +254,7 @@ export function writeFile(options: { path: string, data: string, directory?: Dir
 
             let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
 
-            console.log('calling writefile with', path, options.data);
+            console.debug('calling writefile with', path, options.data);
             Neutralino.filesystem.writeFile(path, options.data).then(() => {
                 resolve({
                     relativePath: getRelativePathFromNutralinoPath(path).relativePath
@@ -290,7 +292,7 @@ export function mkdir(options: MkdirOptions): Promise<void> {
 
             let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
 
-            console.log('calling createDirectory with', path);
+            console.debug('calling createDirectory with', path);
             Neutralino.filesystem.createDirectory(path).then(() => {
                 resolve();
             }).catch(e => reject(e));
@@ -310,7 +312,7 @@ export function rmdir(options: RmdirOptions): Promise<void> {
 
             let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
 
-            console.log('calling remove with', path);
+            console.debug('calling remove with', path);
             Neutralino.filesystem.remove(path).then(() => {
                 resolve();
             }).catch(e => reject(e));
@@ -335,7 +337,7 @@ export function rename(options: RenameOptions): Promise<void> {
 
             let newPath = getNeutralinoPathFromCapacitorPath(relativeNewPath, newDirectory);
 
-            console.log('calling move with', path, newPath);
+            console.debug('calling move with', path, newPath);
             Neutralino.filesystem.move(path, newPath).then(() => {
                 resolve();
             }).catch(e => reject(e));
@@ -355,7 +357,7 @@ export function deleteFile(options: DeleteFileOptions): Promise<void> {
 
             let path = getNeutralinoPathFromCapacitorPath(relativePath, directory);
 
-            console.log('calling remove with', path);
+            console.debug('calling remove with', path);
             Neutralino.filesystem.remove(path).then(() => {
                 resolve();
             }).catch(e => reject(e));

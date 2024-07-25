@@ -1,8 +1,8 @@
-import {type Writable, writable} from "svelte/store";
-import type {Editor} from "@tiptap/core";
-import type {DrawingTool} from "./DrawingTool";
-import {PenTool} from "./Tools/PenTool";
-import type {Note} from "./noteUtils";
+import { type Writable, writable } from "svelte/store";
+import type { Editor } from "@tiptap/core";
+import type { DrawingTool } from "./DrawingTool";
+import { PenTool } from "./Tools/PenTool";
+import { Directory, ReadDirRecursive, type Note } from "./noteUtils";
 
 export const sidebarOpen = writable(true);
 
@@ -18,8 +18,11 @@ export let currentEditor: Writable<Editor | null> = writable(null);
 
 export let currentDrawColor: Writable<string> = writable("pink");
 
-export let drawingUndo: Writable<()=>void | null> = writable(null);
-export let drawingRedo: Writable<()=>void | null> = writable(null);
+export let drawingUndo: Writable<() => void | null> = writable(null as any);
+export let drawingRedo: Writable<() => void | null> = writable(null as any);
+
+export let filesystem: Writable<Directory | undefined> = writable(undefined);
+export let openDirectories: Writable<Set<string>> = writable(new Set());
 
 export let drawingTool: Writable<DrawingTool> = writable(new PenTool());
 
@@ -29,3 +32,18 @@ export let onEditorChange = (listener: (editor: Editor) => void) => {
 }
 
 export let currentNote: Writable<Note | null> = writable(null);
+
+export let notePath: Writable<string> = writable("notes");
+
+let currentNotePath: string = "notes";
+notePath.subscribe(async (path) => {
+    currentNotePath = path;
+    await reloadFilesystem();
+});
+
+export async function reloadFilesystem() {
+    const result = await ReadDirRecursive(currentNotePath, null);
+    filesystem.update((fs) => {
+        return result;
+    });
+}

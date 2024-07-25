@@ -1,17 +1,31 @@
-import { Directory as _Directory } from '@capacitor/filesystem';
-import { Capacitor } from '@capacitor/core';
-import { readDir, readFile, stat, writeFile, rename, mkdir, rmdir, deleteFile } from "./filesystem";
+import { Directory as _Directory } from "@capacitor/filesystem";
+import { Capacitor } from "@capacitor/core";
+import {
+    readDir,
+    readFile,
+    stat,
+    writeFile,
+    rename,
+    mkdir,
+    rmdir,
+    deleteFile,
+} from "./filesystem";
 import { isNeutralino } from "./main";
-import type {Writable} from "svelte/store";
+import type { Writable } from "svelte/store";
+import { filesystem, reloadFilesystem } from "./globals";
 
 export class Note {
     Name: string;
     HTMLPath: string;
     SVGPath: string;
     Parent: Directory;
-    selfWritable: Writable<Directory | Note>
 
-    constructor(name: string, path: string, drawingPath: string, directory: Directory) {
+    constructor(
+        name: string,
+        path: string,
+        drawingPath: string,
+        directory: Directory,
+    ) {
         this.Name = name;
         this.HTMLPath = path;
         this.SVGPath = drawingPath;
@@ -21,28 +35,36 @@ export class Note {
     async rename(name: string) {
         try {
             let splitPath = this.HTMLPath.split("/");
-            let newPath = splitPath.slice(0, splitPath.length - 1).join("/") + "/" + name + ".html";
+            let newPath =
+                splitPath.slice(0, splitPath.length - 1).join("/") +
+                "/" +
+                name +
+                ".html";
 
             await rename({
                 from: this.HTMLPath,
                 to: newPath,
-                directory: _Directory.Documents
+                directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error('Unable to rename directory', e);
+            console.error("Unable to rename directory", e);
         }
 
         try {
             let splitPath = this.SVGPath.split("/");
-            let newPath = splitPath.slice(0, splitPath.length - 1).join("/") + "/" + name + ".svg";
+            let newPath =
+                splitPath.slice(0, splitPath.length - 1).join("/") +
+                "/" +
+                name +
+                ".svg";
 
             await rename({
                 from: this.SVGPath,
                 to: newPath,
-                directory: _Directory.Documents
+                directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error('Unable to rename note', e);
+            console.error("Unable to rename note", e);
         }
 
         await this.Parent.refresh();
@@ -52,88 +74,87 @@ export class Note {
         try {
             await deleteFile({
                 directory: _Directory.Documents,
-                path: this.HTMLPath
+                path: this.HTMLPath,
             });
         } catch (e) {
-            console.error('Unable to delete file', e);
+            console.error("Unable to delete file", e);
         }
 
         try {
             await deleteFile({
                 directory: _Directory.Documents,
-                path: this.SVGPath
+                path: this.SVGPath,
             });
         } catch (e) {
-            console.error('Unable to delete file', e);
+            console.error("Unable to delete file", e);
         }
 
         await this.Parent.refresh();
     }
 
-
     async getHTMLContent() {
         try {
-            console.log('Reading file', this.HTMLPath);
+            console.debug("Reading file", this.HTMLPath);
 
             const ret = await readFile({
                 path: this.HTMLPath,
-                directory: _Directory.Documents
+                directory: _Directory.Documents,
             });
 
-            console.log('File read', ret.data);
+            console.debug("File read", ret.data);
 
             return ret.data;
         } catch (e) {
-            console.error('Unable to read file', e);
+            console.error("Unable to read file", e);
 
-            return ""
+            return "";
         }
     }
 
     async setHTMLContent(content: string) {
         try {
-            console.log('Writing to file', this.HTMLPath, "content", content);
+            console.debug("Writing to file", this.HTMLPath, "content", content);
 
             await writeFile({
                 data: content,
                 path: this.HTMLPath,
-                directory: _Directory.Documents
+                directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error('Unable to write file', e);
+            console.error("Unable to write file", e);
         }
     }
 
     async getSVGContent() {
         try {
-            console.log('Reading file', this.SVGPath);
+            console.debug("Reading file", this.SVGPath);
 
             const ret = await readFile({
                 path: this.SVGPath,
-                directory: _Directory.Documents
+                directory: _Directory.Documents,
             });
 
-            console.log('File read', ret.data);
+            console.debug("File read", ret.data);
 
             return ret.data;
         } catch (e) {
-            console.error('Unable to read file', e);
+            console.error("Unable to read file", e);
 
-            return ""
+            return "";
         }
     }
 
     async setSVGContent(content: string) {
         try {
-            console.log('Writing to file', this.SVGPath, "content", content);
+            console.debug("Writing to file", this.SVGPath, "content", content);
 
             await writeFile({
                 data: content,
                 path: this.SVGPath,
-                directory: _Directory.Documents
+                directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error('Unable to write file', e);
+            console.error("Unable to write file", e);
         }
     }
 }
@@ -144,9 +165,14 @@ export class Directory {
     Directories: Directory[];
     path: string;
     Parent: Directory | null;
-    selfWritable: Writable<Directory | Note>
 
-    constructor(name: string, path: string, Files: Note[], Directories: Directory[], parent: Directory | null) {
+    constructor(
+        name: string,
+        path: string,
+        Files: Note[],
+        Directories: Directory[],
+        parent: Directory | null,
+    ) {
         this.Name = name;
         this.Files = Files;
         this.Directories = Directories;
@@ -160,10 +186,10 @@ export class Directory {
             await writeFile({
                 data: "<svg><svg/>",
                 path: this.path + "/" + name + ".svg",
-                directory: _Directory.Documents
+                directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error('Unable to create svg file', e);
+            console.error("Unable to create svg file", e);
         }
 
         // create html file
@@ -171,38 +197,59 @@ export class Directory {
             await writeFile({
                 data: "",
                 path: this.path + "/" + name + ".html",
-                directory: _Directory.Documents
+                directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error('Unable to create svg file', e);
+            console.error("Unable to create svg file", e);
         }
 
         await this.refresh();
+    }
+
+    getAllChildrenRecursive() {
+        let children: (Directory | Note)[] = [];
+
+        for (let file of this.Files) {
+            children.push(file);
+        }
+
+        for (let dir of this.Directories) {
+            children.push(dir);
+            children.push(...dir.getAllChildrenRecursive());
+        }
+
+        return children;
     }
 
     async CreateDirectory(name: string) {
         try {
             await mkdir({
                 path: this.path + "/" + name,
-                directory: _Directory.Documents
+                directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error('Unable to create directory', e);
+            console.error("Unable to create directory", e);
         }
 
         await this.refresh();
     }
 
     async rename(name: string) {
-        let newPath = this.path.split("/").slice(0, this.path.split("/").length - 1).join("/") + "/" + name;
+        let newPath =
+            this.path
+                .split("/")
+                .slice(0, this.path.split("/").length - 1)
+                .join("/") +
+            "/" +
+            name;
         try {
             await rename({
                 from: this.path,
                 to: newPath,
-                directory: _Directory.Documents
+                directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error('Unable to rename directory', e);
+            console.error("Unable to rename directory", e);
 
             return;
         }
@@ -216,28 +263,21 @@ export class Directory {
     }
 
     async refresh() {
-        let selfWritable = this.selfWritable;
+        this.replaceDirectory((await ReadDirRecursive(this.path, this.Parent))!);
 
-        console.log("selfWritable is pre", this.selfWritable, "from", this.Name);
+        reloadFilesystem();
 
-        this.replaceDirectory(await ReadDirRecursive(this.path, this.Parent));
-        this.selfWritable = selfWritable;
-
-        console.log("selfWritable is post", this.selfWritable, "from", this.Name);
-
-        this.selfWritable.set(this);
-
-        console.log('Refreshed dir', this.path);
+        console.log("Refreshed dir", this.path);
     }
 
     async delete() {
         try {
             await rmdir({
                 directory: _Directory.Documents,
-                path: this.path
+                path: this.path,
             });
         } catch (e) {
-            console.error('Unable to delete directory', e);
+            console.error("Unable to delete directory", e);
         }
 
         await this.refreshParent();
@@ -258,16 +298,16 @@ export async function InitBaseDir() {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error('Unable to create base directory', e);
+            console.error("Unable to create base directory", e);
         }
     }
 }
 
-
 export async function ReadDirRecursive(path: string, parent: Directory | null) {
-    if (Capacitor.isNativePlatform() || isNeutralino) { // if mobile or desktop
+    if (Capacitor.isNativePlatform() || isNeutralino) {
+        // if mobile or desktop
         try {
-            console.log('Reading dir', path);
+            console.debug("Reading dir", path);
             const ret = await readDir({
                 path: path,
                 directory: _Directory.Documents,
@@ -279,58 +319,68 @@ export async function ReadDirRecursive(path: string, parent: Directory | null) {
             let dir = new Directory(dirname, path, [], [], parent);
 
             for (let file of ret.files) {
-                console.log('got file', file);
+                console.debug("got file", file);
                 if (file.type == "directory") {
                     let relativePath = file.relativePath;
 
-                    console.log('Reading dir from relative path', relativePath);
+                    console.debug("Reading dir from relative path", relativePath);
 
-                    dir.Directories.push(await ReadDirRecursive(relativePath, dir));
+                    dir.Directories.push((await ReadDirRecursive(relativePath, dir))!);
                 } else {
                     // if not a html file, skip
-                    if (!file.name.endsWith('.html')) continue;
+                    if (!file.name.endsWith(".html")) continue;
 
                     // get companion svg file, same name as html file but with svg extension
-                    let svgFile = file.relativePath.replace('.html', '.svg');
+                    let svgFile = file.relativePath.replace(".html", ".svg");
 
                     // determine if file exists
                     try {
-                        console.log('Checking if svg file exists', svgFile);
+                        console.debug("Checking if svg file exists", svgFile);
                         await stat({
                             path: svgFile,
                             directory: _Directory.Documents,
-                        })
+                        });
                     } catch (e) {
-                        console.error('Unable to read svg file', e);
+                        console.error("Unable to read svg file", e);
 
                         // create svg file
                         try {
                             await writeFile({
                                 data: "<svg><svg/>",
                                 path: svgFile,
-                                directory: _Directory.Documents
+                                directory: _Directory.Documents,
                             });
                         } catch (e) {
-                            console.error('Unable to create svg file', e);
+                            console.error("Unable to create svg file", e);
                         }
                     }
 
-                    dir.Files.push(new Note(file.name.split(".html")[0], file.relativePath, svgFile, dir));
+                    dir.Files.push(
+                        new Note(
+                            file.name.split(".html")[0],
+                            file.relativePath,
+                            svgFile,
+                            dir,
+                        ),
+                    );
                 }
             }
 
-            console.log('Read dir', dir);
+            console.debug("Read dir", dir);
 
             return dir;
         } catch (e) {
-            console.error('Unable to read dir', e);
+            console.error("Unable to read dir", e);
         }
     } else {
-        console.error('This is not a native platform');
+        console.error("This is not a native platform");
 
-        let dir = new Directory('notes', "", [], [
-            new Directory('Folder 1', "", [], [])
-        ]);
+        let dir = new Directory(
+            "notes",
+            "",
+            [],
+            [new Directory("Folder 1", "", [], [])],
+        );
 
         dir.Files.push(new Note("File 1", "notes/File 1", "notes/File 1", dir));
 

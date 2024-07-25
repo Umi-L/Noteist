@@ -12,45 +12,43 @@
     } from "phosphor-svelte";
     import {Directory, Note, ReadDirRecursive} from "../noteUtils";
     import {hideContextMenu, showContextMenu} from "../contextmenu";
-    import {currentNote} from "../globals";
+    import {currentNote, openDirectories} from "../globals";
     import {writable, type Writable} from "svelte/store";
-    import {afterUpdate, onMount} from "svelte";
+    import {afterUpdate, beforeUpdate, onMount} from "svelte";
 
-    export let directoryObjectWritable: Writable<Directory | Note>;
+    export let directoryObject: Directory | Note;
 
     const size = 16;
     const innerSize = 16;
 
-    let expanded = false;
-
-    let directoryObject: Directory | Note;
-    directoryObjectWritable.subscribe(value => {
-        value.selfWritable = directoryObjectWritable;
-        directoryObject = value;
-
-        console.log("selfWritable changed to ", directoryObjectWritable, "from", directoryObject.Name);
-    });
-
-    onMount(() => {
-        console.log("selfWritable changed to onMount", directoryObjectWritable, "from", directoryObject.Name);
-        directoryObject.selfWritable = directoryObjectWritable;
-    });
-
-    afterUpdate(() => {
-        directoryObjectWritable.update(value => {
-            console.log("selfWritable changed to afterUpdate", directoryObjectWritable, "from", directoryObject.Name);
-            value.selfWritable = directoryObjectWritable;
-
-            return value;
-        });
-    });
-
     function click() {
         if (directoryObject instanceof Directory) {
-            expanded = !expanded;
+            setExpanded(!getExpanded());
         } else {
             currentNote.set(directoryObject as Note);
         }
+    }
+
+    function setExpanded(isOpen: boolean) {
+        if (directoryObject instanceof Directory) {
+            openDirectories.update((value) => {
+                if (isOpen) {
+                    value.add(directoryObject.path);
+                } else {
+                    value.delete(directoryObject.path);
+                }
+
+                return value;
+            });
+        }
+    }
+
+    function getExpanded() {
+        if (directoryObject instanceof Directory) {
+            return $openDirectories.has(directoryObject.path);
+        }
+
+        return false;
     }
 
     async function addNote(event: MouseEvent) {
@@ -65,7 +63,7 @@
 
         await directoryObject.CreateNote("New Note");
 
-        expanded = true;
+        setExpanded(true);
     }
 
     async function deleteNote() {
@@ -95,7 +93,7 @@
 
         await directoryObject.CreateDirectory("New Folder")
 
-        expanded = true;
+        setExpanded(true);
     }
 
     async function rename(event: MouseEvent) {
@@ -170,7 +168,7 @@
         <a class="item" on:click={click} role="button" tabindex={0}>
             <div class="item-subwrapper">
                 {#if directoryObject instanceof Directory}
-                    {#if expanded}
+                    {#if $openDirectories.has(directoryObject.path)}
                         <CaretDown/>
                     {:else}
                         <CaretRight/>
@@ -211,7 +209,7 @@
 
     {#if directoryObject instanceof Directory}
         <ul class="children menu">
-            {#if expanded}
+            {#if $openDirectories.has(directoryObject.path)}
                 {#if directoryObject.Directories.length === 0 && directoryObject.Files.length === 0}
                     <li>
                         <p>Empty</p>
@@ -219,10 +217,10 @@
                 {:else}
                     {#key directoryObject}
                         {#each directoryObject.Directories as dir (dir.path)}
-                            <svelte:self directoryObjectWritable={writable(dir)}/>
+                            <svelte:self directoryObject={dir}/>
                         {/each}
                         {#each directoryObject.Files as file (file.HTMLPath)}
-                            <svelte:self directoryObjectWritable={writable(file)}/>
+                            <svelte:self directoryObject={file}/>
                         {/each}
                     {/key}
                 {/if}

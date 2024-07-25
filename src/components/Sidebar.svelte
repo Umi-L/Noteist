@@ -9,7 +9,7 @@
         Note,
         Plus,
     } from "phosphor-svelte";
-    import {sidebarOpen} from "../globals";
+    import {filesystem, sidebarOpen} from "../globals";
     import {onMount} from "svelte";
     import {Directory, InitBaseDir, ReadDirRecursive} from "../noteUtils";
     import DirectoryItem from "./DirectoryItem.svelte";
@@ -24,22 +24,16 @@
         sidebarOpen.update((value) => !value);
     }
 
-    let filesystem: Directory | undefined;
-    let filesystemWritable: Writable<Directory | undefined> = writable(undefined);
-
-    filesystemWritable.subscribe((value) => filesystem = value);
-
     onMount(async () => {
         await InitBaseDir();
 
-        filesystemWritable.set(await ReadDirRecursive("notes", null));
-        filesystem!.selfWritable = filesystemWritable as any;
+        filesystem.set((await ReadDirRecursive('notes', null))!);
 
-        console.log("file system", filesystem);
+        console.log("file system", $filesystem);
     });
 
     function addNewFolder() {
-        filesystem?.CreateDirectory("New Directory");
+        $filesystem?.CreateDirectory("New Directory");
     }
 </script>
 
@@ -60,13 +54,13 @@
 
         <!-- Links -->
         <ul class="menu p-0">
-            {#if filesystem}
-                {#key filesystem}
-                    {#each filesystem.Directories as dir (dir.path)}
-                        <DirectoryItem directoryObjectWritable={writable(dir)}/>
+            {#if $filesystem != undefined}
+                {#key $filesystem}
+                    {#each $filesystem.Directories as dir}
+                        <DirectoryItem directoryObject={dir}/>
                     {/each}
-                    {#each filesystem.Files as file (file.HTMLPath)}
-                        <DirectoryItem directoryObjectWritable={writable(file)}/>
+                    {#each $filesystem.Files as file}
+                        <DirectoryItem directoryObject={file}/>
                     {/each}
                 {/key}
             {:else}
