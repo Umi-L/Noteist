@@ -1,36 +1,38 @@
 <script lang="ts">
-    import {getContext} from "svelte";
-    import type {Writable} from "svelte/store";
-    import {AnchorSide} from "../AnchorSide";
+    import { getContext } from "svelte";
+    import type { Writable } from "svelte/store";
+    import { AnchorSide } from "../../AnchorSide";
 
     export let wrapper;
     export let isOpen;
     export let isDialog;
 
-    let isVertical: Writable<boolean> = getContext("vertical")
+    let isVertical: Writable<boolean> = getContext("vertical");
     let vertical = false;
-    isVertical.subscribe(value => {
+    isVertical.subscribe((value) => {
         vertical = value;
     });
 
-    let colorPickerAnchorSide: Writable<AnchorSide> = getContext("colorPickerAnchorSide");
+    let colorPickerAnchorSide: Writable<AnchorSide> = getContext(
+        "colorPickerAnchorSide"
+    );
     let openingDirection: AnchorSide = AnchorSide.TopRight;
-    colorPickerAnchorSide.subscribe(value => {
+    colorPickerAnchorSide.subscribe((value) => {
         openingDirection = value;
     });
 </script>
 
 <div
-        bind:this={wrapper}
-        class="wrapper"
-        class:is-open={isOpen}
-        role={isDialog ? 'dialog' : undefined}
-        aria-label="color picker"
-        class:top-justified={openingDirection === AnchorSide.Top}
-        class:bottom-justified={openingDirection === AnchorSide.Bottom}
-        class:left-justified={openingDirection === AnchorSide.Left}
-        class:right-justified={openingDirection === AnchorSide.Right}
-        class:vertical={vertical}
+    bind:this={wrapper}
+    class="wrapper"
+    class:is-open={isOpen}
+    role={isDialog ? "dialog" : undefined}
+    aria-label="color picker"
+    class:top-justified={openingDirection === AnchorSide.Top}
+    class:bottom-justified={openingDirection === AnchorSide.Bottom}
+    class:left-justified={openingDirection === AnchorSide.Left}
+    class:right-justified={openingDirection === AnchorSide.Right}
+    class:vertical
 >
     <slot />
 </div>
@@ -48,7 +50,7 @@
     .is-open {
         display: inline-block;
     }
-    [role='dialog'] {
+    [role="dialog"] {
         position: absolute;
         z-index: var(--picker-z-index, 2);
 

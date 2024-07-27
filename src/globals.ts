@@ -4,6 +4,13 @@ import type { DrawingTool } from "./DrawingTool";
 import { PenTool } from "./Tools/PenTool";
 import { Directory, ReadDirRecursive, type Note } from "./noteUtils";
 
+export enum AppStateEnum {
+    App,
+    Settings
+}
+
+export const AppState = writable(AppStateEnum.App);
+
 export const sidebarOpen = writable(true);
 
 export const drawMode = writable(false);

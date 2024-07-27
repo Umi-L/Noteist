@@ -3,17 +3,24 @@
         ArrowLineRight,
         CaretRight,
         Folder,
+        Gear,
         Hamburger,
         LineSegments,
         List,
         Note,
         Plus,
     } from "phosphor-svelte";
-    import {filesystem, sidebarOpen} from "../globals";
-    import {onMount} from "svelte";
-    import {Directory, InitBaseDir, ReadDirRecursive} from "../noteUtils";
+    import {
+        AppState,
+        AppStateEnum,
+        filesystem,
+        sidebarOpen,
+    } from "../../globals";
+    import { onMount } from "svelte";
+    import { Directory, InitBaseDir, ReadDirRecursive } from "../../noteUtils";
     import DirectoryItem from "./DirectoryItem.svelte";
-    import {writable, type Writable} from "svelte/store";
+    import { writable, type Writable } from "svelte/store";
+    import SidebarBase from "../Shared/SidebarBase.svelte";
 
     const size = 16;
 
@@ -27,7 +34,7 @@
     onMount(async () => {
         await InitBaseDir();
 
-        filesystem.set((await ReadDirRecursive('notes', null))!);
+        filesystem.set((await ReadDirRecursive("notes", null))!);
 
         console.log("file system", $filesystem);
     });
@@ -35,43 +42,34 @@
     function addNewFolder() {
         $filesystem?.CreateDirectory("New Directory");
     }
+
+    function openSettings() {
+        AppState.set(AppStateEnum.Settings);
+    }
 </script>
 
-<class class="sidebar" class:open={isOpen} class:close={!isOpen}>
-    <div>
-        <div class="header">
-            <h2 class="font-bold">Writeover</h2>
-
-            <button
-                    class="btn btn-square btn-ghost btn-sm"
-                    on:click={toggleSidebar}
-            >
-                <List {size}/>
-            </button>
-        </div>
-
-        <div class="divider"></div>
-
+<SidebarBase title="Noteist">
+    <div class="items">
         <!-- Links -->
-        <ul class="menu p-0">
+        <ul class="menu p-0 note-list">
             {#if $filesystem != undefined}
                 {#key $filesystem}
                     {#each $filesystem.Directories as dir}
-                        <DirectoryItem directoryObject={dir}/>
+                        <DirectoryItem directoryObject={dir} />
                     {/each}
                     {#each $filesystem.Files as file}
-                        <DirectoryItem directoryObject={file}/>
+                        <DirectoryItem directoryObject={file} />
                     {/each}
                 {/key}
             {:else}
                 <p>Loading...</p>
             {/if}
         </ul>
+        <button class="addFolder btn btn-ghost" on:click={addNewFolder}>
+            <Plus />
+        </button>
     </div>
-    <button class="addFolder btn btn-ghost" on:click={addNewFolder}>
-        <Plus/>
-    </button>
-</class>
+</SidebarBase>
 
 <style>
     @keyframes slideOut {
@@ -114,6 +112,11 @@
         }
     }
 
+    .items {
+        height: 100%;
+        overflow-y: scroll;
+    }
+
     .sidebar {
         --sidebar-width: 20rem;
 
@@ -125,12 +128,19 @@
         color: var(--color-text);
         padding: 1rem;
         height: 100%;
-        overflow-y: auto;
 
         border-right: 1px solid var(--muted-foreground);
 
         transition: width 0.3s ease-out 0s;
         box-shadow: var(--shadow);
+
+        overflow: hidden;
+    }
+
+    .note-list {
+        overflow-y: auto;
+
+        overflow-x: hidden;
     }
 
     .open {
@@ -159,10 +169,12 @@
     .addFolder {
         width: 100%;
         display: flex;
+
+        margin-top: 5rem;
     }
 
     h2 {
         margin: 0;
-        font-size: 1.5rem;
+        font-size: 1.2rem;
     }
 </style>

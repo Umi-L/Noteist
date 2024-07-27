@@ -1,28 +1,34 @@
 <script lang="ts">
-    import {onMount} from "svelte";
-    import {PenPoint} from "../PenPoint";
-    import {currentDrawColor, currentNote, drawingRedo, drawingTool, drawingUndo, drawMode} from "../globals";
-    import {PenTool} from "../Tools/PenTool";
-    import type {DrawingTool} from "../DrawingTool";
-    import type {Action} from "../Action";
-    import type {Note} from "../noteUtils";
+    import { onMount } from "svelte";
+    import { PenPoint } from "../../PenPoint";
+    import {
+        currentDrawColor,
+        currentNote,
+        drawingRedo,
+        drawingTool,
+        drawingUndo,
+        drawMode,
+    } from "../../globals";
+    import { PenTool } from "../../Tools/PenTool";
+    import type { DrawingTool } from "../../DrawingTool";
+    import type { Action } from "../../Action";
+    import type { Note } from "../../noteUtils";
 
     let drawArea: SVGElement;
 
     let hasFetchedContent = false;
 
     let note: Note | null = null;
-    currentNote.subscribe(async (_note)=>{
-
+    currentNote.subscribe(async (_note) => {
         hasFetchedContent = false;
 
-        if (_note != null){
+        if (_note != null) {
             let content = await _note.getSVGContent();
 
             console.log(content);
 
             // strip outer svg tags
-            content = content.replace(/<\/?svg[^>]*>/g, '');
+            content = content.replace(/<\/?svg[^>]*>/g, "");
 
             console.log("replaced", content);
 
@@ -41,17 +47,17 @@
     let redoStack: Array<Action> = [];
 
     let tool: DrawingTool = new PenTool();
-    drawingTool.subscribe(value => {
+    drawingTool.subscribe((value) => {
         tool = value;
     });
 
     let enabled = true;
-    drawMode.subscribe(value => {
+    drawMode.subscribe((value) => {
         enabled = value;
     });
 
-    let color = 'black';
-    currentDrawColor.subscribe(value => {
+    let color = "black";
+    currentDrawColor.subscribe((value) => {
         color = value;
     });
 
@@ -60,13 +66,12 @@
         drawingRedo.set(redo);
 
         // subscribe to pointer events on the drawArea
-        drawArea.addEventListener('pointerdown', handlePointerDown);
-        document.addEventListener('pointermove', handlePointerMove);
-        document.addEventListener('pointerup', handlePointerUp);
+        drawArea.addEventListener("pointerdown", handlePointerDown);
+        document.addEventListener("pointermove", handlePointerMove);
+        document.addEventListener("pointerup", handlePointerUp);
 
         // on two finger tap
-        drawArea.addEventListener('touchstart', (event) => {
-
+        drawArea.addEventListener("touchstart", (event) => {
             // if two finger tap
             if (event.touches.length == 2) {
                 // remove last stroke
@@ -80,14 +85,14 @@
 
     function isValidPointerEvent(event: PointerEvent): boolean {
         // if pen is not selected, return
-        if (event.pointerType == 'pen') {
+        if (event.pointerType == "pen") {
             // if pen is not in contact with the screen, return
             if (!event.pressure) {
                 return false;
             }
         } else {
             // if mouse
-            if (event.pointerType != 'mouse') {
+            if (event.pointerType != "mouse") {
                 return false;
             }
         }
@@ -102,16 +107,22 @@
 
         isDrawing = true;
 
-        let correctEvent = new PointerEvent('pointerdown', event);
+        let correctEvent = new PointerEvent("pointerdown", event);
 
-        tool.startDrawing(strokes, drawArea, event, color, undoStack, redoStack);
+        tool.startDrawing(
+            strokes,
+            drawArea,
+            event,
+            color,
+            undoStack,
+            redoStack
+        );
 
-        console.log('drawing started');
+        console.log("drawing started");
     }
 
     function handlePointerMove(event: PointerEvent) {
         if (isDrawing) {
-
             if (!isValidPointerEvent(event)) {
                 return;
             }
@@ -125,7 +136,7 @@
             return;
         }
 
-        if (!(event.pointerType == 'mouse' || event.pointerType == 'pen')) {
+        if (!(event.pointerType == "mouse" || event.pointerType == "pen")) {
             return;
         }
 
@@ -133,16 +144,15 @@
 
         tool.stopDrawing(event);
 
-        console.log('drawing stopped');
+        console.log("drawing stopped");
 
-        if (note && hasFetchedContent){
+        if (note && hasFetchedContent) {
             note.setSVGContent(drawArea.outerHTML);
         }
     }
 
     function undo() {
-
-        console.log('undo');
+        console.log("undo");
 
         if (strokes.length > 0) {
             strokes[strokes.length - 1].remove();
@@ -156,8 +166,7 @@
     }
 
     function redo() {
-
-        console.log('redo');
+        console.log("redo");
 
         if (redoStack.length > 0) {
             let action = redoStack.pop()!;
@@ -168,11 +177,12 @@
     }
 </script>
 
-
-<svg bind:this={drawArea} class="drawing-area" style={enabled ? "pointer-events: all;" : "pointer-events: none;"}>
-
+<svg
+    bind:this={drawArea}
+    class="drawing-area"
+    style={enabled ? "pointer-events: all;" : "pointer-events: none;"}
+>
 </svg>
-
 
 <style>
     .drawing-area {

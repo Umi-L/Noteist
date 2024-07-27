@@ -1,5 +1,4 @@
 <script lang="ts">
-
     import {
         CaretDown,
         CaretRight,
@@ -8,13 +7,13 @@
         Note as NoteIcon,
         Pen,
         Plus,
-        Trash
+        Trash,
     } from "phosphor-svelte";
-    import {Directory, Note, ReadDirRecursive} from "../noteUtils";
-    import {hideContextMenu, showContextMenu} from "../contextmenu";
-    import {currentNote, openDirectories} from "../globals";
-    import {writable, type Writable} from "svelte/store";
-    import {afterUpdate, beforeUpdate, onMount} from "svelte";
+    import { Directory, Note, ReadDirRecursive } from "../../noteUtils";
+    import { hideContextMenu, showContextMenu } from "../../contextmenu";
+    import { currentNote, openDirectories } from "../../globals";
+    import { writable, type Writable } from "svelte/store";
+    import { afterUpdate, beforeUpdate, onMount } from "svelte";
 
     export let directoryObject: Directory | Note;
 
@@ -67,14 +66,17 @@
     }
 
     async function deleteNote() {
-
         let type = "Note";
         if (directoryObject instanceof Directory) {
             type = "Folder";
         }
 
         // are you sure?
-        if (!confirm(`Are you sure you want to delete ${type} ${directoryObject.Name}?`)) {
+        if (
+            !confirm(
+                `Are you sure you want to delete ${type} ${directoryObject.Name}?`
+            )
+        ) {
             return;
         }
 
@@ -91,7 +93,7 @@
 
         hideContextMenu();
 
-        await directoryObject.CreateDirectory("New Folder")
+        await directoryObject.CreateDirectory("New Folder");
 
         setExpanded(true);
     }
@@ -113,31 +115,31 @@
         event.preventDefault();
         event.stopPropagation();
 
-        showContextMenu({x: event.clientX, y: event.clientY}, [
+        showContextMenu({ x: event.clientX, y: event.clientY }, [
             {
                 label: "Add Note",
                 action: addNote,
                 availableCheck: () => true,
-                icon: NoteIcon
+                icon: NoteIcon,
             },
             {
                 label: "Add Folder",
                 action: addFolder,
                 availableCheck: () => true,
-                icon: Folder
+                icon: Folder,
             },
             {
                 label: "Rename",
                 action: rename,
                 availableCheck: () => true,
-                icon: Pen
+                icon: Pen,
             },
             {
                 label: "Delete",
                 action: deleteNote,
                 availableCheck: () => true,
-                icon: Trash
-            }
+                icon: Trash,
+            },
         ]);
     }
 
@@ -145,40 +147,39 @@
         event.preventDefault();
         event.stopPropagation();
 
-        showContextMenu({x: event.clientX, y: event.clientY}, [
+        showContextMenu({ x: event.clientX, y: event.clientY }, [
             {
                 label: "Rename",
                 action: rename,
                 availableCheck: () => true,
-                icon: Pen
+                icon: Pen,
             },
             {
                 label: "Delete",
                 action: deleteNote,
                 availableCheck: () => true,
-                icon: Trash
-            }
+                icon: Trash,
+            },
         ]);
     }
 </script>
 
 <ul>
     <li class="menu">
-
         <a class="item" on:click={click} role="button" tabindex={0}>
             <div class="item-subwrapper">
                 {#if directoryObject instanceof Directory}
                     {#if $openDirectories.has(directoryObject.path)}
-                        <CaretDown/>
+                        <CaretDown />
                     {:else}
-                        <CaretRight/>
+                        <CaretRight />
                     {/if}
                 {/if}
 
                 {#if directoryObject instanceof Directory}
-                    <Folder size={size}/>
+                    <Folder {size} />
                 {:else}
-                    <NoteIcon size={size}/>
+                    <NoteIcon {size} />
                 {/if}
                 {directoryObject.Name}
             </div>
@@ -186,20 +187,29 @@
             <div class="item-subwrapper">
                 {#if directoryObject instanceof Directory}
                     <div class="tooltip" data-tip="More options">
-                        <button class="btn btn-xs btn-ghost btn-square" on:click={openContextMenuDir}>
-                            <DotsThreeVertical size={innerSize}/>
+                        <button
+                            class="btn btn-xs btn-ghost btn-square"
+                            on:click={openContextMenuDir}
+                        >
+                            <DotsThreeVertical size={innerSize} />
                         </button>
                     </div>
 
                     <div class="tooltip" data-tip="Add note">
-                        <button class="btn btn-xs btn-ghost btn-square" on:click={addNote}>
-                            <Plus size={innerSize}/>
+                        <button
+                            class="btn btn-xs btn-ghost btn-square"
+                            on:click={addNote}
+                        >
+                            <Plus size={innerSize} />
                         </button>
                     </div>
                 {:else}
                     <div class="tooltip" data-tip="More options">
-                        <button class="btn btn-xs btn-ghost btn-square" on:click={openContextMenuFile}>
-                            <DotsThreeVertical size={innerSize}/>
+                        <button
+                            class="btn btn-xs btn-ghost btn-square"
+                            on:click={openContextMenuFile}
+                        >
+                            <DotsThreeVertical size={innerSize} />
                         </button>
                     </div>
                 {/if}
@@ -217,10 +227,10 @@
                 {:else}
                     {#key directoryObject}
                         {#each directoryObject.Directories as dir (dir.path)}
-                            <svelte:self directoryObject={dir}/>
+                            <svelte:self directoryObject={dir} />
                         {/each}
                         {#each directoryObject.Files as file (file.HTMLPath)}
-                            <svelte:self directoryObject={file}/>
+                            <svelte:self directoryObject={file} />
                         {/each}
                     {/key}
                 {/if}
@@ -230,7 +240,6 @@
 </ul>
 
 <style>
-
     .item {
         display: flex;
         align-items: center;
@@ -252,4 +261,3 @@
         padding: 0 0 0 1rem;
     }
 </style>
-

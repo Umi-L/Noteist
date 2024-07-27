@@ -1,11 +1,12 @@
 import './app.css'
 import App from './components/App.svelte'
-import {StatusBar, Style} from '@capacitor/status-bar';
-import {SafeArea} from "@capacitor-community/safe-area";
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { SafeArea } from "@capacitor-community/safe-area";
 
 
 export let isNeutralino: boolean;
 try {
+    ``
     isNeutralino = !!Neutralino;
 
 } catch (e) {

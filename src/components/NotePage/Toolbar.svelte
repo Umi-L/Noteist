@@ -2,37 +2,45 @@
     import {
         ArrowClockwise,
         ArrowCounterClockwise,
-        CodeBlock, DotsSix, DotsSixVertical, Eraser,
+        CodeBlock,
+        DotsSix,
+        DotsSixVertical,
+        Eraser,
         Highlighter,
         NotePencil,
         Pen,
-        Pencil, ScribbleLoop,
+        Pencil,
+        ScribbleLoop,
         TextB,
         TextItalic,
         TextStrikethrough,
-        TextUnderline
+        TextUnderline,
     } from "phosphor-svelte";
     import {
         boldMode,
-        codeMode, currentDrawColor,
-        currentEditor, drawingRedo, drawingTool, drawingUndo,
+        codeMode,
+        currentDrawColor,
+        currentEditor,
+        drawingRedo,
+        drawingTool,
+        drawingUndo,
         drawMode,
         highlightMode,
         italicMode,
         strikeMode,
-        underlineMode
-    } from "../globals";
+        underlineMode,
+    } from "../../globals";
     import Toggle from "./Toggle.svelte";
-    import {onMount, setContext} from "svelte";
-    import type {Editor} from "@tiptap/core";
-    import ColorPicker from 'svelte-awesome-color-picker';
-    import ColorPickerWrapper from "./ColorPickerWrapper.svelte";
-    import {type Writable, writable} from "svelte/store";
-    import {AnchorSide} from "../AnchorSide";
+    import { onMount, setContext } from "svelte";
+    import type { Editor } from "@tiptap/core";
+    import ColorPicker from "svelte-awesome-color-picker";
+    import ColorPickerWrapper from "../NotePage/ColorPickerWrapper.svelte";
+    import { type Writable, writable } from "svelte/store";
+    import { AnchorSide } from "../../AnchorSide";
     import ToolbarButton from "./ToolbarButton.svelte";
     import SetterToggle from "./SetterToggle.svelte";
-    import {EraserTool} from "../Tools/EraserTool";
-    import {PenTool} from "../Tools/PenTool";
+    import { EraserTool } from "../../Tools/EraserTool";
+    import { PenTool } from "../../Tools/PenTool";
 
     const size = 16;
 
@@ -43,45 +51,49 @@
     let isVertical = writable(false);
 
     let vertical = false;
-    isVertical.subscribe(value => {
+    isVertical.subscribe((value) => {
         vertical = value;
     });
 
     let isDrawing = false;
-    drawMode.subscribe(value => {
+    drawMode.subscribe((value) => {
         isDrawing = value;
     });
 
     setContext("vertical", isVertical);
 
-    let colorPickerAnchorSide: Writable<AnchorSide> = writable(AnchorSide.Bottom);
+    let colorPickerAnchorSide: Writable<AnchorSide> = writable(
+        AnchorSide.Bottom
+    );
     setContext("colorPickerAnchorSide", colorPickerAnchorSide);
 
     let editor: Editor | null = null;
-    currentEditor.subscribe(value => {
+    currentEditor.subscribe((value) => {
         editor = value;
     });
 
     let drawColor = "black";
-    currentDrawColor.subscribe(value => {
+    currentDrawColor.subscribe((value) => {
         drawColor = value;
     });
 
-    function start(e: MouseEvent | TouchEvent): void{
+    function start(e: MouseEvent | TouchEvent): void {
         e.preventDefault();
         isDragging = true;
 
         toolbar.style.transition = "";
     }
 
-    function move(e: MouseEvent | TouchEvent): void{
+    function move(e: MouseEvent | TouchEvent): void {
         if (isDragging) {
             e.preventDefault();
 
             let parentRect = toolbar.parentElement!.getBoundingClientRect();
 
-            const x = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
-            const y = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
+            const x =
+                e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
+            const y =
+                e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
 
             toolbar.style.left = `${x - parentRect.left - toolbar.offsetWidth / 2}px`;
             toolbar.style.top = `${y - parentRect.top - toolbar.offsetHeight / 2}px`;
@@ -95,11 +107,21 @@
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
 
-            isVertical.set(Math.abs(centerX - window.innerWidth / 2) > Math.abs(centerY - window.innerHeight / 2));
+            isVertical.set(
+                Math.abs(centerX - window.innerWidth / 2) >
+                    Math.abs(centerY - window.innerHeight / 2)
+            );
 
-            colorPickerAnchorSide.set(centerX > window.innerWidth / 2 ? AnchorSide.Right : AnchorSide.Left);
-            colorPickerAnchorSide.set(centerY > window.innerHeight / 2 ? AnchorSide.Bottom : AnchorSide.Top);
-
+            colorPickerAnchorSide.set(
+                centerX > window.innerWidth / 2
+                    ? AnchorSide.Right
+                    : AnchorSide.Left
+            );
+            colorPickerAnchorSide.set(
+                centerY > window.innerHeight / 2
+                    ? AnchorSide.Bottom
+                    : AnchorSide.Top
+            );
         }
     }
 
@@ -113,48 +135,78 @@
             const centerY = rect.top + rect.height / 2;
 
             // top, bottom, left, right
-            if (Math.abs(centerX - window.innerWidth / 2) < Math.abs(centerY - window.innerHeight / 2)) {
-                toolbar.style.top = centerY > window.innerHeight / 2 ? "auto" : "calc(10px + var(--safe-area-inset-top))";
-                toolbar.style.bottom = centerY > window.innerHeight / 2 ? "calc(env(keyboard-inset-height, 0px) + env(keyboard-inset-bottom, 0px) + var(--safe-area-inset-bottom)*2 + 10px)" : "auto";
+            if (
+                Math.abs(centerX - window.innerWidth / 2) <
+                Math.abs(centerY - window.innerHeight / 2)
+            ) {
+                toolbar.style.top =
+                    centerY > window.innerHeight / 2
+                        ? "auto"
+                        : "calc(10px + var(--safe-area-inset-top))";
+                toolbar.style.bottom =
+                    centerY > window.innerHeight / 2
+                        ? "calc(env(keyboard-inset-height, 0px) + env(keyboard-inset-bottom, 0px) + var(--safe-area-inset-bottom)*2 + 10px)"
+                        : "auto";
                 toolbar.style.left = "50%";
                 toolbar.style.transform = "translateX(-50%)";
 
-                colorPickerAnchorSide.set(centerY > window.innerHeight / 2 ? AnchorSide.Bottom : AnchorSide.Top);
+                colorPickerAnchorSide.set(
+                    centerY > window.innerHeight / 2
+                        ? AnchorSide.Bottom
+                        : AnchorSide.Top
+                );
 
                 isVertical.set(false);
-            } else if (Math.abs(centerX - window.innerWidth / 2) > Math.abs(centerY - window.innerHeight / 2)) {
-                toolbar.style.left = centerX > window.innerWidth / 2 ? "auto" : "10px";
-                toolbar.style.right = centerX > window.innerWidth / 2 ? "10px" : "auto";
+            } else if (
+                Math.abs(centerX - window.innerWidth / 2) >
+                Math.abs(centerY - window.innerHeight / 2)
+            ) {
+                toolbar.style.left =
+                    centerX > window.innerWidth / 2 ? "auto" : "10px";
+                toolbar.style.right =
+                    centerX > window.innerWidth / 2 ? "10px" : "auto";
                 toolbar.style.top = "50%";
 
-                colorPickerAnchorSide.set(centerX > window.innerWidth / 2 ? AnchorSide.Right : AnchorSide.Left);
+                colorPickerAnchorSide.set(
+                    centerX > window.innerWidth / 2
+                        ? AnchorSide.Right
+                        : AnchorSide.Left
+                );
 
                 let halfWidth = toolbar.offsetWidth / 2 - 25;
 
-                let translatePercent = centerX > window.innerWidth / 2 ? `translateY(-${halfWidth}px)` : `translateY(${halfWidth}px)`;
+                let translatePercent =
+                    centerX > window.innerWidth / 2
+                        ? `translateY(-${halfWidth}px)`
+                        : `translateY(${halfWidth}px)`;
 
                 toolbar.style.transform = translatePercent;
 
                 isVertical.set(true);
             }
 
-
             // play easing animation
-            toolbar.style.transition = "top 0.2s, bottom 0.2s, left 0.2s, right 0.2s, transform 0.2s";
+            toolbar.style.transition =
+                "top 0.2s, bottom 0.2s, left 0.2s, right 0.2s, transform 0.2s";
         }
     }
 
     onMount(() => {
         new ResizeObserver((entries) => {
-
             const rect = toolbar.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
 
-            if (Math.abs(centerX - window.innerWidth / 2) > Math.abs(centerY - window.innerHeight / 2)) {
+            if (
+                Math.abs(centerX - window.innerWidth / 2) >
+                Math.abs(centerY - window.innerHeight / 2)
+            ) {
                 let halfWidth = toolbar.offsetWidth / 2 - 25;
 
-                let translatePercent = centerX > window.innerWidth / 2 ? `translateY(-${halfWidth}px)` : `translateY(${halfWidth}px)`;
+                let translatePercent =
+                    centerX > window.innerWidth / 2
+                        ? `translateY(-${halfWidth}px)`
+                        : `translateY(${halfWidth}px)`;
 
                 toolbar.style.transform = translatePercent;
 
@@ -173,7 +225,7 @@
         window.addEventListener("mouseup", end);
     });
 
-    boldMode.subscribe(value => {
+    boldMode.subscribe((value) => {
         if (editor) {
             if (value) {
                 editor.chain().focus().setBold().run();
@@ -183,7 +235,7 @@
         }
     });
 
-    italicMode.subscribe(value => {
+    italicMode.subscribe((value) => {
         if (editor) {
             if (value) {
                 editor.chain().focus().setItalic().run();
@@ -193,7 +245,7 @@
         }
     });
 
-    underlineMode.subscribe(value => {
+    underlineMode.subscribe((value) => {
         if (editor) {
             if (value) {
                 editor.chain().focus().setUnderline().run();
@@ -203,7 +255,7 @@
         }
     });
 
-    strikeMode.subscribe(value => {
+    strikeMode.subscribe((value) => {
         if (editor) {
             if (value) {
                 editor.chain().focus().setStrike().run();
@@ -213,7 +265,7 @@
         }
     });
 
-    highlightMode.subscribe(value => {
+    highlightMode.subscribe((value) => {
         if (editor) {
             if (value) {
                 editor.chain().focus().setHighlight().run();
@@ -223,7 +275,7 @@
         }
     });
 
-    codeMode.subscribe(value => {
+    codeMode.subscribe((value) => {
         if (editor) {
             if (value) {
                 editor.chain().focus().setCode().run();
@@ -232,127 +284,151 @@
             }
         }
     });
-
 </script>
 
-<div class="toolbar" bind:this={toolbar} class:vertical={vertical} class:horizontal={!vertical}>
-
+<div
+    class="toolbar"
+    bind:this={toolbar}
+    class:vertical
+    class:horizontal={!vertical}
+>
     <div class="handle" bind:this={handle}>
-        <DotsSixVertical size={size*1.25}/>
+        <DotsSixVertical size={size * 1.25} />
     </div>
 
     <Toggle store={drawMode}>
         <div class:negative-vertical={vertical}>
-            <ScribbleLoop size={size}/>
+            <ScribbleLoop {size} />
         </div>
     </Toggle>
 
     <!-- vertical rule  -->
-    <div style="height: 1rem; width: 1px; background-color: var(--muted-foreground);"></div>
+    <div
+        style="height: 1rem; width: 1px; background-color: var(--muted-foreground);"
+    ></div>
 
     {#if !isDrawing}
         <Toggle store={boldMode}>
             <div class:negative-vertical={vertical}>
-                <TextB size={size}/>
+                <TextB {size} />
             </div>
         </Toggle>
 
         <Toggle store={italicMode}>
             <div class:negative-vertical={vertical}>
-                <TextItalic size={size}/>
+                <TextItalic {size} />
             </div>
         </Toggle>
 
         <Toggle store={underlineMode}>
             <div class:negative-vertical={vertical}>
-                <TextUnderline size={size}/>
+                <TextUnderline {size} />
             </div>
         </Toggle>
 
         <Toggle store={strikeMode}>
             <div class:negative-vertical={vertical}>
-                <TextStrikethrough size={size}/>
+                <TextStrikethrough {size} />
             </div>
         </Toggle>
 
         <Toggle store={highlightMode}>
             <div class:negative-vertical={vertical}>
-                <Highlighter size={size}/>
+                <Highlighter {size} />
             </div>
         </Toggle>
 
         <Toggle store={codeMode}>
             <div class:negative-vertical={vertical}>
-                <CodeBlock size={size}/>
+                <CodeBlock {size} />
             </div>
         </Toggle>
     {:else}
-        <SetterToggle store={drawingTool} value={new PenTool()} typeOnlyCheck={true}>
+        <SetterToggle
+            store={drawingTool}
+            value={new PenTool()}
+            typeOnlyCheck={true}
+        >
             <div class:negative-vertical={vertical}>
-                <Pen size={size}/>
+                <Pen {size} />
             </div>
         </SetterToggle>
-        <SetterToggle store={drawingTool} value={new EraserTool()} typeOnlyCheck={true}>
+        <SetterToggle
+            store={drawingTool}
+            value={new EraserTool()}
+            typeOnlyCheck={true}
+        >
             <div class:negative-vertical={vertical}>
-                <Eraser size={size}/>
+                <Eraser {size} />
             </div>
         </SetterToggle>
     {/if}
 
     <!-- vertical rule  -->
-    <div style="height: 1rem; width: 1px; background-color: var(--muted-foreground);"></div>
+    <div
+        style="height: 1rem; width: 1px; background-color: var(--muted-foreground);"
+    ></div>
 
-    <ToolbarButton pressedCallback={() => {
-        if (!isDrawing) {
-            if (editor) {
-                editor.chain().focus().undo().run();
-            }
-        } else {
-            drawingUndo.update((func)=>{
-                if (func) {
-                    func();
+    <ToolbarButton
+        pressedCallback={() => {
+            if (!isDrawing) {
+                if (editor) {
+                    editor.chain().focus().undo().run();
                 }
-                return func;
-            });
-        }
-    }}>
+            } else {
+                drawingUndo.update((func) => {
+                    if (func) {
+                        func();
+                    }
+                    return func;
+                });
+            }
+        }}
+    >
         <div class:negative-vertical={vertical}>
-
-            <ArrowCounterClockwise size={size}/>
+            <ArrowCounterClockwise {size} />
         </div>
     </ToolbarButton>
 
-    <ToolbarButton pressedCallback={() => {
-        if (!isDrawing) {
-            if (editor) {
-                editor.chain().focus().redo().run();
-            }
-        } else {
-            drawingRedo.update((func)=>{
-                if (func) {
-                    func();
+    <ToolbarButton
+        pressedCallback={() => {
+            if (!isDrawing) {
+                if (editor) {
+                    editor.chain().focus().redo().run();
                 }
-                return func;
-            });
-        }
-    }}>
+            } else {
+                drawingRedo.update((func) => {
+                    if (func) {
+                        func();
+                    }
+                    return func;
+                });
+            }
+        }}
+    >
         <div class:negative-vertical={vertical}>
-
-            <ArrowClockwise size={size}/>
+            <ArrowClockwise {size} />
         </div>
     </ToolbarButton>
 
-
-    <ColorPicker components={{wrapper: ColorPickerWrapper}} label="" bind:hex={drawColor} on:input={(event)=>{
-        if (event.detail.color)
-            currentDrawColor.set(event.detail.color.toHex());
-    }}/>
+    <ColorPicker
+        components={{ wrapper: ColorPickerWrapper }}
+        label=""
+        bind:hex={drawColor}
+        on:input={(event) => {
+            if (event.detail.color)
+                currentDrawColor.set(event.detail.color.toHex());
+        }}
+    />
 </div>
 
 <style>
     .toolbar {
         position: absolute;
-        bottom: calc(env(keyboard-inset-height, 0px) + env(keyboard-inset-bottom, 0px) + var(--safe-area-inset-bottom)*2 + 10px);
+        bottom: calc(
+            env(keyboard-inset-height, 0px) + env(keyboard-inset-bottom, 0px) +
+                var(--safe-area-inset-bottom) * 2 + 10px
+        );
         right: 50%;
         transform: translateX(50%);
 
@@ -388,11 +464,9 @@
         cursor: move;
         user-select: none;
         padding: 0 0.5rem;
-
     }
 
-    :global(.toolbar .container){
+    :global(.toolbar .container) {
         padding: 0 !important;
     }
-
 </style>

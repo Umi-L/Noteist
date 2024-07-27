@@ -382,7 +382,12 @@ export async function ReadDirRecursive(path: string, parent: Directory | null) {
             [new Directory("Folder 1", "", [], [])],
         );
 
-        dir.Files.push(new Note("File 1", "notes/File 1", "notes/File 1", dir));
+
+        const numNotes = 20;
+
+        for (let i = 0; i < numNotes; i++) {
+            dir.Files.push(new Note("File " + i, "notes/File " + i, "notes/File " + i, dir));
+        }
 
         return dir;
     }
