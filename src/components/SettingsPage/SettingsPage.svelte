@@ -3,6 +3,8 @@
     import SettingsSidebar from "./SettingsSidebar.svelte";
     import ToggleSetting from "./ToggleSetting.svelte";
     import DropdownSetting from "./DropdownSetting.svelte";
+    import { sidebarOpen } from "../../globals";
+    import { List } from "phosphor-svelte";
 
     let settingsPane: HTMLDivElement;
 
@@ -36,6 +38,17 @@
     </SettingsSidebar>
 
     <div class="settings" bind:this={settingsPane}>
+        <button
+            class="btn btn-square btn-ghost top-left btn-sm overlay"
+            class:btn-hidden={$sidebarOpen}
+            class:btn-shown={!$sidebarOpen}
+            on:click={() => {
+                sidebarOpen.update((value) => !value);
+            }}
+        >
+            <List size={16} />
+        </button>
+
         <h2 id="General">General</h2>
         <div class="divider"></div>
         <ToggleSetting name="Test Setting" data={writable(false)} />
@@ -82,9 +95,31 @@
         padding: 2rem;
 
         overflow-y: scroll;
+
+        position: relative;
     }
 
     h2 {
         margin-top: 1.5rem;
+    }
+
+    .top-left {
+        position: fixed;
+        top: calc(1rem + var(--safe-area-inset-top));
+        left: 1rem;
+    }
+
+    .btn {
+        transition: opacity 0.3s;
+    }
+
+    .btn-shown {
+        opacity: 1;
+    }
+
+    .btn-hidden {
+        opacity: 0;
+
+        visibility: hidden;
     }
 </style>

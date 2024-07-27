@@ -22,8 +22,14 @@
     currentNote.subscribe(async (_note) => {
         hasFetchedContent = false;
 
-        if (_note != null) {
-            let content = await _note.getSVGContent();
+        note = _note;
+
+        loadData();
+    });
+
+    async function loadData() {
+        if (note != null && !hasFetchedContent && drawArea) {
+            let content = await note.getSVGContent();
 
             console.log(content);
 
@@ -36,10 +42,8 @@
 
             hasFetchedContent = true;
         }
-
-        note = _note;
-    });
-
+    }
+    ``;
     let isDrawing = false;
 
     let strokes: Array<SVGElement> = [];
@@ -81,6 +85,8 @@
                 }
             }
         });
+
+        loadData();
     });
 
     function isValidPointerEvent(event: PointerEvent): boolean {

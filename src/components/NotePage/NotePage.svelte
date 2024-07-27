@@ -10,11 +10,6 @@
     import { List } from "phosphor-svelte";
     import Editor from "./Editor.svelte";
 
-    let isSidebarOpen = false;
-    sidebarOpen.subscribe((value) => {
-        isSidebarOpen = value;
-    });
-
     let note: HTMLDivElement;
     let innerNote: HTMLDivElement;
     let noteWidth: number;
@@ -32,6 +27,10 @@
         }).observe(note);
 
         onEditorChange((editor: EditorType) => {
+            if (!innerNote) {
+                return;
+            }
+
             noteHeight = innerNote.scrollHeight;
         });
     });
@@ -64,8 +63,8 @@
 
             <button
                 class="btn btn-square btn-ghost top-left btn-sm overlay"
-                class:btn-hidden={isSidebarOpen}
-                class:btn-shown={!isSidebarOpen}
+                class:btn-hidden={$sidebarOpen}
+                class:btn-shown={!$sidebarOpen}
                 on:click={() => {
                     sidebarOpen.update((value) => !value);
                 }}

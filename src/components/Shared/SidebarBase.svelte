@@ -9,6 +9,7 @@
         List,
         Note,
         Plus,
+        House,
     } from "phosphor-svelte";
     import {
         AppState,
@@ -22,6 +23,10 @@
     export let title: string;
 
     const size = 16;
+
+    let hasOpened = false;
+
+    let sidebar: HTMLDivElement;
 
     function toggleSidebar() {
         sidebarOpen.update((value) => !value);
@@ -42,19 +47,37 @@
     function openSettings() {
         AppState.set(AppStateEnum.Settings);
     }
+
+    function openNotes() {
+        AppState.set(AppStateEnum.App);
+    }
+
+    onMount(() => {
+        // get css variable --animation-time from sidebar
+        const animationTime =
+            getComputedStyle(sidebar).getPropertyValue("--animation-time");
+
+        // set hasOpened to true after the animation time
+        setTimeout(
+            () => {
+                hasOpened = true;
+            },
+            parseFloat(animationTime) * 1000
+        );
+    });
 </script>
 
-<div class="sidebar" class:open={$sidebarOpen} class:close={!$sidebarOpen}>
+<div
+    class="sidebar"
+    class:open={$sidebarOpen}
+    class:close={!$sidebarOpen}
+    class:dont-animate={!hasOpened}
+    bind:this={sidebar}
+>
     <div class="header">
         <h2 class="font-bold">{title}</h2>
 
         <div>
-            <button
-                class="btn btn-square btn-ghost btn-sm"
-                on:click={openSettings}
-            >
-                <Gear {size} />
-            </button>
             <button
                 class="btn btn-square btn-ghost btn-sm"
                 on:click={toggleSidebar}
@@ -63,6 +86,24 @@
             </button>
         </div>
     </div>
+
+    <div class="divider"></div>
+
+    <ul class="menu p-0 option-list">
+        {#if $AppState == AppStateEnum.Settings}
+            <li>
+                <a on:click={openNotes}>
+                    <House {size} /> Back to Notes
+                </a>
+            </li>
+        {:else}
+            <li>
+                <a on:click={openSettings}>
+                    <Gear {size} /> Settings
+                </a>
+            </li>
+        {/if}
+    </ul>
 
     <div class="divider"></div>
 
@@ -132,6 +173,12 @@
         box-shadow: var(--shadow);
 
         overflow: hidden;
+
+        --animation-time: 0.3s;
+    }
+
+    .dont-animate {
+        animation-delay: calc(var(--animation-time) * -1) !important;
     }
 
     .note-list {
@@ -141,12 +188,12 @@
     }
 
     .open {
-        animation: slideIn 0.3s ease-out 0s forwards;
+        animation: slideIn var(--animation-time) ease-out 0s forwards;
     }
 
     .close {
         overflow: hidden !important;
-        animation: slideOut 0.3s ease-out 0s forwards;
+        animation: slideOut var(--animation-time) ease-out 0s forwards;
     }
 
     .menu {
