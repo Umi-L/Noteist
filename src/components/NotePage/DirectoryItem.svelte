@@ -165,7 +165,7 @@
 </script>
 
 <ul>
-    <li class="menu">
+    <li class="list-item">
         <a class="item" on:click={click} role="button" tabindex={0}>
             <div class="item-subwrapper">
                 {#if directoryObject instanceof Directory}
@@ -219,6 +219,10 @@
 
     {#if directoryObject instanceof Directory}
         <ul class="children menu">
+            <div class="open-indicator-wrapper">
+                <div class="open-indicator"></div>
+            </div>
+
             {#if $openDirectories.has(directoryObject.path)}
                 {#if directoryObject.Directories.length === 0 && directoryObject.Files.length === 0}
                     <li>
@@ -254,10 +258,34 @@
     }
 
     .menu {
-        gap: 5px;
+        gap: 1px;
+    }
+
+    .list-item {
+        margin-bottom: 5px;
     }
 
     .children {
         padding: 0 0 0 1rem;
+
+        position: relative;
+    }
+
+    .open-indicator-wrapper {
+        position: absolute;
+        top: 0;
+        left: 0.8rem;
+
+        height: 100%;
+
+        display: flex;
+        align-items: center;
+    }
+
+    .open-indicator {
+        height: 80%;
+        width: 1px;
+
+        border-right: 1px dashed var(--double-muted-foreground);
     }
 </style>

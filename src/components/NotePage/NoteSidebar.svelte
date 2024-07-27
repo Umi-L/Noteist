@@ -1,15 +1,5 @@
 <script lang="ts">
-    import {
-        ArrowLineRight,
-        CaretRight,
-        Folder,
-        Gear,
-        Hamburger,
-        LineSegments,
-        List,
-        Note,
-        Plus,
-    } from "phosphor-svelte";
+    import { Folder, Gear, Note as NoteIcon, Plus } from "phosphor-svelte";
     import {
         AppState,
         AppStateEnum,
@@ -17,10 +7,17 @@
         sidebarOpen,
     } from "../../globals";
     import { onMount } from "svelte";
-    import { Directory, InitBaseDir, ReadDirRecursive } from "../../noteUtils";
+    import {
+        Directory,
+        getNextAvailableDirName,
+        getNextAvailableNoteName,
+        InitBaseDir,
+        ReadDirRecursive,
+    } from "../../noteUtils";
     import DirectoryItem from "./DirectoryItem.svelte";
     import { writable, type Writable } from "svelte/store";
     import SidebarBase from "../Shared/SidebarBase.svelte";
+    import NotePage from "./NotePage.svelte";
 
     const size = 16;
 
@@ -39,8 +36,26 @@
         console.log("file system", $filesystem);
     });
 
-    function addNewFolder() {
-        $filesystem?.CreateDirectory("New Directory");
+    async function addNewFolder() {
+        let nextName = await getNextAvailableDirName(
+            "New Folder",
+            $filesystem!.path
+        );
+
+        console.log("next name", nextName);
+
+        $filesystem?.CreateDirectory(nextName);
+    }
+
+    async function addNewNote() {
+        let nextName = await getNextAvailableNoteName(
+            "New Note",
+            $filesystem!.path
+        );
+
+        console.log("next name", nextName);
+
+        $filesystem?.CreateNote(nextName);
     }
 
     function openSettings() {
@@ -49,7 +64,24 @@
 </script>
 
 <SidebarBase title="Noteist">
-    <div class="items">
+    <ul class="menu p-0 option-list" slot="menu">
+        <li>
+            <a on:click={openSettings}>
+                <Gear {size} /> Settings
+            </a>
+        </li>
+        <li>
+            <a on:click={addNewNote}>
+                <NoteIcon {size} /> New Note
+            </a>
+        </li>
+        <li>
+            <a on:click={addNewFolder}>
+                <Folder {size} /> New Folder
+            </a>
+        </li>
+    </ul>
+    <div class="items" slot="content">
         <!-- Links -->
         <ul class="menu p-0 note-list">
             {#if $filesystem != undefined}
@@ -65,9 +97,6 @@
                 <p>Loading...</p>
             {/if}
         </ul>
-        <button class="addFolder btn btn-ghost" on:click={addNewFolder}>
-            <Plus />
-        </button>
     </div>
 </SidebarBase>
 
@@ -141,6 +170,8 @@
         overflow-y: auto;
 
         overflow-x: hidden;
+
+        padding-right: 1rem;
     }
 
     .open {

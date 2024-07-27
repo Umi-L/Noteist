@@ -290,6 +290,57 @@ export class Directory {
     }
 }
 
+export async function getNextAvailableNoteName(name: string, path: string) {
+    let i = 1;
+    let newName = name;
+
+    console.log("Checking if note exists", path + "/" + newName + ".html");
+
+    while (true) {
+        try {
+            let result = await stat({
+                path: path + "/" + newName + ".html",
+                directory: _Directory.Documents,
+            });
+
+            console.debug("Stat result", result);
+        }
+        catch (e) {
+            return newName;
+        }
+
+        newName = name + " (" + i + ")";
+
+        i++;
+    }
+}
+
+export async function getNextAvailableDirName(name: string, path: string) {
+    let i = 1;
+    let newName = name;
+
+    while (true) {
+
+        console.log("Checking if dir exists", path + "/" + newName);
+
+        try {
+            let result = await stat({
+                path: path + "/" + newName,
+                directory: _Directory.Documents,
+            });
+
+            console.debug("Stat result", result);
+        }
+        catch (e) {
+            return newName;
+        }
+
+        newName = name + " (" + i + ")";
+
+        i++;
+    }
+}
+
 export async function InitBaseDir() {
     if (Capacitor.isNativePlatform() || isNeutralino) {
         try {

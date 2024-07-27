@@ -40,18 +40,6 @@
         console.log("file system", $filesystem);
     });
 
-    function addNewFolder() {
-        $filesystem?.CreateDirectory("New Directory");
-    }
-
-    function openSettings() {
-        AppState.set(AppStateEnum.Settings);
-    }
-
-    function openNotes() {
-        AppState.set(AppStateEnum.App);
-    }
-
     onMount(() => {
         // get css variable --animation-time from sidebar
         const animationTime =
@@ -89,25 +77,11 @@
 
     <div class="divider"></div>
 
-    <ul class="menu p-0 option-list">
-        {#if $AppState == AppStateEnum.Settings}
-            <li>
-                <a on:click={openNotes}>
-                    <House {size} /> Back to Notes
-                </a>
-            </li>
-        {:else}
-            <li>
-                <a on:click={openSettings}>
-                    <Gear {size} /> Settings
-                </a>
-            </li>
-        {/if}
-    </ul>
+    <slot name="menu" />
 
     <div class="divider"></div>
 
-    <slot></slot>
+    <slot name="content" />
 </div>
 
 <style>
