@@ -5,6 +5,8 @@
 /bin
 /dist
 
+resources/assets/*
+
 # Neutralinojs client (minified)
 neutralino.js
 

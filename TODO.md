@@ -6,6 +6,7 @@
 -   [ ] Scroll when drawing on mobile
 -   [ ] Make toolbar animation more smooth
 -   [ ] tooltip showing on mobile
+-   [ ] fix odd bug on desktop for toolbar during resize
 
 ## Core Functionality
 
@@ -27,6 +28,7 @@
 -   [ ] desktop keybinds - Panth
 -   [ ] State transition
 -   [ ] customizable notes path
+-   [ ] recently opened
 
 ## Features
 

@@ -1,5 +1,4 @@
 <script lang="ts">
-    import type { Editor as EditorType } from "@tiptap/core";
     import { currentNote, onEditorChange, sidebarOpen } from "../../globals";
     import type { Note } from "../../noteUtils";
     import { onMount } from "svelte";
@@ -9,6 +8,7 @@
     import Toolbar from "./Toolbar.svelte";
     import { List } from "phosphor-svelte";
     import Editor from "./Editor.svelte";
+    import type { Editor as EditorType } from "@tiptap/core";
 
     let note: HTMLDivElement;
     let innerNote: HTMLDivElement;

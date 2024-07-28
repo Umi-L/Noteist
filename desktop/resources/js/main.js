@@ -38,7 +38,7 @@ function openTutorial() {
 */
 function setTray() {
     // Tray menu is only available in window mode
-    if(NL_MODE != "window") {
+    if (NL_MODE != "window") {
         console.log("INFO: Tray menu is only available in the window mode.");
         return;
     }
@@ -47,9 +47,9 @@ function setTray() {
     let tray = {
         icon: "/resources/icons/trayIcon.png",
         menuItems: [
-            {id: "VERSION", text: "Get version"},
-            {id: "SEP", text: "-"},
-            {id: "QUIT", text: "Quit"}
+            { id: "VERSION", text: "Get version" },
+            { id: "SEP", text: "-" },
+            { id: "QUIT", text: "Quit" }
         ]
     };
 
@@ -63,7 +63,7 @@ function setTray() {
     such as displaying version information or exiting the application.
 */
 function onTrayMenuItemClicked(event) {
-    switch(event.detail.id) {
+    switch (event.detail.id) {
         case "VERSION":
             // Display version information
             Neutralino.os.showMessageBox("Version information",
@@ -83,6 +83,8 @@ function onWindowClose() {
     Neutralino.app.exit();
 }
 
+console.log("INFO: main.js is loaded");
+
 // Initialize Neutralino
 Neutralino.init();
 
@@ -91,7 +93,7 @@ Neutralino.events.on("trayMenuItemClicked", onTrayMenuItemClicked);
 Neutralino.events.on("windowClose", onWindowClose);
 
 // Conditional initialization: Set up system tray if not running on macOS
-if(NL_OS != "Darwin") { // TODO: Fix https://github.com/neutralinojs/neutralinojs/issues/615
+if (NL_OS != "Darwin") { // TODO: Fix https://github.com/neutralinojs/neutralinojs/issues/615
     setTray();
 }
 

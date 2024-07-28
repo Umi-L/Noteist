@@ -9,7 +9,13 @@
         Plus,
         Trash,
     } from "phosphor-svelte";
-    import { Directory, Note, ReadDirRecursive } from "../../noteUtils";
+    import {
+        Directory,
+        getNextAvailableDirName,
+        getNextAvailableNoteName,
+        Note,
+        ReadDirRecursive,
+    } from "../../noteUtils";
     import { hideContextMenu, showContextMenu } from "../../contextmenu";
     import { currentNote, openDirectories } from "../../globals";
     import { writable, type Writable } from "svelte/store";
@@ -60,7 +66,9 @@
 
         hideContextMenu();
 
-        await directoryObject.CreateNote("New Note");
+        await directoryObject.CreateNote(
+            await getNextAvailableNoteName("New Note", directoryObject.path)
+        );
 
         setExpanded(true);
     }
@@ -93,7 +101,9 @@
 
         hideContextMenu();
 
-        await directoryObject.CreateDirectory("New Folder");
+        await directoryObject.CreateDirectory(
+            await getNextAvailableDirName("New Folder", directoryObject.path)
+        );
 
         setExpanded(true);
     }
