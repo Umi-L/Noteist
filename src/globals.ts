@@ -54,3 +54,15 @@ export async function reloadFilesystem() {
         return result;
     });
 }
+
+export interface ToastData {
+    data: {
+        text: string;
+        type: "error" | "success" | "info";
+    };
+}
+
+// TODO implement this
+export function addToast(data: ToastData) {
+    console.log(data);
+}
