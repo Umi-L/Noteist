@@ -18,7 +18,7 @@ const config: Config = {
                     "base-content": "#ebdbb2",
                     "primary": "#d3849a",
                     "primary-content": "#b16185",
-                    "neutral-content": "#222525",
+                    "neutral-content": "#a79783",
                 }
             },
             "dark",
