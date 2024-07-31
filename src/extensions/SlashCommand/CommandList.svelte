@@ -105,7 +105,7 @@
     }
 
     .description {
-        color: var(--muted-foreground);
+        color: var(--neutral);
     }
 
     .selected {

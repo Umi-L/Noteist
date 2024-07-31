@@ -4,14 +4,16 @@
 
 @layer base {
     :root {
-        --background: #191919;
-        --foreground: #d4d4d4;
+        --background: oklch(var(--b1));
+        --foreground: oklch(var(--bc));
 
-        --muted: #202020;
-        --muted-foreground: #b2b2b2;
+        --neutral: oklch(var(--n));
 
-        --double-muted: #292929;
-        --double-muted-foreground: #a2a2a2;
+        --muted: oklch(var(--b2));
+        --muted-foreground: oklch(var(--nc));
+
+        --double-muted: oklch(var(--b3));
+        --double-muted-foreground: oklch(var(--n));
 
         --popover: hsl(0 0% 100%);
         --popover-foreground: hsl(222.2 84% 4.9%);
@@ -19,17 +21,17 @@
         --card: hsl(0 0% 100%);
         --card-foreground: hsl(222.2 84% 4.9%);
 
-        --border: hsl(214.3 31.8% 91.4%);
+        --border: var(--foreground);
         --input: hsl(214.3 31.8% 91.4%);
 
-        --primary: #7480ff;
-        --primary-foreground: hsl(210 40% 98%);
+        --primary: oklch(var(--p));
+        --primary-foreground: oklch(var(--pc));
 
-        --secondary: rgb(167, 130, 149);
-        --secondary-foreground: hsl(222.2 47.4% 11.2%);
+        --secondary: oklch(var(--s));
+        --secondary-foreground: oklch(var(--sc));
 
-        --accent: hsl(210 40% 96.1%);
-        --accent-foreground: hsl(222.2 47.4% 11.2%);
+        --accent: oklch(var(--a));
+        --accent-foreground: oklch(var(--ac));
 
         --destructive: hsl(0 72.2% 50.6%);
         --destructive-foreground: 2 hsl(10 40% 98%);
@@ -83,7 +85,9 @@
     }
 }
 
-html, body, #app {
+html,
+body,
+#app {
     height: 100dvh;
     width: 100dvw;
     overscroll-behavior: none;
@@ -112,7 +116,7 @@ h3 {
 }
 
 * {
-  /* rounded */
-  scrollbar-width: thin;
-  scrollbar-color: var(--foreground) transparent;
+    /* rounded */
+    scrollbar-width: thin;
+    scrollbar-color: var(--foreground) transparent;
 }

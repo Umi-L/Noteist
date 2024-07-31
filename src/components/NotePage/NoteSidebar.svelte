@@ -153,8 +153,6 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        background-color: var(--color-bg);
-        color: var(--color-text);
         padding: 1rem;
         height: 100%;
 

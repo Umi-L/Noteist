@@ -63,6 +63,7 @@
         "svelte-moveable": "^0.45.0",
         "tailwind-merge": "^2.3.0",
         "tailwind-variants": "^0.2.1",
+        "theme-change": "^2.5.0",
         "tippy.js": "^6.3.7",
         "vite-plugin-mkcert": "^1.17.5"
     }
