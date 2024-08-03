@@ -2,6 +2,8 @@
     import {
         CaretDown,
         CaretRight,
+        Clipboard,
+        Copy,
         DotsThreeVertical,
         Folder,
         Note as NoteIcon,
@@ -17,14 +19,67 @@
         ReadDirRecursive,
     } from "../../noteUtils";
     import { hideContextMenu, showContextMenu } from "../../contextmenu";
-    import { currentNote, openDirectories } from "../../globals";
+    import {
+        currentCopiedDirOrFile,
+        currentDraggingDirOrFile,
+        currentNote,
+        openDirectories,
+    } from "../../globals";
     import { writable, type Writable } from "svelte/store";
     import { afterUpdate, beforeUpdate, onMount } from "svelte";
 
     export let directoryObject: Directory | Note;
+    let item: HTMLAnchorElement;
 
     const size = 16;
     const innerSize = 16;
+
+    let dragging = false;
+    let draggingOver = false;
+
+    function onDragStart(event: DragEvent) {
+        currentDraggingDirOrFile.set(directoryObject);
+        console.log("drag start");
+        dragging = true;
+    }
+
+    function onDragEnd() {
+        dragging = false;
+        console.log("drag end");
+        currentDraggingDirOrFile.set(null);
+    }
+
+    function onDrop(event: DragEvent) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        console.log("dropped", $currentDraggingDirOrFile);
+
+        if ($currentDraggingDirOrFile === null) {
+            return;
+        }
+
+        let directoryToMoveTo: Directory;
+
+        if (directoryObject instanceof Directory) {
+            directoryToMoveTo = directoryObject;
+        } else {
+            directoryToMoveTo = directoryObject.Parent;
+        }
+
+        $currentDraggingDirOrFile.move(directoryToMoveTo.path);
+    }
+
+    function onDragOver(event: DragEvent) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        draggingOver = true;
+    }
+
+    function onDragLeave() {
+        draggingOver = false;
+    }
 
     function click() {
         if (directoryObject instanceof Directory) {
@@ -127,6 +182,24 @@
 
         showContextMenu({ x: event.clientX, y: event.clientY }, [
             {
+                label: "Copy",
+                action: () => {
+                    currentCopiedDirOrFile.set(directoryObject);
+                },
+                availableCheck: () => true,
+                icon: Copy,
+            },
+            {
+                label: "Paste",
+                action: () => {
+                    let directory = directoryObject as Directory;
+
+                    $currentCopiedDirOrFile!.copyAndPaste(directory.path);
+                },
+                availableCheck: () => $currentCopiedDirOrFile !== null,
+                icon: Clipboard,
+            },
+            {
                 label: "Add Note",
                 action: addNote,
                 availableCheck: () => true,
@@ -159,6 +232,24 @@
 
         showContextMenu({ x: event.clientX, y: event.clientY }, [
             {
+                label: "Copy",
+                action: () => {
+                    currentCopiedDirOrFile.set(directoryObject);
+                },
+                availableCheck: () => true,
+                icon: Copy,
+            },
+            {
+                label: "Paste",
+                action: () => {
+                    $currentCopiedDirOrFile!.copyAndPaste(
+                        directoryObject.Parent!.path
+                    );
+                },
+                availableCheck: () => $currentCopiedDirOrFile !== null,
+                icon: Clipboard,
+            },
+            {
                 label: "Rename",
                 action: rename,
                 availableCheck: () => true,
@@ -176,7 +267,21 @@
 
 <ul>
     <li class="list-item">
-        <a class="item" on:click={click} role="button" tabindex={0}>
+        <a
+            class="item"
+            on:click={click}
+            role="button"
+            tabindex={0}
+            bind:this={item}
+            draggable="true"
+            class:dragging
+            on:drop={onDrop}
+            on:dragover={onDragOver}
+            on:dragstart={onDragStart}
+            on:dragend={onDragEnd}
+            on:dragleave={onDragLeave}
+            class:draggingOver
+        >
             <div class="item-subwrapper">
                 {#if directoryObject instanceof Directory}
                     {#if $openDirectories.has(directoryObject.path)}
@@ -265,6 +370,15 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
+    }
+
+    .dragging {
+        background-color: var(--background) !important;
+        border: 1px solid var(--foreground);
+    }
+
+    .draggingOver {
+        border: 1px solid var(--foreground);
     }
 
     .menu {

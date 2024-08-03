@@ -70,6 +70,69 @@ export class Note {
         await this.Parent.refresh();
     }
 
+    async move(path: string) {
+
+        let originalName = await getNextAvailableNoteName(this.Name, path);
+
+        try {
+            let newPath = path + "/" + originalName + ".html";
+
+            await rename({
+                from: this.HTMLPath,
+                to: newPath,
+                directory: _Directory.Documents,
+            });
+        } catch (e) {
+            console.error("Unable to move note", e);
+        }
+
+        try {
+            let newPath = path + "/" + originalName + ".svg";
+
+            await rename({
+                from: this.SVGPath,
+                to: newPath,
+                directory: _Directory.Documents,
+            });
+        } catch (e) {
+            console.error("Unable to move note", e);
+        }
+
+        await this.Parent.refresh();
+    }
+
+    async copyAndPaste(path: string) {
+        let originalName = await getNextAvailableNoteName(this.Name, path);
+
+        try {
+            let htmlContent = await this.getHTMLContent();
+            let newHtmlPath = path + "/" + originalName + ".html";
+
+            await writeFile({
+                data: htmlContent,
+                directory: _Directory.Documents,
+                path: newHtmlPath,
+            });
+        } catch (e) {
+            console.error("Unable to copy html content of note", e);
+        }
+
+        try {
+            let svgContent = await this.getSVGContent();
+            let newSvgPath = path + "/" + originalName + ".svg";
+
+            await writeFile({
+                data: svgContent,
+                directory: _Directory.Documents,
+                path: newSvgPath,
+            });
+        } catch (e) {
+            console.error("Unable to copy svg content of note", e);
+        }
+
+        await this.Parent.refresh();
+    }
+
     async delete() {
         try {
             await deleteFile({
@@ -204,6 +267,50 @@ export class Directory {
         }
 
         await this.refresh();
+    }
+
+    async move(path: string) {
+
+        let originalName = await getNextAvailableDirName(this.Name, path);
+        let newPath = path + "/" + originalName;
+
+        try {
+            await rename({
+                from: this.path,
+                to: newPath,
+                directory: _Directory.Documents,
+            });
+        } catch (e) {
+            console.error("Unable to move directory", e);
+        }
+
+        await this.refreshParent();
+    }
+
+    async copyAndPaste(path: string) {
+
+        let originalName = await getNextAvailableDirName(this.Name, path);
+        let newPath = path + "/" + originalName;
+
+        try {
+            await mkdir({
+                path: newPath,
+                directory: _Directory.Documents,
+            });
+        } catch (e) {
+            console.error("Unable to create directory", e);
+        }
+
+        let children = this.getAllChildrenRecursive();
+
+        for (let child of children) {
+            if (child instanceof Note) {
+                await child.copyAndPaste(newPath);
+            }
+        }
+
+        // TODO this is wrong but will work given refresh always refreshes from the root
+        await this.refreshParent();
     }
 
     getAllChildrenRecursive() {
