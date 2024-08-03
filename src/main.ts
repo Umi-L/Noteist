@@ -2,7 +2,9 @@ import './app.css'
 import App from './components/App.svelte'
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SafeArea } from "@capacitor-community/safe-area";
+import { enableDragDropTouch } from './dragdroptouch/drag-drop-touch';
 
+enableDragDropTouch();
 
 export let isNeutralino: boolean;
 try {

@@ -11,6 +11,7 @@
 -   [x] image load from file
 -   [ ] image drop indicators not showing
 -   [ ] stop context menu from going off screen
+-   [ ] delete folder not working on android?
 
 ## Core Functionality
 
