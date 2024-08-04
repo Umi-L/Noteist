@@ -92,7 +92,7 @@
         width: 100%;
         height: 100%;
 
-        padding: 2rem;
+        padding: 3rem;
 
         overflow-y: scroll;
 

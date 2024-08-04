@@ -195,7 +195,7 @@ export class Directory {
         // create html file
         try {
             await writeFile({
-                data: "",
+                data: "<h1></h1>",
                 path: this.path + "/" + name + ".html",
                 directory: _Directory.Documents,
             });
