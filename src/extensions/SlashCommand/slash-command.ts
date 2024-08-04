@@ -11,6 +11,7 @@ import type { SvelteComponent } from 'svelte';
 import {
     CheckSquare,
     CodeSimple, GridNine,
+    Image,
     ListBullets,
     ListNumbers,
     Quotes, Rectangle,
@@ -19,6 +20,7 @@ import {
     TextHThree,
     TextHTwo
 } from "phosphor-svelte";
+import { startImageUpload } from '../../plugins/uploadImages';
 
 export interface CommandItemProps {
     title: string;
@@ -161,28 +163,28 @@ const getSuggestionItems = ({ query }: { query: string }) => {
             icon: GridNine,
             command: ({ editor, range }: CommandProps) =>
                 editor.chain().focus().deleteRange(range).insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+        },
+        {
+            title: 'Image',
+            description: 'Upload an image from your computer.',
+            searchTerms: ['photo', 'picture', 'media', 'image'],
+            icon: Image,
+            command: ({ editor, range }: CommandProps) => {
+                editor.chain().focus().deleteRange(range).run();
+                // upload image
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = async () => {
+                    if (input.files?.length) {
+                        const file = input.files[0];
+                        const pos = editor.view.state.selection.from;
+                        startImageUpload(file, editor.view, pos);
+                    }
+                };
+                input.click();
+            }
         }
-        // {
-        // 	title: 'Image',
-        // 	description: 'Upload an image from your computer.',
-        // 	searchTerms: ['photo', 'picture', 'media'],
-        // 	// icon: <ImageIcon size={18} />,
-        // 	command: ({ editor, range }: CommandProps) => {
-        // 		editor.chain().focus().deleteRange(range).run();
-        // 		// upload image
-        // 		const input = document.createElement('input');
-        // 		input.type = 'file';
-        // 		input.accept = 'image/*';
-        // 		input.onchange = async () => {
-        // 			if (input.files?.length) {
-        // 				const file = input.files[0];
-        // 				const pos = editor.view.state.selection.from;
-        // 				// startImageUpload(file, editor.view, pos);
-        // 			}
-        // 		};
-        // 		input.click();
-        // 	}
-        // }
     ].filter((item) => {
         if (typeof query === 'string' && query.length > 0) {
             const search = query.toLowerCase();
@@ -242,9 +244,9 @@ const renderItems = () => {
             component?.$set(props);
 
             popup &&
-            popup[0].setProps({
-                getReferenceClientRect: props.clientRect
-            });
+                popup[0].setProps({
+                    getReferenceClientRect: props.clientRect
+                });
         },
         onKeyDown: (props: { event: KeyboardEvent }) => {
             if (props.event.key === 'Escape') {

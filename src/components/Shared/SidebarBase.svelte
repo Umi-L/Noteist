@@ -136,12 +136,12 @@
         height: 100%;
         display: flex;
         flex-direction: column;
-        background-color: var(--color-bg);
-        color: var(--color-text);
+        background-color: var(--background);
+        color: var(--foreground);
         padding: 1rem;
         height: 100%;
 
-        border-right: 1px solid var(--muted-foreground);
+        border-right: 1px solid var(--border);
 
         transition: width 0.3s ease-out 0s;
         box-shadow: var(--shadow);

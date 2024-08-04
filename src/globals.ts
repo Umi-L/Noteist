@@ -38,6 +38,9 @@ export let onEditorChange = (listener: (editor: Editor) => void) => {
     editorChangeListeners.push(listener);
 }
 
+export let currentDraggingDirOrFile: Writable<Directory | Note | null> = writable(null);
+export let currentCopiedDirOrFile: Writable<Directory | Note | null> = writable(null);
+
 export let currentNote: Writable<Note | null> = writable(null);
 
 export let notePath: Writable<string> = writable("notes");
@@ -53,4 +56,16 @@ export async function reloadFilesystem() {
     filesystem.update((fs) => {
         return result;
     });
+}
+
+export interface ToastData {
+    data: {
+        text: string;
+        type: "error" | "success" | "info";
+    };
+}
+
+// TODO implement this
+export function addToast(data: ToastData) {
+    console.log(data);
 }

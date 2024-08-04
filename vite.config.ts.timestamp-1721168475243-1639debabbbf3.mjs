@@ -1,7 +1,7 @@
 // vite.config.ts
-import { defineConfig } from "file:///C:/Users/julia/Projects/notist/node_modules/vite/dist/node/index.js";
-import { svelte } from "file:///C:/Users/julia/Projects/notist/node_modules/@sveltejs/vite-plugin-svelte/src/index.js";
-import { vitePreprocess } from "file:///C:/Users/julia/Projects/notist/node_modules/@sveltejs/vite-plugin-svelte/src/index.js";
+import { defineConfig } from "file:///C:/Users/julia/Projects/Noteist/node_modules/vite/dist/node/index.js";
+import { svelte } from "file:///C:/Users/julia/Projects/Noteist/node_modules/@sveltejs/vite-plugin-svelte/src/index.js";
+import { vitePreprocess } from "file:///C:/Users/julia/Projects/Noteist/node_modules/@sveltejs/vite-plugin-svelte/src/index.js";
 var vite_config_default = defineConfig({
     plugins: [svelte()],
     preprocess: vitePreprocess(),

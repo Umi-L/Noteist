@@ -5,6 +5,8 @@
     import DropdownSetting from "./DropdownSetting.svelte";
     import { sidebarOpen } from "../../globals";
     import { List } from "phosphor-svelte";
+    import { onMount } from "svelte";
+    import { themeChange } from "theme-change";
 
     let settingsPane: HTMLDivElement;
 
@@ -17,6 +19,52 @@
 
         element.scrollIntoView({ behavior: "smooth" });
     }
+
+    let themes = [
+        "default",
+        "dark",
+        "light",
+        "bumblebee",
+        "emerald",
+        "corporate",
+        "synthwave",
+        "retro",
+        "cyberpunk",
+        "valentine",
+        "halloween",
+        "garden",
+        "forest",
+        "aqua",
+        "lofi",
+        "pastel",
+        "fantasy",
+        "wireframe",
+        "black",
+        "luxury",
+        "dracula",
+        "cmyk",
+        "autumn",
+        "business",
+        "acid",
+        "lemonade",
+        "night",
+        "coffee",
+        "winter",
+        "dim",
+        "nord",
+        "sunset",
+    ];
+
+    onMount(async () => {
+        themeChange(false);
+    });
+
+    function asTitleCase(str: string) {
+        return str
+            .split(" ")
+            .map((word) => word[0].toUpperCase() + word.slice(1))
+            .join(" ");
+    }
 </script>
 
 <div class="wrapper">
@@ -26,6 +74,13 @@
                 on:click={() => {
                     scrollTo("General");
                 }}>General</a
+            >
+        </li>
+        <li>
+            <a
+                on:click={() => {
+                    scrollTo("Appearance");
+                }}>Appearance</a
             >
         </li>
         <li>
@@ -51,27 +106,25 @@
 
         <h2 id="General">General</h2>
         <div class="divider"></div>
-        <ToggleSetting name="Test Setting" data={writable(false)} />
-        <ToggleSetting name="Test Setting" data={writable(false)} />
-        <ToggleSetting name="Test Setting" data={writable(false)} />
-        <ToggleSetting name="Test Setting" data={writable(false)} />
-        <ToggleSetting name="Test Setting" data={writable(false)} />
-        <ToggleSetting name="Test Setting" data={writable(false)} />
-        <ToggleSetting name="Test Setting" data={writable(false)} />
         <DropdownSetting name="Test Setting" data={writable("Hello")}>
             <option value="Hello">Hello</option>
             <option value="World">World</option>
         </DropdownSetting>
 
+        <h2 id="Appearance">Appearance</h2>
+        <div class="divider"></div>
+        <DropdownSetting
+            name="Theme"
+            data={writable("Hello")}
+            themePicker={true}
+        >
+            {#each themes as theme}
+                <option value={theme}>{asTitleCase(theme)}</option>
+            {/each}
+        </DropdownSetting>
+
         <h2 id="Account">Account</h2>
         <div class="divider"></div>
-        <ToggleSetting name="Test Setting" data={writable(false)} />
-        <ToggleSetting name="Test Setting" data={writable(false)} />
-        <ToggleSetting name="Test Setting" data={writable(false)} />
-        <ToggleSetting name="Test Setting" data={writable(false)} />
-        <ToggleSetting name="Test Setting" data={writable(false)} />
-        <ToggleSetting name="Test Setting" data={writable(false)} />
-        <ToggleSetting name="Test Setting" data={writable(false)} />
         <DropdownSetting name="Test Setting" data={writable("Hello")}>
             <option value="Hello">Hello</option>
             <option value="World">World</option>

@@ -46,6 +46,11 @@
     import Placeholder from "@tiptap/extension-placeholder";
     import { Callout } from "../../extensions/Callout/callout";
     import type { Note } from "../../noteUtils";
+    import Image from "@tiptap/extension-image";
+    import UploadImagesPlugin, {
+        startImageUpload,
+    } from "../../plugins/uploadImages";
+    import ImageResizer from "../../extensions/ImageResizer/ImageResizer.svelte";
 
     let element: HTMLDivElement;
     let editor: Editor;
@@ -111,6 +116,28 @@
                 TableCell.configure({
                     HTMLAttributes: {
                         class: "p-2 border border-s-2 no-placeholder",
+                    },
+                }),
+                Image.extend({
+                    addProseMirrorPlugins() {
+                        return [UploadImagesPlugin()];
+                    },
+
+                    addAttributes() {
+                        return {
+                            ...this.parent?.(),
+                            width: {
+                                default: null,
+                            },
+                            height: {
+                                default: null,
+                            },
+                        };
+                    },
+                }).configure({
+                    allowBase64: true,
+                    HTMLAttributes: {
+                        class: "rounded-lg",
                     },
                 }),
                 Placeholder.configure({
@@ -186,6 +213,51 @@
                 }
             },
             editorProps: {
+                handlePaste: (view, event) => {
+                    if (
+                        event.clipboardData &&
+                        event.clipboardData.files &&
+                        event.clipboardData.files[0]
+                    ) {
+                        event.preventDefault();
+                        const file = event.clipboardData.files[0];
+                        const pos = view.state.selection.from;
+
+                        startImageUpload(file, view, pos);
+                        return true;
+                    }
+                    return false;
+                },
+                handleDrop: (view, event, _slice, moved) => {
+                    if (
+                        !moved &&
+                        event.dataTransfer &&
+                        event.dataTransfer.files &&
+                        event.dataTransfer.files[0]
+                    ) {
+                        event.preventDefault();
+                        const file = event.dataTransfer.files[0];
+                        const coordinates = view.posAtCoords({
+                            left: event.clientX,
+                            top: event.clientY,
+                        });
+
+                        const cursorPos = view.state.selection.from;
+
+                        let posToDrop = coordinates?.pos || cursorPos;
+
+                        // here we deduct 1 from the pos or else the image will create an extra node
+                        posToDrop -= 1;
+
+                        console.log("dragged coordinates", coordinates);
+                        console.log("cursorPos", cursorPos);
+                        console.log("dropping at", posToDrop);
+
+                        startImageUpload(file, view, posToDrop);
+                        return true;
+                    }
+                    return false;
+                },
                 handleDOMEvents: {
                     keydown: (_view, event) => {
                         // prevent default event listeners from firing when slash command is active
@@ -221,7 +293,11 @@
     });
 </script>
 
-<div bind:this={element} class="editor" />
+<div bind:this={element} class="editor">
+    {#if editor?.isActive("image")}
+        <ImageResizer {editor} />
+    {/if}
+</div>
 
 <style>
     button.active {

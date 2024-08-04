@@ -23,10 +23,13 @@
         </li>
     </ul>
 
-    <ul class="menu p-0 note-list" slot="content">
+    <ul class="menu p-0 content-list" slot="content">
         <slot></slot>
     </ul>
 </SidebarBase>
 
 <style>
+    .content-list {
+        gap: 5px;
+    }
 </style>

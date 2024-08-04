@@ -5,14 +5,15 @@
 .ProseMirror .is-editor-empty:first-child::before {
     content: attr(data-placeholder);
     float: left;
-    color: var(--muted-foreground);
+    color: var(--neutral);
     pointer-events: none;
     height: 0;
 }
+
 .ProseMirror .is-empty::before {
     content: attr(data-placeholder);
     float: left;
-    color: var(--muted-foreground);
+    color: var(--neutral);
     pointer-events: none;
     height: 0;
 }
@@ -59,19 +60,19 @@
 
 /* Custom TODO list checkboxes – shoutout to this awesome tutorial: https://moderncss.dev/pure-css-custom-checkbox-style/ */
 
-ul[data-type='taskList'] li > label {
+ul[data-type='taskList'] li>label {
     margin-right: 0.2rem;
     user-select: none;
 }
 
 @media screen and (max-width: 768px) {
-    ul[data-type='taskList'] li > label {
+    ul[data-type='taskList'] li>label {
         margin-right: 0.5rem;
     }
 }
 
-ul[data-type='taskList'] li[data-checked='true'] > div > p {
-    color: var(--muted-foreground);
+ul[data-type='taskList'] li[data-checked='true']>div>p {
+    color: var(--neutral);
     text-decoration: line-through;
     text-decoration-thickness: 2px;
 }
@@ -82,19 +83,19 @@ ul[data-type='taskList'] li[data-checked='true'] > div > p {
     max-width: 400px !important;
 }
 
-h1{
+h1 {
     font-size: 2.5rem;
     margin-top: 3rem;
 }
 
 
-h2{
+h2 {
     font-size: 2rem;
     margin-top: 1.5rem;
 }
 
 
-h3{
+h3 {
     font-size: 1.5rem;
     margin-top: 0.5rem;
 }
