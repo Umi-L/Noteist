@@ -12,7 +12,17 @@ import {
 } from "./filesystem";
 import { isNeutralino } from "./main";
 import type { Writable } from "svelte/store";
-import { filesystem, reloadFilesystem } from "./globals";
+import { addToast, filesystem, reloadFilesystem } from "./globals";
+
+function error(text: string, e: any) {
+    console.error(e);
+    addToast({
+        data: {
+            text: text,
+            type: "error",
+        },
+    });
+}
 
 export class Note {
     Name: string;
@@ -47,7 +57,7 @@ export class Note {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error("Unable to rename directory", e);
+            error("Unable to rename directory", e);
         }
 
         try {
@@ -64,7 +74,7 @@ export class Note {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error("Unable to rename note", e);
+            error("Unable to rename note", e);
         }
 
         await this.Parent.refresh();
@@ -83,7 +93,7 @@ export class Note {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error("Unable to move note", e);
+            error("Unable to move note", e);
         }
 
         try {
@@ -95,7 +105,7 @@ export class Note {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error("Unable to move note", e);
+            error("Unable to move note", e);
         }
 
         await this.Parent.refresh();
@@ -114,7 +124,7 @@ export class Note {
                 path: newHtmlPath,
             });
         } catch (e) {
-            console.error("Unable to copy html content of note", e);
+            error("Unable to copy html content of note", e);
         }
 
         try {
@@ -127,7 +137,7 @@ export class Note {
                 path: newSvgPath,
             });
         } catch (e) {
-            console.error("Unable to copy svg content of note", e);
+            error("Unable to copy svg content of note", e);
         }
 
         await this.Parent.refresh();
@@ -140,7 +150,7 @@ export class Note {
                 path: this.HTMLPath,
             });
         } catch (e) {
-            console.error("Unable to delete file", e);
+            error("Unable to delete file", e);
         }
 
         try {
@@ -149,7 +159,7 @@ export class Note {
                 path: this.SVGPath,
             });
         } catch (e) {
-            console.error("Unable to delete file", e);
+            error("Unable to delete file", e);
         }
 
         await this.Parent.refresh();
@@ -168,7 +178,7 @@ export class Note {
 
             return ret.data;
         } catch (e) {
-            console.error("Unable to read file", e);
+            error("Unable to read file", e);
 
             return "";
         }
@@ -184,7 +194,7 @@ export class Note {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error("Unable to write file", e);
+            error("Unable to write file", e);
         }
     }
 
@@ -201,7 +211,7 @@ export class Note {
 
             return ret.data;
         } catch (e) {
-            console.error("Unable to read file", e);
+            error("Unable to read file", e);
 
             return "";
         }
@@ -217,7 +227,7 @@ export class Note {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error("Unable to write file", e);
+            error("Unable to write file", e);
         }
     }
 }
@@ -252,7 +262,7 @@ export class Directory {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error("Unable to create svg file", e);
+            error("Unable to create svg file", e);
         }
 
         // create html file
@@ -263,7 +273,7 @@ export class Directory {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error("Unable to create svg file", e);
+            error("Unable to create svg file", e);
         }
 
         await this.refresh();
@@ -281,7 +291,7 @@ export class Directory {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error("Unable to move directory", e);
+            error("Unable to move directory", e);
         }
 
         await this.refreshParent();
@@ -298,7 +308,7 @@ export class Directory {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error("Unable to create directory", e);
+            error("Unable to create directory", e);
         }
 
         let children = this.getAllChildrenRecursive();
@@ -335,7 +345,7 @@ export class Directory {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error("Unable to create directory", e);
+            error("Unable to create directory", e);
         }
 
         await this.refresh();
@@ -356,7 +366,7 @@ export class Directory {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error("Unable to rename directory", e);
+            error("Unable to rename directory", e);
 
             return;
         }
@@ -384,7 +394,7 @@ export class Directory {
                 path: this.path,
             });
         } catch (e) {
-            console.error("Unable to delete directory", e);
+            error("Unable to delete directory", e);
         }
 
         await this.refreshParent();
@@ -456,7 +466,7 @@ export async function InitBaseDir() {
                 directory: _Directory.Documents,
             });
         } catch (e) {
-            console.error("Unable to create base directory", e);
+            console.log("Unable to create base directory", e);
         }
     }
 }
@@ -499,7 +509,7 @@ export async function ReadDirRecursive(path: string, parent: Directory | null) {
                             directory: _Directory.Documents,
                         });
                     } catch (e) {
-                        console.error("Unable to read svg file", e);
+                        error("Unable to read svg file", e);
 
                         // create svg file
                         try {
@@ -509,7 +519,7 @@ export async function ReadDirRecursive(path: string, parent: Directory | null) {
                                 directory: _Directory.Documents,
                             });
                         } catch (e) {
-                            console.error("Unable to create svg file", e);
+                            error("Unable to create svg file", e);
                         }
                     }
 
@@ -528,10 +538,10 @@ export async function ReadDirRecursive(path: string, parent: Directory | null) {
 
             return dir;
         } catch (e) {
-            console.error("Unable to read dir", e);
+            error("Unable to read dir", e);
         }
     } else {
-        console.error("This is not a native platform");
+        error("This is not a native platform");
 
         let dir = new Directory(
             "notes",

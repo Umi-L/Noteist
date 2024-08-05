@@ -12,6 +12,7 @@
 -   [ ] image drop indicators not showing
 -   [ ] stop context menu from going off screen
 -   [ ] delete folder not working on android?
+-   [ ] Use npm version of https://github.com/drag-drop-touch-js/dragdroptouch
 
 ## Core Functionality
 
@@ -36,7 +37,7 @@
 -   [x] Images
 -   [ ] Dragging blocks https://templates.tiptap.dev/fDq8DDz6Tc - tiptap pro?
 -   [ ] links
--   [ ] toasts https://daisyui.com/components/toast/
+-   [x] toasts https://daisyui.com/components/toast/
 -   [ ] make ctrl-p for print work - actually should paste lol
 
 ## Features

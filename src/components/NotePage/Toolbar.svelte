@@ -42,6 +42,9 @@
     import { EraserTool } from "../../Tools/EraserTool";
     import { PenTool } from "../../Tools/PenTool";
 
+    export let maxWidth: number;
+    export let maxHeight: number;
+
     const size = 16;
 
     let handle: HTMLDivElement;
@@ -291,6 +294,7 @@
     bind:this={toolbar}
     class:vertical
     class:horizontal={!vertical}
+    style={`max-width: calc(${vertical ? maxHeight : maxWidth}px - 40px);`}
 >
     <div class="handle" bind:this={handle}>
         <DotsSixVertical size={size * 1.25} />
@@ -450,6 +454,8 @@
 
         user-select: none;
         pointer-events: all;
+
+        overflow-x: auto;
     }
 
     .vertical {

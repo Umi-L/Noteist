@@ -66,6 +66,10 @@ export interface ToastData {
 }
 
 // TODO implement this
-export function addToast(data: ToastData) {
-    console.log(data);
+export let addToast: (data: ToastData) => void = (data) => {
+    throw new Error("addToast not initialized");
+};
+
+export function setAddToast(func: (data: ToastData) => void) {
+    addToast = func;
 }

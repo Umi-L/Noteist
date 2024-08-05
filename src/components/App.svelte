@@ -5,6 +5,7 @@
     import NotePage from "./NotePage/NotePage.svelte";
     import { themeChange } from "theme-change";
     import { onMount } from "svelte";
+    import Toasts from "./Shared/Toasts.svelte";
 
     if ("virtualKeyboard" in navigator) {
         //@ts-ignore
@@ -18,6 +19,7 @@
 </script>
 
 <main class="main">
+    <Toasts />
     {#if $AppState == AppStateEnum.App}
         <NotePage />
     {:else if $AppState == AppStateEnum.Settings}

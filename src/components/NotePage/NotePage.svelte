@@ -58,7 +58,7 @@
 
         <div class="toolbar-wrapper">
             <div class="toolbar-subwrapper" style={`width: ${noteWidth}px;`}>
-                <Toolbar />
+                <Toolbar maxWidth={noteWidth} maxHeight={noteHeight} />
             </div>
 
             <button
