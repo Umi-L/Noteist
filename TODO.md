@@ -18,7 +18,7 @@
 ## Core Functionality
 
 -   [ ] make toolbar scroll when too large for screen
--   [ ] detect when pen up and enable draw mode?
+-   [x] detect when pen up and enable draw mode?
 -   [x] Settings menu
 -   [ ] Save undo & redo history to file?
 -   [x] Make logo
