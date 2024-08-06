@@ -13,6 +13,12 @@ import {
 import { isNeutralino } from "./main";
 import type { Writable } from "svelte/store";
 import { addToast, filesystem, reloadFilesystem } from "./globals";
+import { Settings } from "./settings";
+
+let showDotFiles = true;
+Settings.general.showDotFiles.subscribe((val) => {
+    showDotFiles = val;
+});
 
 function error(text: string, e: any) {
     console.error(e);
@@ -487,6 +493,10 @@ export async function ReadDirRecursive(path: string, parent: Directory | null) {
             let dir = new Directory(dirname, path, [], [], parent);
 
             for (let file of ret.files) {
+
+                // if is dotfile and settings say not to show dotfiles, skip
+                if (file.name.startsWith(".") && !showDotFiles) continue;
+
                 console.debug("got file", file);
                 if (file.type == "directory") {
                     let relativePath = file.relativePath;

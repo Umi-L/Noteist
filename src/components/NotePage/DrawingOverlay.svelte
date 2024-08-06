@@ -13,6 +13,25 @@
     import type { DrawingTool } from "../../DrawingTool";
     import type { Action } from "../../Action";
     import type { Note } from "../../noteUtils";
+    import { Settings } from "../../settings";
+    import { isPenEvent } from "../../utils";
+
+    let leaveDrawingModeTimeout: number | null = null;
+
+    let detectDrawingMode: boolean;
+    Settings.general.detectDrawingMode.subscribe((value) => {
+        detectDrawingMode = value;
+    });
+
+    let autoLeaveDrawingMode: boolean;
+    let autoLeaveDrawingModeTime: number;
+    Settings.general.autoLeaveDrawingMode.subscribe((value) => {
+        autoLeaveDrawingMode = value;
+    });
+
+    Settings.general.autoLeaveDrawingModeTime.subscribe((value) => {
+        autoLeaveDrawingModeTime = value;
+    });
 
     let drawArea: SVGElement;
 
@@ -107,13 +126,13 @@
     }
 
     function handlePointerDown(event: PointerEvent) {
+        console.debug("drawing down", event);
+
         if (!isValidPointerEvent(event)) {
             return;
         }
 
         isDrawing = true;
-
-        let correctEvent = new PointerEvent("pointerdown", event);
 
         tool.startDrawing(
             strokes,
@@ -128,6 +147,24 @@
     }
 
     function handlePointerMove(event: PointerEvent) {
+        console.debug("drawing move", event);
+
+        if (detectDrawingMode) {
+            if (isPenEvent(event)) {
+                drawMode.set(true);
+
+                if (autoLeaveDrawingMode) {
+                    if (leaveDrawingModeTimeout) {
+                        clearTimeout(leaveDrawingModeTimeout);
+                    }
+
+                    leaveDrawingModeTimeout = setTimeout(() => {
+                        drawMode.set(false);
+                    }, autoLeaveDrawingModeTime);
+                }
+            }
+        }
+
         if (isDrawing) {
             if (!isValidPointerEvent(event)) {
                 return;
@@ -141,6 +178,8 @@
         if (!isDrawing) {
             return;
         }
+
+        console.debug("drawing up", event);
 
         if (!(event.pointerType == "mouse" || event.pointerType == "pen")) {
             return;

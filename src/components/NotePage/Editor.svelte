@@ -34,6 +34,7 @@
         codeMode,
         currentEditor,
         currentNote,
+        drawMode,
         editorChangeListeners,
         highlightMode,
         italicMode,
@@ -51,12 +52,19 @@
         startImageUpload,
     } from "../../plugins/uploadImages";
     import ImageResizer from "../../extensions/ImageResizer/ImageResizer.svelte";
+    import { Settings } from "../../settings";
+    import { isPenEvent } from "../../utils";
 
     let element: HTMLDivElement;
     let editor: Editor;
     let note: Note | null = null;
 
     let hasFetchedContent = false;
+
+    let detectDrawingMode: boolean;
+    Settings.general.detectDrawingMode.subscribe((value) => {
+        detectDrawingMode = value;
+    });
 
     currentNote.subscribe(async (_note) => {
         if (editor && _note) {
@@ -73,6 +81,23 @@
     });
 
     onMount(() => {
+        // TODO ideal solution but can't get it to work :(
+        // element.addEventListener("pointerdown", (event) => {
+        //     if (detectDrawingMode && isPenEvent(event)) {
+        //         drawMode.set(true);
+
+        //         event.preventDefault();
+        //         event.stopImmediatePropagation();
+
+        //         requestAnimationFrame(() => {
+        //             editor.commands.blur();
+        //         });
+        //         editor.commands.blur();
+
+        //         return;
+        //     }
+        // });
+
         editor = new Editor({
             element: element,
             extensions: [

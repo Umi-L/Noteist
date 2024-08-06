@@ -13,6 +13,7 @@
 -   [ ] stop context menu from going off screen
 -   [ ] delete folder not working on android?
 -   [ ] Use npm version of https://github.com/drag-drop-touch-js/dragdroptouch
+-   [ ] text data not being saved
 
 ## Core Functionality
 
@@ -39,6 +40,7 @@
 -   [ ] links
 -   [x] toasts https://daisyui.com/components/toast/
 -   [ ] make ctrl-p for print work - actually should paste lol
+-   [ ] tap anywhere to create new lines
 
 ## Features
 

@@ -1,8 +1,9 @@
 <script lang="ts">
     export let name: string;
+    export let disabled: boolean;
 </script>
 
-<div class="setting">
+<div class="setting" class:disabled>
     <b>{name}</b>
 
     <div class="content">
@@ -27,6 +28,7 @@
         margin-bottom: 0.5rem;
     }
 
-    .content {
+    .disabled {
+        opacity: 0.5;
     }
 </style>

@@ -7,8 +7,15 @@
     import { List } from "phosphor-svelte";
     import { onMount } from "svelte";
     import { themeChange } from "theme-change";
+    import { Settings } from "../../settings";
+    import NumberSetting from "./NumberSetting.svelte";
 
     let settingsPane: HTMLDivElement;
+
+    let detectDrawingMode: boolean;
+    Settings.general.detectDrawingMode.subscribe((value) => {
+        detectDrawingMode = value;
+    });
 
     function scrollTo(name: string) {
         const element = settingsPane.querySelector(`#${name}`);
@@ -106,16 +113,31 @@
 
         <h2 id="General">General</h2>
         <div class="divider"></div>
-        <DropdownSetting name="Test Setting" data={writable("Hello")}>
-            <option value="Hello">Hello</option>
-            <option value="World">World</option>
-        </DropdownSetting>
+        <ToggleSetting
+            name="Detect Pen Mode"
+            data={Settings.general.detectDrawingMode}
+        />
+        <ToggleSetting
+            disabled={!detectDrawingMode}
+            name="Auto Leave Drawing Mode"
+            data={Settings.general.autoLeaveDrawingMode}
+        />
+        <NumberSetting
+            disabled={!detectDrawingMode}
+            name="Auto Leave Drawing Mode Time"
+            data={Settings.general.autoLeaveDrawingModeTime}
+        />
+
+        <ToggleSetting
+            name="Show Dotfiles"
+            data={Settings.general.showDotFiles}
+        />
 
         <h2 id="Appearance">Appearance</h2>
         <div class="divider"></div>
         <DropdownSetting
             name="Theme"
-            data={writable("Hello")}
+            data={Settings.appearance.theme}
             themePicker={true}
         >
             {#each themes as theme}
@@ -125,10 +147,6 @@
 
         <h2 id="Account">Account</h2>
         <div class="divider"></div>
-        <DropdownSetting name="Test Setting" data={writable("Hello")}>
-            <option value="Hello">Hello</option>
-            <option value="World">World</option>
-        </DropdownSetting>
     </div>
 </div>
 

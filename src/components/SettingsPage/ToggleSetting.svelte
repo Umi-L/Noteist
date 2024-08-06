@@ -4,10 +4,11 @@
 
     export let name: string;
     export let data: Writable<boolean>;
+    export let disabled: boolean = false;
 
     let checkbox: HTMLInputElement;
 </script>
 
-<SettingBase {name}>
-    <input type="checkbox" class="toggle" bind:checked={$data} />
+<SettingBase {name} {disabled}>
+    <input type="checkbox" class="toggle" bind:checked={$data} {disabled} />
 </SettingBase>
