@@ -12,7 +12,7 @@ import {
 } from "./filesystem";
 import { isNeutralino } from "./main";
 import type { Writable } from "svelte/store";
-import { addToast, filesystem, reloadFilesystem } from "./globals";
+import { addToast, currentNote, filesystem, openDirectories, reloadFilesystem } from "./globals";
 import { Settings } from "./settings";
 
 let showDotFiles = true;
@@ -49,38 +49,56 @@ export class Note {
     }
 
     async rename(name: string) {
-        try {
-            let splitPath = this.HTMLPath.split("/");
-            let newPath =
-                splitPath.slice(0, splitPath.length - 1).join("/") +
-                "/" +
-                name +
-                ".html";
 
+        let success = true;
+
+        let splitPath = this.HTMLPath.split("/");
+
+        let newHTMLPath =
+            splitPath.slice(0, splitPath.length - 1).join("/") +
+            "/" +
+            name +
+            ".html";
+
+        let newSVGPath =
+            splitPath.slice(0, splitPath.length - 1).join("/") +
+            "/" +
+            name +
+            ".svg";
+
+
+        try {
             await rename({
                 from: this.HTMLPath,
-                to: newPath,
+                to: newHTMLPath,
                 directory: _Directory.Documents,
             });
         } catch (e) {
             error("Unable to rename directory", e);
+
+            success = false;
         }
 
         try {
-            let splitPath = this.SVGPath.split("/");
-            let newPath =
-                splitPath.slice(0, splitPath.length - 1).join("/") +
-                "/" +
-                name +
-                ".svg";
-
             await rename({
                 from: this.SVGPath,
-                to: newPath,
+                to: newSVGPath,
                 directory: _Directory.Documents,
             });
         } catch (e) {
             error("Unable to rename note", e);
+
+            success = false;
+        }
+
+        if (success) {
+            currentNote.update((note) => {
+                if (note == this) {
+                    note.HTMLPath = newHTMLPath;
+                    note.SVGPath = newHTMLPath;
+                }
+                return note;
+            });
         }
 
         await this.Parent.refresh();
@@ -89,29 +107,43 @@ export class Note {
     async move(path: string) {
 
         let originalName = await getNextAvailableNoteName(this.Name, path);
+        let newHTMLPath = path + "/" + originalName + ".html";
+        let newSVGPath = path + "/" + originalName + ".svg";
+
+        let success = true;
 
         try {
-            let newPath = path + "/" + originalName + ".html";
-
             await rename({
                 from: this.HTMLPath,
-                to: newPath,
+                to: newHTMLPath,
                 directory: _Directory.Documents,
             });
         } catch (e) {
             error("Unable to move note", e);
+
+            success = false;
         }
 
         try {
-            let newPath = path + "/" + originalName + ".svg";
-
             await rename({
                 from: this.SVGPath,
-                to: newPath,
+                to: newSVGPath,
                 directory: _Directory.Documents,
             });
         } catch (e) {
             error("Unable to move note", e);
+
+            success = false;
+        }
+
+        if (success) {
+            currentNote.update((note) => {
+                if (note == this) {
+                    note.HTMLPath = newHTMLPath;
+                    note.SVGPath = newSVGPath;
+                }
+                return note;
+            });
         }
 
         await this.Parent.refresh();
@@ -150,6 +182,9 @@ export class Note {
     }
 
     async delete() {
+
+        let success = true;
+
         try {
             await deleteFile({
                 directory: _Directory.Documents,
@@ -157,6 +192,8 @@ export class Note {
             });
         } catch (e) {
             error("Unable to delete file", e);
+
+            success = false;
         }
 
         try {
@@ -166,6 +203,17 @@ export class Note {
             });
         } catch (e) {
             error("Unable to delete file", e);
+
+            success = false;
+        }
+
+        if (success) {
+            currentNote.update((note) => {
+                if (note == this) {
+                    note = null;
+                }
+                return note;
+            });
         }
 
         await this.Parent.refresh();
@@ -344,6 +392,20 @@ export class Directory {
         return children;
     }
 
+    getChildByHTMLPathRecursive(path: string): Note | null {
+        let childrenRecursive = this.getAllChildrenRecursive();
+
+        for (let child of childrenRecursive) {
+            if (child instanceof Note) {
+                if (child.HTMLPath == path) {
+                    return child;
+                }
+            }
+        }
+
+        return null;
+    }
+
     async CreateDirectory(name: string) {
         try {
             await mkdir({
@@ -365,6 +427,9 @@ export class Directory {
                 .join("/") +
             "/" +
             name;
+
+        let success = true;
+
         try {
             await rename({
                 from: this.path,
@@ -374,8 +439,20 @@ export class Directory {
         } catch (e) {
             error("Unable to rename directory", e);
 
-            return;
+            success = false;
         }
+
+        if (success) {
+            openDirectories.update((dirs) => {
+                if (dirs.has(this.path)) {
+                    dirs.delete(this.path);
+                    dirs.add(newPath);
+                }
+
+                return dirs;
+            });
+        }
+
 
         await this.refreshParent();
     }
@@ -394,6 +471,9 @@ export class Directory {
     }
 
     async delete() {
+
+        let success = true;
+
         try {
             await rmdir({
                 directory: _Directory.Documents,
@@ -401,6 +481,15 @@ export class Directory {
             });
         } catch (e) {
             error("Unable to delete directory", e);
+
+            success = false;
+        }
+
+        if (success) {
+            openDirectories.update((dirs) => {
+                dirs.delete(this.path);
+                return dirs;
+            });
         }
 
         await this.refreshParent();
@@ -551,13 +640,18 @@ export async function ReadDirRecursive(path: string, parent: Directory | null) {
             error("Unable to read dir", e);
         }
     } else {
-        error("This is not a native platform");
+        error("This is not a native platform", "This is not a native platform");
 
+        // return dummy data for testing
+        // @ts-ignore
         let dir = new Directory(
             "notes",
             "",
             [],
-            [new Directory("Folder 1", "", [], [])],
+            [
+                // @ts-ignore
+                new Directory("Folder 1", "", [], [])
+            ],
         );
 
 

@@ -3,7 +3,6 @@
     import { AppState, AppStateEnum } from "../globals";
     import SettingsPage from "./SettingsPage/SettingsPage.svelte";
     import NotePage from "./NotePage/NotePage.svelte";
-    import { themeChange } from "theme-change";
     import { onMount } from "svelte";
     import Toasts from "./Shared/Toasts.svelte";
 
@@ -11,11 +10,6 @@
         //@ts-ignore
         navigator.virtualKeyboard.overlaysContent = true;
     }
-
-    onMount(() => {
-        themeChange(false);
-        // 👆 false parameter is required for svelte
-    });
 </script>
 
 <main class="main">

@@ -3,7 +3,7 @@
 ## Bugs
 
 -   [ ] Fix undo & redo when erasing
--   [ ] Scroll when drawing on mobile
+-   [x] Scroll when drawing on mobile
 -   [ ] Make toolbar animation more smooth
 -   [ ] tooltip showing on mobile
 -   [ ] fix odd bug on desktop for toolbar during resize
@@ -14,20 +14,23 @@
 -   [ ] delete folder not working on android?
 -   [ ] Use npm version of https://github.com/drag-drop-touch-js/dragdroptouch
 -   [ ] text data not being saved
+-   [ ] eraser indicator not being removed
+-   [ ] dragging behavior is odd on mobile for notes
 
 ## Core Functionality
 
+-   [x] save settings
 -   [ ] make toolbar scroll when too large for screen
 -   [x] detect when pen up and enable draw mode?
 -   [x] Settings menu
--   [ ] Save undo & redo history to file?
+-   [ ] Save undo & redo history to file
 -   [x] Make logo
 -   [ ] floating sidebar (primarily for mobile)?
 -   [x] working rename
-    -   [ ] Keep folder open when renaming
-    -   [ ] Change open note after renaming it
+    -   [x] Keep folder open when renaming
+    -   [x] Change open note after renaming it
 -   [x] working delete
-    -   [ ] Change open note after deleting
+    -   [x] Change open note after deleting
 -   [x] move note
 -   [x] copy note
 -   [x] paste note
@@ -35,12 +38,18 @@
 -   [ ] desktop keybinds - Panth
 -   [ ] customizable notes path
 -   [ ] recently opened
+    -   [ ] open recent
+    -   [ ] remade home screen
+    -   [ ] save and load old view position
 -   [x] Images
 -   [ ] Dragging blocks https://templates.tiptap.dev/fDq8DDz6Tc - tiptap pro?
 -   [ ] links
 -   [x] toasts https://daisyui.com/components/toast/
 -   [ ] make ctrl-p for print work - actually should paste lol
--   [ ] tap anywhere to create new lines
+-   [x] tap anywhere to create new lines - maybe allow tap later in the line adding whitespace to the end
+-   [ ] watch for file change and reload - for sync with syncthing etc
+-   [ ] lasso select
+-   [ ] allow constant scrolling even when there is no content
 
 ## Features
 

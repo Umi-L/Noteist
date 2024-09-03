@@ -52,10 +52,29 @@ notePath.subscribe(async (path) => {
 });
 
 export async function reloadFilesystem() {
+
+    // save the current note path
+    let _openNotePath: string | undefined;
+    currentNote.update((note) => {
+        if (note) {
+            _openNotePath = note.HTMLPath;
+        }
+        return note;
+    });
+
+    // reload the filesystem
     const result = await ReadDirRecursive(currentNotePath, null);
     filesystem.update((fs) => {
         return result;
     });
+
+    // if the note was open, set it again
+    if (_openNotePath && result) {
+        let note = result.getChildByHTMLPathRecursive(_openNotePath);
+        if (note) {
+            currentNote.set(note);
+        }
+    }
 }
 
 export interface ToastData {

@@ -16,6 +16,8 @@ import { isNeutralino } from "./main";
 import { Capacitor } from "@capacitor/core";
 import type { Neutralino } from "./types/neutralino"
 
+export const rootFolderName = 'notes';
+
 export interface FileInfo {
     name: string;
     type: string;

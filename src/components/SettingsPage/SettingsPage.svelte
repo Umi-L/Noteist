@@ -5,8 +5,6 @@
     import DropdownSetting from "./DropdownSetting.svelte";
     import { sidebarOpen } from "../../globals";
     import { List } from "phosphor-svelte";
-    import { onMount } from "svelte";
-    import { themeChange } from "theme-change";
     import { Settings } from "../../settings";
     import NumberSetting from "./NumberSetting.svelte";
 
@@ -61,10 +59,6 @@
         "nord",
         "sunset",
     ];
-
-    onMount(async () => {
-        themeChange(false);
-    });
 
     function asTitleCase(str: string) {
         return str
@@ -135,11 +129,7 @@
 
         <h2 id="Appearance">Appearance</h2>
         <div class="divider"></div>
-        <DropdownSetting
-            name="Theme"
-            data={Settings.appearance.theme}
-            themePicker={true}
-        >
+        <DropdownSetting name="Theme" data={Settings.appearance.theme}>
             {#each themes as theme}
                 <option value={theme}>{asTitleCase(theme)}</option>
             {/each}

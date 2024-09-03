@@ -74,7 +74,7 @@
         tool = value;
     });
 
-    let enabled = true;
+    let enabled = false;
     drawMode.subscribe((value) => {
         enabled = value;
     });
@@ -102,6 +102,14 @@
                     strokes[strokes.length - 1].remove();
                     strokes.pop();
                 }
+            }
+        });
+
+        // on touchmove
+        drawArea.addEventListener("touchmove", (event) => {
+            // stop scrolling when drawing so drawing wont scroll the screen but still allow scrolling when not drawing
+            if (isDrawing) {
+                event.preventDefault();
             }
         });
 
@@ -147,8 +155,6 @@
     }
 
     function handlePointerMove(event: PointerEvent) {
-        console.debug("drawing move", event);
-
         if (detectDrawingMode) {
             if (isPenEvent(event)) {
                 drawMode.set(true);
@@ -225,7 +231,8 @@
 <svg
     bind:this={drawArea}
     class="drawing-area"
-    style={enabled ? "pointer-events: all;" : "pointer-events: none;"}
+    class:enabled
+    class:drawing={isDrawing}
 >
 </svg>
 
@@ -233,9 +240,6 @@
     .drawing-area {
         width: 100%;
         height: 100%;
-
-        /*  stop dragging  */
-        touch-action: none;
 
         /*  transparent background  */
         background-color: transparent;
@@ -245,5 +249,16 @@
 
         position: absolute;
         top: 0;
+
+        pointer-events: none;
+    }
+
+    .drawing-area.enabled {
+        pointer-events: all;
+    }
+
+    .drawing {
+        /*  stop dragging  */
+        touch-action: none;
     }
 </style>

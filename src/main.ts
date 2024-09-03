@@ -3,6 +3,9 @@ import App from './components/App.svelte'
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SafeArea } from "@capacitor-community/safe-area";
 import { enableDragDropTouch } from './dragdroptouch/drag-drop-touch';
+import { Capacitor } from "@capacitor/core";
+import { InitSettings } from './settings';
+import { InitThemeListener } from './theme';
 
 enableDragDropTouch();
 
@@ -18,13 +21,19 @@ try {
 }
 console.log('isNeutralino', isNeutralino);
 
+export const isNativePlatform = Capacitor.isNativePlatform() || isNeutralino;
+
+console.log('isNativePlatform', isNativePlatform);
+
+InitSettings();
+
 if (isNeutralino) {
     /*
     Function to handle click events on the tray menu items.
     This function performs different actions based on the clicked item's ID,
     such as displaying version information or exiting the application.
     */
-    function onTrayMenuItemClicked(event) {
+    function onTrayMenuItemClicked(event: any) {
         switch (event.detail.id) {
             case "VERSION":
                 // Display version information

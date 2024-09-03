@@ -98,6 +98,33 @@
         //     }
         // });
 
+        element.addEventListener("pointerdown", (event) => {
+            let editorPos = editor.view.posAtCoords({
+                left: event.clientX,
+                top: event.clientY,
+            });
+
+            if (!editorPos) return;
+
+            while (editorPos!.inside === -1) {
+                const endPos = editor.state.doc.content.size;
+
+                // add new line to the end of the document
+                editor
+                    .chain()
+                    .focus()
+                    .insertContentAt(endPos, {
+                        type: "paragraph",
+                        content: [],
+                    })
+                    .run();
+                editorPos = editor.view.posAtCoords({
+                    left: event.clientX,
+                    top: event.clientY,
+                });
+            }
+        });
+
         editor = new Editor({
             element: element,
             extensions: [
