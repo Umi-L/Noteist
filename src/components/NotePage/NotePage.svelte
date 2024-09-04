@@ -9,15 +9,26 @@
     import { List } from "phosphor-svelte";
     import Editor from "./Editor.svelte";
     import type { Editor as EditorType } from "@tiptap/core";
+    import { writable, type Writable } from "svelte/store";
 
     let note: HTMLDivElement;
     let innerNote: HTMLDivElement;
     let noteWidth: number;
     let noteHeight: number;
+    let minNoteHeight: number;
+    let lowestEditorPoint: number;
+    let lowestDrawingPoint: Writable<number> = writable(0);
+
+    // get the value of 7rem in px
+    const noteBottomPadding =
+        7 * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
     onMount(() => {
         noteWidth = note.offsetWidth;
-        noteHeight = innerNote.scrollHeight;
+
+        // get the amount the user has scrolled
+        noteHeight = note.scrollHeight;
+        minNoteHeight = note.scrollHeight;
 
         new ResizeObserver((entries) => {
             console.log("resize");
@@ -31,13 +42,77 @@
                 return;
             }
 
-            noteHeight = innerNote.scrollHeight;
+            lowestEditorPoint =
+                editor.view.dom.children[
+                    editor.view.dom.children.length - 1
+                ].getBoundingClientRect().bottom -
+                editor.view.dom.children[0].getBoundingClientRect().top;
+
+            calculateMinNoteHeight();
+        });
+
+        // on user scrolling
+        note.addEventListener("scroll", () => {
+            // if within noteBottomPadding of the bottom
+            if (
+                note.scrollTop + note.clientHeight >=
+                note.scrollHeight - noteBottomPadding
+            ) {
+                // add the amount of space required to keep the bottom padding at noteBottomPadding
+                noteHeight +=
+                    note.scrollTop +
+                    note.clientHeight -
+                    (note.scrollHeight - noteBottomPadding);
+            }
+
+            // if the user has scrolled up away from the bottom
+            if (
+                note.scrollTop + note.clientHeight <
+                note.scrollHeight - noteBottomPadding
+            ) {
+                // remove the amount of space required to keep the bottom padding at noteBottomPadding
+                noteHeight -=
+                    note.scrollHeight -
+                    noteBottomPadding -
+                    (note.scrollTop + note.clientHeight);
+            }
+
+            if (noteHeight < minNoteHeight) {
+                noteHeight = minNoteHeight;
+            }
         });
     });
+
+    function calculateMinNoteHeight() {
+        if (!innerNote) {
+            return;
+        }
+
+        minNoteHeight = Math.max(
+            note.clientHeight,
+            lowestEditorPoint,
+            $lowestDrawingPoint
+        );
+
+        if (noteHeight < minNoteHeight) {
+            noteHeight = minNoteHeight;
+        }
+    }
+
+    function drawingChanged() {
+        console.log("new lowest drawing point: ", $lowestDrawingPoint);
+
+        calculateMinNoteHeight();
+    }
 
     let _note: Note | null;
     currentNote.subscribe((value) => {
         _note = value;
+
+        // set note scroll to top
+        if (note) {
+            note.scrollTop = 0;
+        }
     });
 </script>
 
@@ -50,9 +125,13 @@
         {#if _note}
             <div
                 class="drawing-overlay-wrapper"
-                style={`height: calc(${noteHeight}px + var(--note-bottom-padding)`}
+                style={`height: calc(${noteHeight}px + var(--note-bottom-padding, 0px));`}
             >
-                <DrawingOverlay />
+                <DrawingOverlay
+                    lowestVerticalPointWritable={lowestDrawingPoint}
+                    onDrawingChange={drawingChanged}
+                    scrollingElement={note}
+                />
             </div>
         {/if}
 
@@ -73,7 +152,11 @@
             </button>
         </div>
 
-        <div class="inner-note" bind:this={innerNote}>
+        <div
+            class="inner-note"
+            bind:this={innerNote}
+            style={`height: calc(${noteHeight}px + var(--note-bottom-padding, 0px));`}
+        >
             {#if _note}
                 <Editor />
             {:else}
@@ -97,7 +180,6 @@
     .note {
         display: flex;
         flex-direction: column;
-        justify-content: center;
         align-items: center;
 
         width: 100%;
@@ -112,10 +194,15 @@
     }
 
     .inner-note {
+        --note-bottom-padding: 7rem;
+
+        flex-shrink: 0;
+
         width: calc(100% - 3rem * 2);
-        height: 100%;
 
         margin-top: var(--safe-area-inset-top);
+
+        overflow: hidden;
     }
 
     .top-left {
@@ -171,11 +258,10 @@
         top: 0;
         left: 0;
         width: 100%;
+        height: 100%;
 
         pointer-events: none;
         user-select: none;
-
-        --note-bottom-padding: 7rem;
     }
 
     .text-center {

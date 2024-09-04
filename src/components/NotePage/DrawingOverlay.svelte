@@ -15,6 +15,11 @@
     import type { Note } from "../../noteUtils";
     import { Settings } from "../../settings";
     import { isPenEvent } from "../../utils";
+    import type { Writable } from "svelte/store";
+
+    export let lowestVerticalPointWritable: Writable<number>;
+    export let onDrawingChange: () => void;
+    export let scrollingElement: HTMLElement;
 
     let leaveDrawingModeTimeout: number | null = null;
 
@@ -200,6 +205,26 @@
         if (note && hasFetchedContent) {
             note.setSVGContent(drawArea.outerHTML);
         }
+
+        // foreach child find the one with the lowest bottom
+        let lowestVerticalPoint = 0;
+        for (let i = 0; i < drawArea.children.length; i++) {
+            let child = drawArea.children[i];
+
+            let childRect = child.getBoundingClientRect();
+
+            let childBottom = childRect.bottom;
+
+            let distance = childBottom + scrollingElement.scrollTop;
+
+            if (distance > lowestVerticalPoint) {
+                lowestVerticalPoint = distance;
+            }
+        }
+
+        lowestVerticalPointWritable.set(lowestVerticalPoint);
+
+        onDrawingChange();
     }
 
     function undo() {

@@ -330,6 +330,15 @@ export class Directory {
             error("Unable to create svg file", e);
         }
 
+        currentNote.update((note) => {
+            return new Note(
+                name,
+                this.path + "/" + name + ".html",
+                this.path + "/" + name + ".svg",
+                this,
+            );
+        });
+
         await this.refresh();
     }
 

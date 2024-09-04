@@ -49,7 +49,10 @@
 -   [x] tap anywhere to create new lines - maybe allow tap later in the line adding whitespace to the end
 -   [ ] watch for file change and reload - for sync with syncthing etc
 -   [ ] lasso select
--   [ ] allow constant scrolling even when there is no content
+-   [x] allow constant scrolling even when there is no content
+-   [x] auto open new note
+-   [x] reset scrolling when changing notes
+    -   [ ] save scroll percentage for each note
 
 ## Features
 
@@ -64,6 +67,7 @@
 -   [ ] State transition
 -   [ ] Infinite Canvas
 -   [ ] live collaboration - https://tiptap.dev/docs/editor/extensions/functionality/collaboration
+-   [ ] export to pdf, png, etc
 
 ## Release
 
