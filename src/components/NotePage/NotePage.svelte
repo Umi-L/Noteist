@@ -19,6 +19,7 @@
     let minNoteHeight: number;
     let lowestEditorPoint: number;
     let lowestDrawingPoint: Writable<number> = writable(0);
+    let toolbarWrapper: HTMLDivElement;
 
     let resizeObserver: ResizeObserver;
 
@@ -153,8 +154,13 @@
                 <div
                     class="toolbar-subwrapper"
                     style={`width: ${noteWidth}px;`}
+                    bind:this={toolbarWrapper}
                 >
-                    <Toolbar maxWidth={noteWidth} maxHeight={noteHeight} />
+                    <Toolbar
+                        maxWidth={noteWidth}
+                        maxHeight={noteHeight}
+                        {toolbarWrapper}
+                    />
                 </div>
 
                 <button

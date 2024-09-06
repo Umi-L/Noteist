@@ -44,6 +44,7 @@
 
     export let maxWidth: number;
     export let maxHeight: number;
+    export let toolbarWrapper: HTMLDivElement;
 
     const size = 16;
 
@@ -88,7 +89,7 @@
 
         toolbarSide = null;
 
-        let parentRect = toolbar.parentElement!.getBoundingClientRect();
+        let parentRect = toolbarWrapper.getBoundingClientRect();
 
         const x = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
         const y = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
@@ -102,7 +103,7 @@
         if (isDragging) {
             e.preventDefault();
 
-            let parentRect = toolbar.parentElement!.getBoundingClientRect();
+            const parentRect = toolbarWrapper.getBoundingClientRect();
 
             const x =
                 e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
@@ -114,22 +115,26 @@
             toolbar.style.transform = "none";
 
             // determine closest edge
-            const rect = toolbar.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
+            const toolbarRect = toolbar.getBoundingClientRect();
+            let centerX = toolbarRect.left + toolbarRect.width / 2;
+            let centerY = toolbarRect.top + toolbarRect.height / 2;
+
+            // make centerX and centerY relative to the toolbarWrapper
+            centerX -= parentRect.left;
+            centerY -= parentRect.top;
 
             isVertical.set(
-                Math.abs(centerX - window.innerWidth / 2) >
-                    Math.abs(centerY - window.innerHeight / 2)
+                Math.abs(centerX - parentRect.width / 2) >
+                    Math.abs(centerY - parentRect.height / 2)
             );
 
             colorPickerAnchorSide.set(
-                centerX > window.innerWidth / 2
+                centerX > parentRect.width / 2
                     ? AnchorSide.Right
                     : AnchorSide.Left
             );
             colorPickerAnchorSide.set(
-                centerY > window.innerHeight / 2
+                centerY > parentRect.height / 2
                     ? AnchorSide.Bottom
                     : AnchorSide.Top
             );
@@ -140,18 +145,24 @@
         if (isDragging) {
             isDragging = false;
 
+            const parentRect = toolbarWrapper.getBoundingClientRect();
+
             // snap to edge
-            const rect = toolbar.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
+            const toolbarRect = toolbar.getBoundingClientRect();
+            let centerX = toolbarRect.left + toolbarRect.width / 2;
+            let centerY = toolbarRect.top + toolbarRect.height / 2;
+
+            // make centerX and centerY relative to the toolbarWrapper
+            centerX -= parentRect.left;
+            centerY -= parentRect.top;
 
             // if the toolbar is closer to the top or bottom edge
             if (
-                Math.abs(centerX - window.innerWidth / 2) <
-                Math.abs(centerY - window.innerHeight / 2)
+                Math.abs(centerX - parentRect.width / 2) <
+                Math.abs(centerY - parentRect.height / 2)
             ) {
                 let side =
-                    centerY > window.innerHeight / 2
+                    centerY > parentRect.height / 2
                         ? AnchorSide.Bottom
                         : AnchorSide.Top;
                 colorPickerAnchorSide.set(side);
@@ -160,11 +171,11 @@
                 isVertical.set(false);
             } else if (
                 // if the toolbar is closer to the left or right edge
-                Math.abs(centerX - window.innerWidth / 2) >
-                Math.abs(centerY - window.innerHeight / 2)
+                Math.abs(centerX - parentRect.width / 2) >
+                Math.abs(centerY - parentRect.height / 2)
             ) {
                 let side =
-                    centerX > window.innerWidth / 2
+                    centerX > parentRect.width / 2
                         ? AnchorSide.Right
                         : AnchorSide.Left;
 
@@ -181,7 +192,7 @@
         }
     }
 
-    onMount(() => {
+    $: if (toolbarWrapper) {
         // touch events
         handle.addEventListener("touchstart", start);
         window.addEventListener("touchmove", move);
@@ -191,19 +202,14 @@
         handle.addEventListener("mousedown", start);
         window.addEventListener("mousemove", move);
         window.addEventListener("mouseup", end);
+    }
 
+    onMount(() => {
         function updateWidth() {
-            console.log("--toolbar-width", toolbar.offsetWidth);
             // set css variable for toolbar width
             toolbar.style.setProperty(
                 "--toolbar-width",
                 `${toolbar.offsetWidth}px`
-            );
-
-            // log getting the toolbar width
-            console.log(
-                "toolbar width",
-                toolbar.style.getPropertyValue("--toolbar-width")
             );
         }
 
