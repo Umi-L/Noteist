@@ -16,6 +16,7 @@
 -   [ ] text data not being saved
 -   [ ] eraser indicator not being removed
 -   [ ] dragging behavior is odd on mobile for notes
+-   [ ] can drag notes to the same folder
 
 ## Core Functionality
 

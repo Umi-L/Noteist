@@ -27,24 +27,11 @@
     const noteBottomPadding =
         7 * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
-    onMount(() => {
+    // to be ran when the note begins to exist
+    function onNoteExists() {
         // get the amount the user has scrolled
         noteHeight = note.scrollHeight;
         minNoteHeight = note.scrollHeight;
-
-        onEditorChange((editor: EditorType) => {
-            if (!innerNote) {
-                return;
-            }
-
-            lowestEditorPoint =
-                editor.view.dom.children[
-                    editor.view.dom.children.length - 1
-                ].getBoundingClientRect().bottom -
-                editor.view.dom.children[0].getBoundingClientRect().top;
-
-            calculateMinNoteHeight();
-        });
 
         // on user scrolling
         note.addEventListener("scroll", () => {
@@ -75,6 +62,27 @@
             if (noteHeight < minNoteHeight) {
                 noteHeight = minNoteHeight;
             }
+        });
+    }
+
+    // reactive block that will only run if innerNote is defined
+    $: if (innerNote) {
+        onNoteExists();
+    }
+
+    onMount(() => {
+        onEditorChange((editor: EditorType) => {
+            if (!innerNote) {
+                return;
+            }
+
+            lowestEditorPoint =
+                editor.view.dom.children[
+                    editor.view.dom.children.length - 1
+                ].getBoundingClientRect().bottom -
+                editor.view.dom.children[0].getBoundingClientRect().top;
+
+            calculateMinNoteHeight();
         });
     });
 
