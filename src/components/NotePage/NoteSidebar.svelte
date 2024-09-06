@@ -1,8 +1,15 @@
 <script lang="ts">
-    import { Folder, Gear, Note as NoteIcon, Plus } from "phosphor-svelte";
+    import {
+        Folder,
+        Gear,
+        House,
+        Note as NoteIcon,
+        Plus,
+    } from "phosphor-svelte";
     import {
         AppState,
         AppStateEnum,
+        currentNote,
         filesystem,
         sidebarOpen,
     } from "../../globals";
@@ -61,10 +68,19 @@
     function openSettings() {
         AppState.set(AppStateEnum.Settings);
     }
+
+    function openHome() {
+        currentNote.set(null);
+    }
 </script>
 
 <SidebarBase title="Noteist">
     <ul class="menu p-0 option-list" slot="menu">
+        <li>
+            <a on:click={openHome}>
+                <House {size} /> Home
+            </a>
+        </li>
         <li>
             <a on:click={openSettings}>
                 <Gear {size} /> Settings

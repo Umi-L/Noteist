@@ -6,6 +6,8 @@ import { enableDragDropTouch } from './dragdroptouch/drag-drop-touch';
 import { Capacitor } from "@capacitor/core";
 import { InitSettings } from './settings';
 import { InitThemeListener } from './theme';
+import { InitUserData } from './userData';
+import { startRecentNotesListener } from './listeners/recentNotesListener';
 
 enableDragDropTouch();
 
@@ -26,6 +28,8 @@ export const isNativePlatform = Capacitor.isNativePlatform() || isNeutralino;
 console.log('isNativePlatform', isNativePlatform);
 
 InitSettings();
+InitUserData();
+startRecentNotesListener();
 
 if (isNeutralino) {
     /*

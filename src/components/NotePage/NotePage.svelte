@@ -10,6 +10,7 @@
     import Editor from "./Editor.svelte";
     import type { Editor as EditorType } from "@tiptap/core";
     import { writable, type Writable } from "svelte/store";
+    import HomeMenu from "./HomeMenu.svelte";
 
     let note: HTMLDivElement;
     let innerNote: HTMLDivElement;
@@ -19,23 +20,16 @@
     let lowestEditorPoint: number;
     let lowestDrawingPoint: Writable<number> = writable(0);
 
+    let resizeObserver: ResizeObserver;
+
     // get the value of 7rem in px
     const noteBottomPadding =
         7 * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
     onMount(() => {
-        noteWidth = note.offsetWidth;
-
         // get the amount the user has scrolled
         noteHeight = note.scrollHeight;
         minNoteHeight = note.scrollHeight;
-
-        new ResizeObserver((entries) => {
-            console.log("resize");
-            for (let entry of entries) {
-                noteWidth = entry.contentRect.width;
-            }
-        }).observe(note);
 
         onEditorChange((editor: EditorType) => {
             if (!innerNote) {
@@ -113,6 +107,28 @@
         if (note) {
             note.scrollTop = 0;
         }
+
+        if (_note) {
+            if (resizeObserver) {
+                resizeObserver.disconnect();
+            }
+
+            // on next frame once the note has been rendered
+            requestAnimationFrame(() => {
+                noteWidth = note.offsetWidth;
+
+                console.log("note width", noteWidth);
+
+                resizeObserver = new ResizeObserver((entries) => {
+                    console.log("resize");
+                    for (let entry of entries) {
+                        noteWidth = entry.contentRect.width;
+                    }
+                });
+
+                resizeObserver.observe(note);
+            });
+        }
     });
 </script>
 
@@ -120,9 +136,8 @@
     <Sidebar />
 
     <ContextMenu />
-
-    <div class="note scrollbar" bind:this={note}>
-        {#if _note}
+    {#if _note}
+        <div class="note scrollbar" bind:this={note}>
             <div
                 class="drawing-overlay-wrapper"
                 style={`height: calc(${noteHeight}px + var(--note-bottom-padding, 0px));`}
@@ -133,39 +148,49 @@
                     scrollingElement={note}
                 />
             </div>
-        {/if}
 
-        <div class="toolbar-wrapper">
-            <div class="toolbar-subwrapper" style={`width: ${noteWidth}px;`}>
-                <Toolbar maxWidth={noteWidth} maxHeight={noteHeight} />
+            <div class="toolbar-wrapper">
+                <div
+                    class="toolbar-subwrapper"
+                    style={`width: ${noteWidth}px;`}
+                >
+                    <Toolbar maxWidth={noteWidth} maxHeight={noteHeight} />
+                </div>
+
+                <button
+                    class="btn btn-square btn-ghost top-left btn-sm overlay"
+                    class:btn-hidden={$sidebarOpen}
+                    class:btn-shown={!$sidebarOpen}
+                    on:click={() => {
+                        sidebarOpen.update((value) => !value);
+                    }}
+                >
+                    <List size={16} />
+                </button>
             </div>
 
-            <button
-                class="btn btn-square btn-ghost top-left btn-sm overlay"
-                class:btn-hidden={$sidebarOpen}
-                class:btn-shown={!$sidebarOpen}
-                on:click={() => {
-                    sidebarOpen.update((value) => !value);
-                }}
+            <div
+                class="inner-note"
+                bind:this={innerNote}
+                style={`height: calc(${noteHeight}px + var(--note-bottom-padding, 0px));`}
             >
-                <List size={16} />
-            </button>
-        </div>
-
-        <div
-            class="inner-note"
-            bind:this={innerNote}
-            style={`height: calc(${noteHeight}px + var(--note-bottom-padding, 0px));`}
-        >
-            {#if _note}
                 <Editor />
-            {:else}
-                <div class="text-center">
-                    <h1 class="text-2xl">No note selected</h1>
-                </div>
-            {/if}
+            </div>
         </div>
-    </div>
+    {:else}
+        <HomeMenu />
+
+        <button
+            class="btn btn-square btn-ghost top-left btn-sm overlay"
+            class:btn-hidden={$sidebarOpen}
+            class:btn-shown={!$sidebarOpen}
+            on:click={() => {
+                sidebarOpen.update((value) => !value);
+            }}
+        >
+            <List size={16} />
+        </button>
+    {/if}
 </div>
 
 <style>

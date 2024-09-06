@@ -53,6 +53,8 @@
     let isDragging = false;
     let isVertical = writable(false);
 
+    let toolbarSide: AnchorSide | null = AnchorSide.Bottom;
+
     let vertical = false;
     isVertical.subscribe((value) => {
         vertical = value;
@@ -84,7 +86,16 @@
         e.preventDefault();
         isDragging = true;
 
-        toolbar.style.transition = "";
+        toolbarSide = null;
+
+        let parentRect = toolbar.parentElement!.getBoundingClientRect();
+
+        const x = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
+        const y = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
+
+        toolbar.style.left = `${x - parentRect.left - toolbar.offsetWidth / 2}px`;
+        toolbar.style.top = `${y - parentRect.top - toolbar.offsetHeight / 2}px`;
+        toolbar.style.transform = "none";
     }
 
     function move(e: MouseEvent | TouchEvent): void {
@@ -100,9 +111,6 @@
 
             toolbar.style.left = `${x - parentRect.left - toolbar.offsetWidth / 2}px`;
             toolbar.style.top = `${y - parentRect.top - toolbar.offsetHeight / 2}px`;
-            toolbar.style.right = "auto";
-            toolbar.style.bottom = "auto";
-
             toolbar.style.transform = "none";
 
             // determine closest edge
@@ -137,86 +145,43 @@
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
 
-            // top, bottom, left, right
+            // if the toolbar is closer to the top or bottom edge
             if (
                 Math.abs(centerX - window.innerWidth / 2) <
                 Math.abs(centerY - window.innerHeight / 2)
             ) {
-                toolbar.style.top =
-                    centerY > window.innerHeight / 2
-                        ? "auto"
-                        : "calc(10px + var(--safe-area-inset-top))";
-                toolbar.style.bottom =
-                    centerY > window.innerHeight / 2
-                        ? "calc(env(keyboard-inset-height, 0px) + env(keyboard-inset-bottom, 0px) + var(--safe-area-inset-bottom)*2 + 10px)"
-                        : "auto";
-                toolbar.style.left = "50%";
-                toolbar.style.transform = "translateX(-50%)";
-
-                colorPickerAnchorSide.set(
+                let side =
                     centerY > window.innerHeight / 2
                         ? AnchorSide.Bottom
-                        : AnchorSide.Top
-                );
+                        : AnchorSide.Top;
+                colorPickerAnchorSide.set(side);
+                toolbarSide = side;
 
                 isVertical.set(false);
             } else if (
+                // if the toolbar is closer to the left or right edge
                 Math.abs(centerX - window.innerWidth / 2) >
                 Math.abs(centerY - window.innerHeight / 2)
             ) {
-                toolbar.style.left =
-                    centerX > window.innerWidth / 2 ? "auto" : "10px";
-                toolbar.style.right =
-                    centerX > window.innerWidth / 2 ? "10px" : "auto";
-                toolbar.style.top = "50%";
-
-                colorPickerAnchorSide.set(
+                let side =
                     centerX > window.innerWidth / 2
                         ? AnchorSide.Right
-                        : AnchorSide.Left
-                );
+                        : AnchorSide.Left;
 
-                let halfWidth = toolbar.offsetWidth / 2 - 25;
-
-                let translatePercent =
-                    centerX > window.innerWidth / 2
-                        ? `translateY(-${halfWidth}px)`
-                        : `translateY(${halfWidth}px)`;
-
-                toolbar.style.transform = translatePercent;
+                colorPickerAnchorSide.set(side);
+                toolbarSide = side;
 
                 isVertical.set(true);
             }
 
-            // play easing animation
-            toolbar.style.transition =
-                "top 0.2s, bottom 0.2s, left 0.2s, right 0.2s, transform 0.2s";
+            // clear toolbar styles
+            toolbar.style.left = "";
+            toolbar.style.top = "";
+            toolbar.style.transform = "";
         }
     }
 
     onMount(() => {
-        new ResizeObserver((entries) => {
-            const rect = toolbar.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-
-            if (
-                Math.abs(centerX - window.innerWidth / 2) >
-                Math.abs(centerY - window.innerHeight / 2)
-            ) {
-                let halfWidth = toolbar.offsetWidth / 2 - 25;
-
-                let translatePercent =
-                    centerX > window.innerWidth / 2
-                        ? `translateY(-${halfWidth}px)`
-                        : `translateY(${halfWidth}px)`;
-
-                toolbar.style.transform = translatePercent;
-
-                console.log("horizontal");
-            }
-        }).observe(toolbar);
-
         // touch events
         handle.addEventListener("touchstart", start);
         window.addEventListener("touchmove", move);
@@ -226,6 +191,43 @@
         handle.addEventListener("mousedown", start);
         window.addEventListener("mousemove", move);
         window.addEventListener("mouseup", end);
+
+        function updateWidth() {
+            console.log("--toolbar-width", toolbar.offsetWidth);
+            // set css variable for toolbar width
+            toolbar.style.setProperty(
+                "--toolbar-width",
+                `${toolbar.offsetWidth}px`
+            );
+
+            // log getting the toolbar width
+            console.log(
+                "toolbar width",
+                toolbar.style.getPropertyValue("--toolbar-width")
+            );
+        }
+
+        // listen for toolbar resize and update width
+        let resizeObserver = new ResizeObserver(() => {
+            updateWidth();
+        });
+
+        resizeObserver.observe(toolbar);
+
+        // initial width
+        updateWidth();
+
+        return () => {
+            handle.removeEventListener("touchstart", start);
+            window.removeEventListener("touchmove", move);
+            window.removeEventListener("touchend", end);
+
+            handle.removeEventListener("mousedown", start);
+            window.removeEventListener("mousemove", move);
+            window.removeEventListener("mouseup", end);
+
+            resizeObserver.disconnect();
+        };
     });
 
     boldMode.subscribe((value) => {
@@ -294,7 +296,11 @@
     bind:this={toolbar}
     class:vertical
     class:horizontal={!vertical}
-    style={`max-width: calc(${vertical ? maxHeight : maxWidth}px - 40px);`}
+    class:top={toolbarSide === AnchorSide.Top}
+    class:bottom={toolbarSide === AnchorSide.Bottom}
+    class:left={toolbarSide === AnchorSide.Left}
+    class:right={toolbarSide === AnchorSide.Right}
+    class:transition={!isDragging}
 >
     <div class="handle" bind:this={handle}>
         <DotsSixVertical size={size * 1.25} />
@@ -428,13 +434,18 @@
 
 <style>
     .toolbar {
-        position: absolute;
-        bottom: calc(
+        --bottomDistance: calc(
             env(keyboard-inset-height, 0px) + env(keyboard-inset-bottom, 0px) +
                 var(--safe-area-inset-bottom) * 2 + 10px
         );
-        right: 50%;
-        transform: translateX(50%);
+        --leftDistance: calc(10px - var(--toolbar-width) / 2);
+        --rightDistance: calc(10px + var(--toolbar-width) / 2);
+        --topDistance: calc(
+            env(keyboard-inset-height, 0px) + env(keyboard-inset-top, 0px) +
+                var(--safe-area-inset-top) * 2 + 10px
+        );
+
+        position: absolute;
 
         z-index: 1000;
 
@@ -474,5 +485,45 @@
 
     :global(.toolbar .container) {
         padding: 0 !important;
+    }
+
+    .bottom {
+        top: calc(100% - var(--bottomDistance));
+
+        left: 50%;
+
+        /* translate x and y */
+        transform: translate(-50%, -100%);
+    }
+
+    .top {
+        top: var(--topDistance);
+
+        left: 50%;
+
+        /* translate x and y */
+        transform: translate(-50%, 0);
+    }
+
+    .left {
+        top: 50%;
+
+        left: var(--leftDistance);
+
+        /* translate x and y */
+        transform: translate(0, -50%);
+    }
+
+    .right {
+        top: 50%;
+
+        left: calc(100% - var(--rightDistance));
+
+        /* translate x and y */
+        transform: translate(0, 50%);
+    }
+
+    .transition {
+        transition: 0.2s ease-out;
     }
 </style>

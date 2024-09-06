@@ -3,6 +3,7 @@ import { readFile, rootFolderName, writeFile } from "./filesystem";
 import { Directory } from "@capacitor/filesystem";
 import { isNativePlatform } from "./main";
 import { InitThemeListener } from "./theme";
+import { addCallbackToAllWritablesInObject, deserializeJsonObjectWithStores, serializeJsonObjectWithStores } from "./utils/serializationUtils";
 
 export let Settings = {
     keybinds: {
@@ -20,56 +21,17 @@ export let Settings = {
     }
 }
 
-let initialized = false;
-
 export async function InitSettings() {
-
-    // subscribe to all settings
-    function subscribeToSettings(obj: { [key: string]: any }) {
-        for (let key in obj) {
-            if (obj[key].subscribe) {
-                obj[key].subscribe(() => {
-                    if (!initialized) return;
-
-                    writeSettings();
-                });
-            } else {
-                subscribeToSettings(obj[key]);
-            }
-        }
-    }
 
     await readSettings();
 
-    subscribeToSettings(Settings);
-
-    initialized = true;
+    addCallbackToAllWritablesInObject(Settings, writeSettings);
 
     InitThemeListener();
 }
 
 export function writeSettings() {
-    let settingsObj = {};
-
-    // recursively write the settings object
-    function writeSettingsRecursive(obj: { [key: string]: any }, settingsObj: { [key: string]: any }) {
-        for (let key in obj) {
-            if (obj[key].update === undefined) {
-                settingsObj[key] = {};
-                writeSettingsRecursive(obj[key], settingsObj[key]);
-            } else {
-                obj[key].update((val: any) => {
-                    settingsObj[key] = { value: val, __setting: true };
-
-                    return val;
-                });
-            }
-        }
-    }
-
-    writeSettingsRecursive(Settings, settingsObj);
-
-    let settingsString = JSON.stringify(settingsObj);
+    let settingsString = serializeJsonObjectWithStores(Settings);
 
     localStorage.setItem("settings", settingsString);
 
@@ -86,7 +48,7 @@ export function writeSettings() {
         }
     }
 
-    console.log("settings written", settingsObj);
+    console.log("settings written", settingsString);
 }
 
 export async function readSettings() {
@@ -111,21 +73,6 @@ export async function readSettings() {
     }
 
     if (settingsString) {
-        let settingsObj = JSON.parse(settingsString);
-
-        // recursively read the settings object
-        function readSettingsRecursive(toWrite: { [key: string]: any }, cachedSettings: { [key: string]: any }) {
-            for (let key in cachedSettings) {
-                if (cachedSettings[key]["__setting"]) {
-                    toWrite[key] = writable(cachedSettings[key].value);
-                } else {
-                    readSettingsRecursive(toWrite[key], cachedSettings[key]);
-                }
-            }
-        }
-
-        readSettingsRecursive(Settings, settingsObj);
-
-        console.log("settings loaded", settingsObj);
+        deserializeJsonObjectWithStores(settingsString, Settings);
     }
 }

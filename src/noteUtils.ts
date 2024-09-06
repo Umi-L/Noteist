@@ -238,6 +238,22 @@ export class Note {
         }
     }
 
+    async getLastModified() {
+        try {
+            const ret = await stat({
+                path: this.HTMLPath,
+                directory: _Directory.Documents,
+            });
+
+            // convert ret.mtime to js date
+            return new Date(ret.mtime);
+        } catch (e) {
+            error("Unable to read file", e);
+
+            return null;
+        }
+    }
+
     async setHTMLContent(content: string) {
         try {
             console.debug("Writing to file", this.HTMLPath, "content", content);
