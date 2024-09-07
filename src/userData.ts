@@ -1,4 +1,4 @@
-import { writable, type Writable } from "svelte/store";
+import { get, writable, type Writable } from "svelte/store";
 import { isNativePlatform } from "./main";
 import { readFile, rootFolderName, writeFile } from "./filesystem";
 import { Directory } from "@capacitor/filesystem";

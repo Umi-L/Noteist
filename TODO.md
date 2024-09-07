@@ -17,6 +17,7 @@
 -   [ ] eraser indicator not being removed
 -   [ ] dragging behavior is odd on mobile for notes
 -   [ ] can drag notes to the same folder
+-   [ ] change pointer listener to click listener on editor to make mobile scrolling less bleh
 
 ## Core Functionality
 

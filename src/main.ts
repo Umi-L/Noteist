@@ -8,6 +8,9 @@ import { InitSettings } from './settings';
 import { InitThemeListener } from './theme';
 import { InitUserData } from './userData';
 import { startRecentNotesListener } from './listeners/recentNotesListener';
+import { InitBaseDir, ReadDirRecursive } from './noteUtils';
+import { filesystem } from './globals';
+import { rootFolderName } from './filesystem';
 
 enableDragDropTouch();
 
@@ -30,6 +33,18 @@ console.log('isNativePlatform', isNativePlatform);
 InitSettings();
 InitUserData();
 startRecentNotesListener();
+
+async function initFilesystem() {
+    // create notes directory if it doesn't exist
+    await InitBaseDir();
+
+    // read filesystem and set it to the store
+    filesystem.set((await ReadDirRecursive(rootFolderName, null))!);
+
+    console.log("initialized filesystem");
+}
+
+initFilesystem();
 
 if (isNeutralino) {
     /*

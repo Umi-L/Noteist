@@ -9,6 +9,7 @@ import {
     mkdir,
     rmdir,
     deleteFile,
+    rootFolderName,
 } from "./filesystem";
 import { isNeutralino } from "./main";
 import type { Writable } from "svelte/store";
@@ -582,7 +583,7 @@ export async function InitBaseDir() {
     if (Capacitor.isNativePlatform() || isNeutralino) {
         try {
             const ret = await mkdir({
-                path: "notes",
+                path: rootFolderName,
                 directory: _Directory.Documents,
             });
         } catch (e) {

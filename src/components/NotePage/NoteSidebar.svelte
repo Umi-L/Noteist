@@ -35,14 +35,6 @@
         sidebarOpen.update((value) => !value);
     }
 
-    onMount(async () => {
-        await InitBaseDir();
-
-        filesystem.set((await ReadDirRecursive("notes", null))!);
-
-        console.log("file system", $filesystem);
-    });
-
     async function addNewFolder() {
         let nextName = await getNextAvailableDirName(
             "New Folder",

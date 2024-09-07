@@ -1,3 +1,4 @@
+import type { Writable } from "svelte-moveable";
 import { get, writable } from "svelte/store";
 
 export function serializeJsonObjectWithStores(objectWithStores: any) {
@@ -30,7 +31,15 @@ export function deserializeJsonObjectWithStores(objectString: string, objectWith
     function readRecursive(toWrite: { [key: string]: any }, cached: { [key: string]: any }) {
         for (let key in cached) {
             if (cached[key]["__setting"]) {
-                toWrite[key] = writable(cached[key].value);
+                let oldWritable: Writable<any> = toWrite[key];
+
+                let newWritable = writable(cached[key].value);
+
+                newWritable.subscribe((value) => {
+                    oldWritable.set(value);
+                });
+
+                toWrite[key] = newWritable;
             } else {
                 readRecursive(toWrite[key], cached[key]);
             }
@@ -38,8 +47,6 @@ export function deserializeJsonObjectWithStores(objectString: string, objectWith
     }
 
     readRecursive(objectWithStores, obj);
-
-    console.log("settings loaded", obj);
 }
 
 export function addCallbackToAllWritablesInObject(obj: { [key: string]: any }, callback: () => void) {

@@ -4,18 +4,49 @@
     import { currentNote, filesystem } from "../../globals";
     import type { Note } from "../../noteUtils";
     import { onMount } from "svelte";
+    import { get } from "svelte/store";
 
     let notes: Note[] = [];
+    let recentlyOpened: string[] = [];
 
-    UserData.recentlyOpened.subscribe((value) => {
-        for (let recent of value) {
+    onMount(() => {
+        recentlyOpened = get(UserData.recentlyOpened);
+
+        if (!recentlyOpened) {
+            recentlyOpened = [];
+        }
+
+        UserData.recentlyOpened.subscribe((value) => {
+            console.log("recently opened updated", value);
+            recentlyOpened = value;
+
+            if ($filesystem) {
+                console.log("updating from user data");
+                updateNotes();
+            }
+        });
+
+        filesystem.subscribe((value) => {
+            if (value) {
+                console.log("updating from filesystem");
+                updateNotes();
+            }
+        });
+    });
+
+    function updateNotes() {
+        console.log("recently opened read as", recentlyOpened);
+
+        for (let recent of recentlyOpened) {
             let note = $filesystem?.getChildByHTMLPathRecursive(recent);
 
             if (note) {
                 notes.push(note);
             }
         }
-    });
+
+        notes = [...notes];
+    }
 
     function openNote(note: Note) {
         currentNote.set(note);

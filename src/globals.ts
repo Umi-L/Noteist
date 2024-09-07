@@ -86,7 +86,7 @@ export interface ToastData {
 
 // TODO implement this
 export let addToast: (data: ToastData) => void = (data) => {
-    throw new Error("addToast not initialized");
+    console.error("addToast not implemented", data);
 };
 
 export function setAddToast(func: (data: ToastData) => void) {
