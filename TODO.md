@@ -39,7 +39,7 @@
 -   [ ] tutorial
 -   [ ] desktop keybinds - Panth
 -   [ ] customizable notes path
--   [c] recently opened
+-   [x] recently opened
     -   [x] open recent
     -   [x] remade home screen
     -   [ ] save and load old view position
@@ -50,7 +50,14 @@
 -   [ ] make ctrl-p for print work - actually should paste lol
 -   [x] tap anywhere to create new lines - maybe allow tap later in the line adding whitespace to the end
 -   [ ] watch for file change and reload - for sync with syncthing etc
--   [ ] lasso select
+-   [x] lasso select
+    -   [ ] undo & redo
+    -   [ ] copy & paste
+    -   [ ] delete
+    -   [x] drag
+    -   [ ] scale
+    -   [ ] rotate
+    -   [ ] pinch
 -   [x] allow constant scrolling even when there is no content
 -   [x] auto open new note
 -   [x] reset scrolling when changing notes
