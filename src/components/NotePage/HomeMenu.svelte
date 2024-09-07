@@ -47,7 +47,11 @@
             }
         });
 
+        // makes sure the carousel edges are recalculated after the carousel is loaded
         calculateCarouselEdges();
+        requestAnimationFrame(() => {
+            calculateCarouselEdges();
+        });
     });
 
     function updateNotes() {

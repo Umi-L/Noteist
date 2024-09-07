@@ -20,6 +20,7 @@
     export let lowestVerticalPointWritable: Writable<number>;
     export let onDrawingChange: () => void;
     export let scrollingElement: HTMLElement;
+    export let onLoadedData: () => void;
 
     let leaveDrawingModeTimeout: number | null = null;
 
@@ -65,9 +66,13 @@
             drawArea.innerHTML = content;
 
             hasFetchedContent = true;
+
+            calculateLowestPoint();
+
+            onLoadedData();
         }
     }
-    ``;
+
     let isDrawing = false;
 
     let strokes: Array<SVGElement> = [];
@@ -206,6 +211,12 @@
             note.setSVGContent(drawArea.outerHTML);
         }
 
+        calculateLowestPoint();
+
+        onDrawingChange();
+    }
+
+    function calculateLowestPoint() {
         // foreach child find the one with the lowest bottom
         let lowestVerticalPoint = 0;
         for (let i = 0; i < drawArea.children.length; i++) {
@@ -223,8 +234,6 @@
         }
 
         lowestVerticalPointWritable.set(lowestVerticalPoint);
-
-        onDrawingChange();
     }
 
     function undo() {

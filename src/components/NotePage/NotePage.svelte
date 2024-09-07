@@ -23,6 +23,9 @@
 
     let resizeObserver: ResizeObserver;
 
+    let loadedDrawing = false;
+    let loadedText = false;
+
     // get the value of 7rem in px
     const noteBottomPadding =
         7 * parseFloat(getComputedStyle(document.documentElement).fontSize);
@@ -72,17 +75,7 @@
 
     onMount(() => {
         onEditorChange((editor: EditorType) => {
-            if (!innerNote) {
-                return;
-            }
-
-            lowestEditorPoint =
-                editor.view.dom.children[
-                    editor.view.dom.children.length - 1
-                ].getBoundingClientRect().bottom -
-                editor.view.dom.children[0].getBoundingClientRect().top;
-
-            calculateMinNoteHeight();
+            editorChanged(editor);
         });
     });
 
@@ -108,9 +101,26 @@
         calculateMinNoteHeight();
     }
 
+    function editorChanged(editor: EditorType) {
+        if (!innerNote) {
+            return;
+        }
+
+        lowestEditorPoint =
+            editor.view.dom.children[
+                editor.view.dom.children.length - 1
+            ].getBoundingClientRect().bottom -
+            editor.view.dom.children[0].getBoundingClientRect().top;
+
+        calculateMinNoteHeight();
+    }
+
     let _note: Note | null;
     currentNote.subscribe((value) => {
         _note = value;
+
+        loadedDrawing = false;
+        loadedText = false;
 
         // set note scroll to top
         if (note) {
@@ -146,12 +156,29 @@
 
     <ContextMenu />
     {#if _note}
-        <div class="note scrollbar" bind:this={note}>
+        <div
+            class="note scrollbar"
+            bind:this={note}
+            class:uninteractable={!loadedText || !loadedDrawing}
+        >
+            {#if !loadedText || !loadedDrawing}
+                <div class="loading-wrapper">
+                    <span class="loading loading-spinner loading-lg"></span>
+                    Loading...
+                </div>
+            {/if}
+
             <div
                 class="drawing-overlay-wrapper"
                 style={`height: calc(${noteHeight}px + var(--note-bottom-padding, 0px));`}
             >
                 <DrawingOverlay
+                    onLoadedData={() => {
+                        loadedDrawing = true;
+                        console.log("loaded drawing");
+
+                        calculateMinNoteHeight();
+                    }}
                     lowestVerticalPointWritable={lowestDrawingPoint}
                     onDrawingChange={drawingChanged}
                     scrollingElement={note}
@@ -188,7 +215,14 @@
                 bind:this={innerNote}
                 style={`height: calc(${noteHeight}px + var(--note-bottom-padding, 0px));`}
             >
-                <Editor />
+                <Editor
+                    onLoadedData={(editor) => {
+                        loadedText = true;
+                        console.log("loaded text");
+
+                        editorChanged(editor);
+                    }}
+                />
             </div>
         </div>
     {:else}
@@ -308,5 +342,29 @@
         justify-content: center;
         align-items: center;
         height: 100%;
+    }
+
+    .loading-wrapper {
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+
+        position: absolute;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        flex-direction: column;
+
+        background-color: rgba(0, 0, 0, 0.2);
+
+        z-index: 1000;
+    }
+
+    .uninteractable {
+        pointer-events: none !important;
+        user-select: none !important;
     }
 </style>

@@ -55,6 +55,8 @@
     import { Settings } from "../../settings";
     import { isPenEvent } from "../../utils";
 
+    export let onLoadedData: (editor: Editor) => void;
+
     let element: HTMLDivElement;
     let editor: Editor;
     let note: Note | null = null;
@@ -75,6 +77,8 @@
             editor.commands.setContent(content as string);
 
             hasFetchedContent = true;
+
+            onLoadedData(editor);
         }
 
         note = _note;
@@ -332,6 +336,8 @@
         if (note && !hasFetchedContent) {
             note.getHTMLContent().then((content) => {
                 editor.commands.setContent(content as string);
+
+                onLoadedData(editor);
             });
         }
 

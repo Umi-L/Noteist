@@ -55,6 +55,7 @@
 -   [x] auto open new note
 -   [x] reset scrolling when changing notes
     -   [ ] save scroll percentage for each note
+-   [x] note loading indicator and not allowing editing until loaded
 
 ## Features
 
@@ -70,6 +71,7 @@
 -   [ ] Infinite Canvas
 -   [ ] live collaboration - https://tiptap.dev/docs/editor/extensions/functionality/collaboration
 -   [ ] export to pdf, png, etc
+-   [ ] color coding folders (maybe notes too?)
 
 ## Release
 
