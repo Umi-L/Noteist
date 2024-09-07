@@ -35,6 +35,7 @@ export function deserializeJsonObjectWithStores(objectString: string, objectWith
 
                 let newWritable = writable(cached[key].value);
 
+                // has the effect of transferring the subscriptions to the new writable if subscribed to prior to async read
                 newWritable.subscribe((value) => {
                     oldWritable.set(value);
                 });

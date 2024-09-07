@@ -9,6 +9,20 @@
     let notes: Note[] = [];
     let recentlyOpened: string[] = [];
 
+    let recentsCarousel: HTMLDivElement;
+
+    let recentsCarouselLeft = 0;
+    let recentsCarouselRight = 0;
+
+    function calculateCarouselEdges() {
+        recentsCarouselLeft = getCarouselDistanceFromLeftEdge(recentsCarousel);
+        recentsCarouselRight =
+            getCarouselDistanceFromRightEdge(recentsCarousel);
+
+        console.log("left", recentsCarouselLeft);
+        console.log("right", recentsCarouselRight);
+    }
+
     onMount(() => {
         recentlyOpened = get(UserData.recentlyOpened);
 
@@ -32,6 +46,8 @@
                 updateNotes();
             }
         });
+
+        calculateCarouselEdges();
     });
 
     function updateNotes() {
@@ -51,6 +67,24 @@
     function openNote(note: Note) {
         currentNote.set(note);
     }
+
+    function getCarouselDistanceFromLeftEdge(carousel: HTMLDivElement) {
+        if (!carousel) {
+            return 0;
+        }
+
+        return carousel.scrollLeft;
+    }
+
+    function getCarouselDistanceFromRightEdge(carousel: HTMLDivElement) {
+        if (!carousel) {
+            return 0;
+        }
+
+        return (
+            carousel.scrollWidth - carousel.scrollLeft - carousel.clientWidth
+        );
+    }
 </script>
 
 <div class="wrapper">
@@ -63,26 +97,40 @@
             <Clock size={32} />
             <p>Recent Notes</p>
         </div>
-        <div class="carousel w-full carousel-center">
-            {#each notes as note}
-                <div
-                    class="carousel-item card recent-item"
-                    on:click={() => {
-                        openNote(note);
-                    }}
-                >
-                    <figure>
-                        <div class="card-color"></div>
-                    </figure>
-                    <div class="card-body">
-                        <div class="card-title">{note.Name}</div>
+        <div class="w-full carousel-wrapper">
+            <div
+                class="left-gradient"
+                class:gradient-hidden={recentsCarouselLeft < 10}
+            ></div>
+            <div
+                class="right-gradient"
+                class:gradient-hidden={recentsCarouselRight < 10}
+            ></div>
+            <div
+                class="carousel w-full carousel-center"
+                bind:this={recentsCarousel}
+                on:scroll={calculateCarouselEdges}
+            >
+                {#each notes as note}
+                    <div
+                        class="carousel-item card recent-item"
+                        on:click={() => {
+                            openNote(note);
+                        }}
+                    >
+                        <figure>
+                            <div class="card-color"></div>
+                        </figure>
+                        <div class="card-body">
+                            <div class="card-title">{note.Name}</div>
+                        </div>
                     </div>
-                </div>
-            {/each}
+                {/each}
 
-            {#if notes.length === 0}
-                <p>No recent notes</p>
-            {/if}
+                {#if notes.length === 0}
+                    <p>No recent notes</p>
+                {/if}
+            </div>
         </div>
     </div>
 </div>
@@ -127,6 +175,14 @@
         box-shadow: var(--shadow);
 
         background-color: var(--muted);
+
+        transition: transform 0.2s;
+    }
+
+    .recent-item:hover {
+        cursor: pointer;
+        outline: 1px solid var(--double-muted);
+        transform: scale(1.03);
     }
 
     .carousel {
@@ -149,5 +205,47 @@
     .title {
         font-size: 2rem;
         margin-bottom: 1rem;
+    }
+
+    .carousel-wrapper {
+        position: relative;
+    }
+
+    .left-gradient {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 10rem;
+        height: 100%;
+        background: linear-gradient(to right, var(--background), transparent);
+
+        z-index: 100;
+
+        opacity: 1;
+
+        transition: 0.2s;
+
+        pointer-events: none;
+    }
+
+    .right-gradient {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 10rem;
+        height: 100%;
+        background: linear-gradient(to left, var(--background), transparent);
+
+        z-index: 100;
+
+        opacity: 1;
+
+        transition: opacity 0.1s;
+
+        pointer-events: none;
+    }
+
+    .gradient-hidden {
+        opacity: 0;
     }
 </style>
