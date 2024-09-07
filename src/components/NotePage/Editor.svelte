@@ -102,7 +102,7 @@
         //     }
         // });
 
-        element.addEventListener("pointerdown", (event) => {
+        element.addEventListener("click", (event) => {
             let editorPos = editor.view.posAtCoords({
                 left: event.clientX,
                 top: event.clientY,

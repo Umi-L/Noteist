@@ -39,9 +39,9 @@
 -   [ ] tutorial
 -   [ ] desktop keybinds - Panth
 -   [ ] customizable notes path
--   [ ] recently opened
-    -   [ ] open recent
-    -   [ ] remade home screen
+-   [c] recently opened
+    -   [x] open recent
+    -   [x] remade home screen
     -   [ ] save and load old view position
 -   [x] Images
 -   [ ] Dragging blocks https://templates.tiptap.dev/fDq8DDz6Tc - tiptap pro?
