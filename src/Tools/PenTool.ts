@@ -1,8 +1,8 @@
-import {DrawingTool} from "../DrawingTool";
-import {PenPoint} from "../PenPoint";
-import type {Action} from "../Action";
-import {DrawingAction} from "../DrawingAction";
-import {getStroke} from 'perfect-freehand';
+import { DrawingTool } from "../DrawingTool";
+import { PenPoint } from "../PenPoint";
+import type { Action } from "../Action";
+import { DrawingAction } from "../DrawingAction";
+import { getStroke } from 'perfect-freehand';
 
 export class PenTool extends DrawingTool {
     currentSVGStroke: string[] = [];

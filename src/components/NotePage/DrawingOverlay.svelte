@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { PenPoint } from "../../PenPoint";
+    import Moveable from "svelte-moveable";
     import {
         currentDrawColor,
         currentNote,
@@ -191,6 +192,8 @@
     }
 
     function handlePointerUp(event: PointerEvent) {
+        movableKey++;
+
         if (!isDrawing) {
             return;
         }
@@ -260,6 +263,27 @@
             action.redo();
         }
     }
+
+    const hideChildMoveableDefaultLines = false;
+    const draggable = true;
+    const throttleDrag = 0;
+    const edgeDraggable = true;
+    const startDragRotate = 0;
+    const throttleDragRotate = 0;
+    const resizable = true;
+    const keepRatio = true;
+    const throttleResize = 1;
+    const renderDirections = ["nw", "n", "ne", "w", "e", "sw", "s", "se"];
+    const rotatable = true;
+    const throttleRotate = 0;
+    const rotationPosition = "top";
+    const minWidth = 0;
+    const minHeight = 0;
+    const maxWidth = 0;
+    const maxHeight = 0;
+    let moveableRef = null;
+
+    let movableKey = 0;
 </script>
 
 <svg
@@ -269,6 +293,59 @@
     class:drawing={isDrawing}
 >
 </svg>
+{#key movableKey}
+    <Moveable
+        bind:this={moveableRef}
+        target={".drawing-selected"}
+        {hideChildMoveableDefaultLines}
+        {draggable}
+        {throttleDrag}
+        {edgeDraggable}
+        {startDragRotate}
+        {throttleDragRotate}
+        {resizable}
+        {keepRatio}
+        {throttleResize}
+        {renderDirections}
+        {rotatable}
+        {throttleRotate}
+        {rotationPosition}
+        dragArea={true}
+        pinchable={true}
+        on:dragGroup={({ detail: { events } }) => {
+            events.forEach((ev) => {
+                ev.target.style.transform = ev.transform;
+            });
+        }}
+        on:dragGroupEnd={({ detail: { events } }) => {
+            movableKey++;
+        }}
+        on:resizeGroupStart={({ detail: { setMin, setMax } }) => {
+            setMin([minWidth, minHeight]);
+            setMax([maxWidth, maxHeight]);
+        }}
+        on:resizeGroup={({ detail: { events } }) => {
+            events.forEach((ev) => {
+                ev.target.style.width = `${ev.width}px`;
+                ev.target.style.height = `${ev.height}px`;
+                ev.target.style.transform = ev.drag.transform;
+            });
+        }}
+        on:rotateGroup={({ detail: { events } }) => {
+            events.forEach((ev) => {
+                ev.target.style.transform = ev.drag.transform;
+            });
+
+            movableKey++;
+        }}
+        on:drag={({ detail: e }) => {
+            e.target.style.transform = e.transform;
+        }}
+        on:dragEnd={({ detail: e }) => {
+            movableKey++;
+        }}
+    />
+{/key}
 
 <style>
     .drawing-area {
@@ -285,6 +362,15 @@
         top: 0;
 
         pointer-events: none;
+    }
+
+    :global(.moveable-control-box) {
+        pointer-events: all;
+    }
+
+    :global(.drawing-selected) {
+        pointer-events: bounding-box;
+        background-color: transparent;
     }
 
     .drawing-area.enabled {

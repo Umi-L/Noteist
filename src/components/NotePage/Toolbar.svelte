@@ -11,6 +11,7 @@
         Pen,
         Pencil,
         ScribbleLoop,
+        Selection,
         TextB,
         TextItalic,
         TextStrikethrough,
@@ -41,6 +42,7 @@
     import SetterToggle from "./SetterToggle.svelte";
     import { EraserTool } from "../../Tools/EraserTool";
     import { PenTool } from "../../Tools/PenTool";
+    import { SelectTool } from "../../Tools/SelectTool";
 
     export let maxWidth: number;
     export let maxHeight: number;
@@ -376,6 +378,15 @@
         >
             <div class:negative-vertical={vertical}>
                 <Eraser {size} />
+            </div>
+        </SetterToggle>
+        <SetterToggle
+            store={drawingTool}
+            value={new SelectTool()}
+            typeOnlyCheck={true}
+        >
+            <div class:negative-vertical={vertical}>
+                <Selection {size} />
             </div>
         </SetterToggle>
     {/if}
