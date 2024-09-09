@@ -47,8 +47,8 @@
 -   [ ] Dragging blocks https://templates.tiptap.dev/fDq8DDz6Tc - tiptap pro?
 -   [ ] links
 -   [x] toasts https://daisyui.com/components/toast/
--   [ ] make ctrl-p for print work - actually should paste lol
 -   [x] tap anywhere to create new lines - maybe allow tap later in the line adding whitespace to the end
+    -   [ ] remove trailing whitespace when tapping on a line?
 -   [ ] watch for file change and reload - for sync with syncthing etc
 -   [x] lasso select
     -   [ ] undo & redo
@@ -63,15 +63,17 @@
 -   [x] reset scrolling when changing notes
     -   [ ] save scroll percentage for each note
 -   [x] note loading indicator and not allowing editing until loaded
+-   [ ] Zoom
+-   [ ] better toolbar when mobile keyboard is open
 
 ## Features
 
 -   [ ] non native topbar for desktop
 -   [ ] Trello like todo?
 -   [ ] note references
--   [ ] Zoom
 -   [ ] Images in draw mode - <image> tag
 -   [ ] PDF import
+    -   [ ] document scanning
 -   [ ] Builtin platform sync - ideal way to make money if released?
 -   [ ] tabs
 -   [ ] State transition
@@ -79,6 +81,10 @@
 -   [ ] live collaboration - https://tiptap.dev/docs/editor/extensions/functionality/collaboration
 -   [ ] export to pdf, png, etc
 -   [ ] color coding folders (maybe notes too?)
+-   [ ] audio recording
+-   [ ] digital ruler
+-   [ ] LaTeX support?
+-   [ ] shape snapping when drawing
 
 ## Release
 

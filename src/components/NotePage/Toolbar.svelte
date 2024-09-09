@@ -52,9 +52,11 @@
 
     let handle: HTMLDivElement;
     let toolbar: HTMLDivElement;
+    let colorPickerWrapper: HTMLDivElement;
 
     let isDragging = false;
     let isVertical = writable(false);
+    let colorPickerShown = false;
 
     let toolbarSide: AnchorSide | null = AnchorSide.Bottom;
 
@@ -204,6 +206,15 @@
         handle.addEventListener("mousedown", start);
         window.addEventListener("mousemove", move);
         window.addEventListener("mouseup", end);
+
+        window.addEventListener("pointerdown", (event) => {
+            if (toolbar && !colorPickerWrapper.contains(event.target as Node)) {
+                colorPickerShown = false;
+
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
     }
 
     onMount(() => {
@@ -299,6 +310,21 @@
     });
 </script>
 
+<div
+    class="color-picker-wrapper"
+    class:hidden={!colorPickerShown}
+    bind:this={colorPickerWrapper}
+>
+    <ColorPicker
+        label=""
+        isDialog={false}
+        bind:hex={drawColor}
+        on:input={(event) => {
+            if (event.detail.color)
+                currentDrawColor.set(event.detail.color.toHex());
+        }}
+    />
+</div>
 <div
     class="toolbar"
     bind:this={toolbar}
@@ -438,15 +464,18 @@
         </div>
     </ToolbarButton>
 
-    <ColorPicker
-        components={{ wrapper: ColorPickerWrapper }}
-        label=""
-        bind:hex={drawColor}
-        on:input={(event) => {
-            if (event.detail.color)
-                currentDrawColor.set(event.detail.color.toHex());
+    <ToolbarButton
+        pressedCallback={() => {
+            colorPickerShown = !colorPickerShown;
         }}
-    />
+        buttonType="btn btn-sm btn-square"
+        noBaseClasses={true}
+    >
+        <div
+            class="circle"
+            style={`background-color: ${$currentDrawColor};`}
+        ></div></ToolbarButton
+    >
 </div>
 
 <style>
@@ -542,5 +571,41 @@
 
     .transition {
         transition: 0.2s ease-out;
+    }
+
+    .color-picker-wrapper {
+        position: absolute;
+        z-index: 1000;
+
+        width: 100%;
+        height: 100%;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        --cp-bg-color: var(--muted);
+        --cp-border-color: var(--border);
+        --cp-text-color: var(--foreground);
+        --cp-input-color: var(--double-muted);
+        --cp-button-hover-color: var(--muted-foreground);
+    }
+
+    .color-picker-wrapper * {
+        pointer-events: all !important;
+    }
+
+    :global(.color-picker) {
+        pointer-events: all;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .circle {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
     }
 </style>

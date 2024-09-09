@@ -20,11 +20,14 @@
     let lowestEditorPoint: number;
     let lowestDrawingPoint: Writable<number> = writable(0);
     let toolbarWrapper: HTMLDivElement;
+    let noteScrollbarWrapper: HTMLDivElement;
 
     let resizeObserver: ResizeObserver;
 
     let loadedDrawing = false;
     let loadedText = false;
+
+    let zoom = 1;
 
     // get the value of 7rem in px
     const noteBottomPadding =
@@ -66,6 +69,93 @@
                 noteHeight = minNoteHeight;
             }
         });
+
+        noteScrollbarWrapper.addEventListener(
+            "wheel",
+            (event) => {
+                if (event.ctrlKey) {
+                    let zoomOrigin =
+                        event.clientX - note.getBoundingClientRect().left;
+
+                    // if deltay is approximately 0, return
+                    if (Math.abs(event.deltaY) < 0.1) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    zoom += event.deltaY * -0.01;
+
+                    if (zoom < 1) {
+                        zoom = 1;
+                    }
+
+                    if (zoom > 3) {
+                        zoom = 3;
+                    }
+
+                    // calculate the new scroll position
+                    let newScrollPosition =
+                        (note.scrollLeft + zoomOrigin) * zoom - zoomOrigin;
+
+                    // set the new scroll position
+                    noteScrollbarWrapper.scrollLeft = newScrollPosition;
+                }
+            },
+            { passive: false }
+        );
+
+        let startDistance = 0;
+        // on mobile pinch zoom
+        noteScrollbarWrapper.addEventListener(
+            "touchstart",
+            (event) => {
+                if (event.touches.length < 2) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                const touch1 = event.touches[0];
+                const touch2 = event.touches[1];
+
+                startDistance = Math.hypot(
+                    touch1.clientX - touch2.clientX,
+                    touch1.clientY - touch2.clientY
+                );
+            },
+            { passive: false }
+        );
+
+        noteScrollbarWrapper.addEventListener(
+            "touchmove",
+            (event) => {
+                if (event.touches.length < 2) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                const touch1 = event.touches[0];
+                const touch2 = event.touches[1];
+
+                const distance = Math.hypot(
+                    touch1.clientX - touch2.clientX,
+                    touch1.clientY - touch2.clientY
+                );
+
+                zoom += (distance - startDistance) * 0.005;
+
+                if (zoom < 1) {
+                    zoom = 1;
+                }
+
+                if (zoom > 3) {
+                    zoom = 3;
+                }
+            },
+            { passive: false }
+        );
     }
 
     // reactive block that will only run if innerNote is defined
@@ -156,10 +246,35 @@
 
     <ContextMenu />
     {#if _note}
+        <div class="toolbar-wrapper">
+            <div
+                class="toolbar-subwrapper"
+                style={`width: ${noteWidth}px;`}
+                bind:this={toolbarWrapper}
+            >
+                <Toolbar
+                    maxWidth={noteWidth}
+                    maxHeight={noteHeight}
+                    {toolbarWrapper}
+                />
+            </div>
+
+            <button
+                class="btn btn-square btn-ghost top-left btn-sm overlay"
+                class:btn-hidden={$sidebarOpen}
+                class:btn-shown={!$sidebarOpen}
+                on:click={() => {
+                    sidebarOpen.update((value) => !value);
+                }}
+            >
+                <List size={16} />
+            </button>
+        </div>
+
         <div
-            class="note scrollbar"
-            bind:this={note}
+            class="scrollbar"
             class:uninteractable={!loadedText || !loadedDrawing}
+            bind:this={noteScrollbarWrapper}
         >
             {#if !loadedText || !loadedDrawing}
                 <div class="loading-wrapper">
@@ -169,60 +284,41 @@
             {/if}
 
             <div
-                class="drawing-overlay-wrapper"
-                style={`height: calc(${noteHeight}px + var(--note-bottom-padding, 0px));`}
+                class="note"
+                bind:this={note}
+                style={`transform: scale(${zoom});`}
             >
-                <DrawingOverlay
-                    onLoadedData={() => {
-                        loadedDrawing = true;
-                        console.log("loaded drawing");
-
-                        calculateMinNoteHeight();
-                    }}
-                    lowestVerticalPointWritable={lowestDrawingPoint}
-                    onDrawingChange={drawingChanged}
-                    scrollingElement={note}
-                />
-            </div>
-
-            <div class="toolbar-wrapper">
                 <div
-                    class="toolbar-subwrapper"
-                    style={`width: ${noteWidth}px;`}
-                    bind:this={toolbarWrapper}
+                    class="drawing-overlay-wrapper"
+                    style={`height: calc(${noteHeight}px + var(--note-bottom-padding, 0px));`}
                 >
-                    <Toolbar
-                        maxWidth={noteWidth}
-                        maxHeight={noteHeight}
-                        {toolbarWrapper}
+                    <DrawingOverlay
+                        onLoadedData={() => {
+                            loadedDrawing = true;
+                            console.log("loaded drawing");
+
+                            calculateMinNoteHeight();
+                        }}
+                        lowestVerticalPointWritable={lowestDrawingPoint}
+                        onDrawingChange={drawingChanged}
+                        scrollingElement={note}
                     />
                 </div>
 
-                <button
-                    class="btn btn-square btn-ghost top-left btn-sm overlay"
-                    class:btn-hidden={$sidebarOpen}
-                    class:btn-shown={!$sidebarOpen}
-                    on:click={() => {
-                        sidebarOpen.update((value) => !value);
-                    }}
+                <div
+                    class="inner-note"
+                    bind:this={innerNote}
+                    style={`height: calc(${noteHeight}px + var(--note-bottom-padding, 0px));`}
                 >
-                    <List size={16} />
-                </button>
-            </div>
+                    <Editor
+                        onLoadedData={(editor) => {
+                            loadedText = true;
+                            console.log("loaded text");
 
-            <div
-                class="inner-note"
-                bind:this={innerNote}
-                style={`height: calc(${noteHeight}px + var(--note-bottom-padding, 0px));`}
-            >
-                <Editor
-                    onLoadedData={(editor) => {
-                        loadedText = true;
-                        console.log("loaded text");
-
-                        editorChanged(editor);
-                    }}
-                />
+                            editorChanged(editor);
+                        }}
+                    />
+                </div>
             </div>
         </div>
     {:else}
@@ -258,12 +354,13 @@
         width: 100%;
         height: 100%;
 
-        overflow-y: auto;
+        overflow: auto;
 
         position: relative;
 
         /*pointer-events: none;*/
         user-select: none;
+        transform-origin: 0% 0%;
     }
 
     .inner-note {
@@ -366,5 +463,15 @@
     .uninteractable {
         pointer-events: none !important;
         user-select: none !important;
+    }
+
+    .scrollbar {
+        height: 100%;
+        width: 100%;
+
+        overflow-x: auto;
+        overflow-y: hidden;
+
+        position: relative;
     }
 </style>

@@ -17,6 +17,7 @@
     import { Settings } from "../../settings";
     import { isPenEvent } from "../../utils";
     import type { Writable } from "svelte/store";
+    import { draw } from "svelte/transition";
 
     export let lowestVerticalPointWritable: Writable<number>;
     export let onDrawingChange: () => void;
@@ -83,6 +84,15 @@
     let tool: DrawingTool = new PenTool();
     drawingTool.subscribe((value) => {
         tool = value;
+
+        if (!drawArea) return;
+
+        // when tool changes, remove selections
+        drawArea.querySelectorAll(".drawing-selected").forEach((element) => {
+            element.classList.remove("drawing-selected");
+        });
+
+        moveableKey++;
     });
 
     let enabled = false;
@@ -192,7 +202,7 @@
     }
 
     function handlePointerUp(event: PointerEvent) {
-        movableKey++;
+        moveableKey++;
 
         if (!isDrawing) {
             return;
@@ -271,8 +281,8 @@
     const startDragRotate = 0;
     const throttleDragRotate = 0;
     const resizable = true;
-    const keepRatio = true;
-    const throttleResize = 1;
+    const keepRatio = false;
+    const throttleResize = 0;
     const renderDirections = ["nw", "n", "ne", "w", "e", "sw", "s", "se"];
     const rotatable = true;
     const throttleRotate = 0;
@@ -283,7 +293,7 @@
     const maxHeight = 0;
     let moveableRef = null;
 
-    let movableKey = 0;
+    let moveableKey = 0;
 </script>
 
 <svg
@@ -293,7 +303,7 @@
     class:drawing={isDrawing}
 >
 </svg>
-{#key movableKey}
+{#key moveableKey}
     <Moveable
         bind:this={moveableRef}
         target={".drawing-selected"}
@@ -318,7 +328,7 @@
             });
         }}
         on:dragGroupEnd={({ detail: { events } }) => {
-            movableKey++;
+            moveableKey++;
         }}
         on:resizeGroupStart={({ detail: { setMin, setMax } }) => {
             setMin([minWidth, minHeight]);
@@ -336,13 +346,27 @@
                 ev.target.style.transform = ev.drag.transform;
             });
 
-            movableKey++;
+            moveableKey++;
         }}
         on:drag={({ detail: e }) => {
             e.target.style.transform = e.transform;
         }}
         on:dragEnd={({ detail: e }) => {
-            movableKey++;
+            moveableKey++;
+        }}
+        on:resize={({ detail: e }) => {
+            e.target.style.width = `${e.width}px`;
+            e.target.style.height = `${e.height}px`;
+            e.target.style.transform = e.drag.transform;
+        }}
+        on:resizeEnd={({ detail: e }) => {
+            moveableKey++;
+        }}
+        on:rotate={({ detail: e }) => {
+            e.target.style.transform = e.transform;
+        }}
+        on:rotateEnd={({ detail: e }) => {
+            moveableKey++;
         }}
     />
 {/key}
