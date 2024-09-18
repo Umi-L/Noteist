@@ -6,6 +6,7 @@
         type OnDragGroupEnd,
         type OnDragGroupStart,
         type OnDragStart,
+        type OnScale,
     } from "svelte-moveable";
 
     export let usingMoveable: boolean;
@@ -17,11 +18,12 @@
     const edgeDraggable = true;
     const startDragRotate = 0;
     const throttleDragRotate = 0;
-    const resizable = true;
+    const resizable = false;
+    const scalable = true;
     const keepRatio = false;
     const throttleResize = 0;
     const renderDirections = ["nw", "n", "ne", "w", "e", "sw", "s", "se"];
-    const rotatable = true;
+    const rotatable = false;
     const throttleRotate = 0;
     const rotationPosition = "top";
     const minWidth = 0;
@@ -30,12 +32,11 @@
     const maxHeight = 0;
     let moveableRef = null;
 
+    // --- Dragging ---
     function dragStart(e: OnDragStart) {
         usingMoveable = true;
 
         // e.set([0, 0]);
-        e.target.setAttribute("transform-origin", "center");
-
         // let beforeTranslate = e.target.getAttribute("beforeTranslate");
         // if (beforeTranslate) {
         //     let beforeTranslateValues = beforeTranslate.split(",");
@@ -49,22 +50,23 @@
 
     function drag(e: OnDrag) {
         console.log("drag", e);
-
         // set the origin to the center of the element
         if (e.target instanceof SVGElement) {
-            let coordinates = getSVGTransformCoordinates(e.target);
+            let transform = getSVGTransform(e.target);
 
-            e.target.setAttribute(
-                "transform",
-                `translate(${coordinates[0] + e.delta[0]}, ${coordinates[1] + e.delta[1]})`,
-            );
+            transform.translate.x += e.delta[0];
+            transform.translate.y += e.delta[1];
+
+            setSVGTransformCoordinates(e.target, transform);
+
+            // e.target.setAttribute("transform", stripUnits(e.transform));
         } else {
             console.error("drag target is not an SVGElement", e.target);
         }
     }
 
     function dragEnd(e: OnDragEnd) {
-        console.log("drag end", e);
+        // console.log("drag end", e);
     }
 
     function dragGroupStart(e: OnDragStart[]) {
@@ -85,17 +87,94 @@
         }
     }
 
-    function getSVGTransformCoordinates(svgElement: SVGElement) {
+    // --- Scale ---
+    function scaleStart(e: OnDragStart) {
+        console.log("scale start", e);
+    }
+
+    function scale(e: OnScale) {
+        console.log("scale", e);
+
+        if (e.target instanceof SVGElement) {
+            let transform = getSVGTransform(e.target);
+
+            transform.scale.x *= e.delta[0];
+            transform.scale.y *= e.delta[1];
+
+            setSVGTransformCoordinates(e.target, transform);
+        }
+    }
+
+    function scaleEnd(e: OnDragEnd) {
+        console.log("scale end", e);
+    }
+
+    function scaleGroupStart(e: OnDragStart[]) {
+        for (const event of e) {
+            scaleStart(event);
+        }
+    }
+
+    function scaleGroup(e: OnScale[]) {
+        for (const event of e) {
+            scale(event);
+        }
+    }
+
+    function scaleGroupEnd(e: OnDragEnd[]) {
+        for (const event of e) {
+            scaleEnd(event);
+        }
+    }
+
+    // --- Helpers ---
+    function getSVGTransform(svgElement: SVGElement) {
         const transform = svgElement.getAttribute("transform");
+
+        let final = {
+            translate: { x: 0, y: 0 },
+            scale: {
+                x: 1,
+                y: 1,
+            },
+        };
+
         if (transform) {
             // get translate(x, y)
-            const regex = /translate\(([-]?[\d.]+), ([-]?[\d.]+)\)/;
-            const match = transform.match(regex);
+            let regex = /translate\(([-]?[\d.]+), ([-]?[\d.]+)\)/;
+            let match = transform.match(regex);
             if (match) {
-                return [parseFloat(match[1]), parseFloat(match[2])];
+                final.translate.x = parseFloat(match[1]);
+                final.translate.y = parseFloat(match[2]);
+            }
+
+            // get scale(x, y)
+            regex = /scale\(([-]?[\d.]+), ([-]?[\d.]+)\)/;
+            match = transform.match(regex);
+            if (match) {
+                final.scale.x = parseFloat(match[1]);
+                final.scale.y = parseFloat(match[2]);
             }
         }
-        return [0, 0];
+        return final;
+    }
+
+    function setSVGTransformCoordinates(
+        svgElement: SVGElement,
+        transform: {
+            translate: { x: number; y: number };
+            scale: { x: number; y: number };
+        },
+    ) {
+        svgElement.setAttribute(
+            "transform",
+            `translate(${transform.translate.x}, ${transform.translate.y}) scale(${transform.scale.x}, ${transform.scale.y})`,
+        );
+    }
+
+    function stripUnits(value: string) {
+        // replave px with ""
+        return value.replaceAll("px", "");
     }
 </script>
 
@@ -110,6 +189,7 @@
         {startDragRotate}
         {throttleDragRotate}
         {resizable}
+        {scalable}
         {keepRatio}
         {throttleResize}
         {renderDirections}
@@ -117,7 +197,6 @@
         {throttleRotate}
         {rotationPosition}
         dragArea={true}
-        pinchable={true}
         on:dragGroupStart={({ detail: { events } }) => {
             dragGroupStart(events);
         }}
@@ -135,6 +214,24 @@
         }}
         on:dragEnd={({ detail: e }) => {
             dragEnd(e);
+        }}
+        on:scaleGroupStart={({ detail: { events } }) => {
+            scaleGroupStart(events);
+        }}
+        on:scaleGroup={({ detail: { events } }) => {
+            scaleGroup(events);
+        }}
+        on:scaleGroupEnd={({ detail: { events } }) => {
+            scaleGroupEnd(events);
+        }}
+        on:scaleStart={({ detail: e }) => {
+            scaleStart(e);
+        }}
+        on:scale={({ detail: e }) => {
+            scale(e);
+        }}
+        on:scaleEnd={({ detail: e }) => {
+            scaleEnd(e);
         }}
     />
 {/key}

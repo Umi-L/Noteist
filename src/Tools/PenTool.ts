@@ -17,6 +17,12 @@ export class PenTool extends DrawingTool {
         this.drawArea = drawArea;
 
         this.gParent = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+        // set the transform origin to the center of the element for moveable
+        this.gParent.setAttribute('transform-origin', 'center');
+        this.gParent.style.transformBox = 'fill-box';
+
+
         this.currentSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         this.currentSVGElement.setAttribute('fill', color);
 
