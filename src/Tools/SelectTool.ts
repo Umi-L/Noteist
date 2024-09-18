@@ -65,21 +65,40 @@ export class SelectTool extends DrawingTool {
         const checkingBounds = this.currentSVGElement?.getBoundingClientRect();
 
         // find intersecting elements
-        this.drawArea?.querySelectorAll("path").forEach((comparePath) => {
-            if (comparePath === this.currentSVGElement) return;
+        this.drawArea?.querySelectorAll("g").forEach((compareG) => {
+            if (compareG === this.currentSVGElement) return;
 
-            let compareRect = comparePath.getBoundingClientRect();
+            let compareRect = compareG.getBoundingClientRect();
 
             // check for bounding box intersection
             if (this.bboxIntersect(checkingBounds!, compareRect)) {
 
-                let points = this.samplePathPoints(comparePath);
+                let gTransform = compareG.getAttribute("transform")
 
-                // check for path intersection
-                for (let i = 0; i < points.length; i++) {
-                    if (this.currentSVGElement!.isPointInFill(points[i])) {
-                        comparePath.classList.add("drawing-selected");
+                let gOffsetX = 0;
+                let gOffsetY = 0;
+
+                if (gTransform) {
+                    let gTransformValues = gTransform.split("(")[1].split(")")[0].split(",");
+                    gOffsetX = parseFloat(gTransformValues[0]);
+                    gOffsetY = parseFloat(gTransformValues[1]);
+                }
+
+                let gChild = compareG.children[0] as SVGElement;
+
+                // if the child is a path, then we can sample the points
+                if (gChild instanceof SVGGeometryElement) {
+
+                    let points = this.samplePathPoints(gChild, gOffsetX, gOffsetY);
+
+                    // check for path intersection
+                    for (let i = 0; i < points.length; i++) {
+                        if (this.currentSVGElement!.isPointInFill(points[i])) {
+                            compareG.classList.add("drawing-selected");
+                        }
                     }
+                } else {
+                    compareG.classList.add("drawing-selected");
                 }
             }
         });
@@ -111,11 +130,11 @@ export class SelectTool extends DrawingTool {
             a.y + a.height > b.y);
     }
 
-    samplePathPoints(path: SVGGeometryElement) {
+    samplePathPoints(path: SVGGeometryElement, gOffsetX: number, gOffsetY: number) {
         const pathLength = path.getTotalLength()
         const points = []
         for (let i = 0; i < pathLength; i += 10)
-            points.push(path.getPointAtLength(i))
+            points.push(path.getPointAtLength(i).matrixTransform(new DOMMatrix().translate(gOffsetX, gOffsetY)))
         return points
     }
 }

@@ -18,6 +18,8 @@
     import { isPenEvent } from "../../utils";
     import type { Writable } from "svelte/store";
     import { draw } from "svelte/transition";
+    import { Target } from "phosphor-svelte";
+    import DrawingSelector from "./DrawingSelector.svelte";
 
     export let lowestVerticalPointWritable: Writable<number>;
     export let onDrawingChange: () => void;
@@ -76,6 +78,8 @@
     }
 
     let isDrawing = false;
+    let usingMoveable = false;
+    let moveableKey = 0;
 
     let strokes: Array<SVGElement> = [];
     let undoStack: Array<Action> = [];
@@ -169,7 +173,7 @@
             event,
             color,
             undoStack,
-            redoStack
+            redoStack,
         );
 
         console.log("drawing started");
@@ -202,7 +206,9 @@
     }
 
     function handlePointerUp(event: PointerEvent) {
-        moveableKey++;
+        if (!usingMoveable) {
+            moveableKey++;
+        }
 
         if (!isDrawing) {
             return;
@@ -273,27 +279,6 @@
             action.redo();
         }
     }
-
-    const hideChildMoveableDefaultLines = false;
-    const draggable = true;
-    const throttleDrag = 0;
-    const edgeDraggable = true;
-    const startDragRotate = 0;
-    const throttleDragRotate = 0;
-    const resizable = true;
-    const keepRatio = false;
-    const throttleResize = 0;
-    const renderDirections = ["nw", "n", "ne", "w", "e", "sw", "s", "se"];
-    const rotatable = true;
-    const throttleRotate = 0;
-    const rotationPosition = "top";
-    const minWidth = 0;
-    const minHeight = 0;
-    const maxWidth = 0;
-    const maxHeight = 0;
-    let moveableRef = null;
-
-    let moveableKey = 0;
 </script>
 
 <svg
@@ -303,73 +288,7 @@
     class:drawing={isDrawing}
 >
 </svg>
-{#key moveableKey}
-    <Moveable
-        bind:this={moveableRef}
-        target={".drawing-selected"}
-        {hideChildMoveableDefaultLines}
-        {draggable}
-        {throttleDrag}
-        {edgeDraggable}
-        {startDragRotate}
-        {throttleDragRotate}
-        {resizable}
-        {keepRatio}
-        {throttleResize}
-        {renderDirections}
-        {rotatable}
-        {throttleRotate}
-        {rotationPosition}
-        dragArea={true}
-        pinchable={true}
-        on:dragGroup={({ detail: { events } }) => {
-            events.forEach((ev) => {
-                ev.target.style.transform = ev.transform;
-            });
-        }}
-        on:dragGroupEnd={({ detail: { events } }) => {
-            moveableKey++;
-        }}
-        on:resizeGroupStart={({ detail: { setMin, setMax } }) => {
-            setMin([minWidth, minHeight]);
-            setMax([maxWidth, maxHeight]);
-        }}
-        on:resizeGroup={({ detail: { events } }) => {
-            events.forEach((ev) => {
-                ev.target.style.width = `${ev.width}px`;
-                ev.target.style.height = `${ev.height}px`;
-                ev.target.style.transform = ev.drag.transform;
-            });
-        }}
-        on:rotateGroup={({ detail: { events } }) => {
-            events.forEach((ev) => {
-                ev.target.style.transform = ev.drag.transform;
-            });
-
-            moveableKey++;
-        }}
-        on:drag={({ detail: e }) => {
-            e.target.style.transform = e.transform;
-        }}
-        on:dragEnd={({ detail: e }) => {
-            moveableKey++;
-        }}
-        on:resize={({ detail: e }) => {
-            e.target.style.width = `${e.width}px`;
-            e.target.style.height = `${e.height}px`;
-            e.target.style.transform = e.drag.transform;
-        }}
-        on:resizeEnd={({ detail: e }) => {
-            moveableKey++;
-        }}
-        on:rotate={({ detail: e }) => {
-            e.target.style.transform = e.transform;
-        }}
-        on:rotateEnd={({ detail: e }) => {
-            moveableKey++;
-        }}
-    />
-{/key}
+<DrawingSelector {usingMoveable} {moveableKey} />
 
 <style>
     .drawing-area {

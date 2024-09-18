@@ -1,8 +1,8 @@
-import {DrawingTool} from "../DrawingTool";
-import {PenPoint} from "../PenPoint";
-import type {Action} from "../Action";
-import {DrawingAction} from "../DrawingAction";
-import type {Point} from "../Point";
+import { DrawingTool } from "../DrawingTool";
+import { PenPoint } from "../PenPoint";
+import type { Action } from "../Action";
+import { DrawingAction } from "../DrawingAction";
+import type { Point } from "../Point";
 
 export class EraserTool extends DrawingTool {
     strokes: Array<SVGElement> = [];
@@ -40,17 +40,30 @@ export class EraserTool extends DrawingTool {
         this.indicator!.setAttribute('cx', `${currentPoint.x}`);
         this.indicator!.setAttribute('cy', `${currentPoint.y}`);
 
-        for (let stroke of this.drawArea!.children) {
+        for (let gParent of this.drawArea!.querySelectorAll('g')) {
+
+            let stroke = gParent.children[0] as SVGPathElement;
 
             // if svg stroke is not a path, continue
             if (!(stroke instanceof SVGPathElement))
                 continue;
 
-            let boundingBox = stroke.getBoundingClientRect();
+            let gTransform = gParent.getAttribute("transform")
+
+            let gOffsetX = 0;
+            let gOffsetY = 0;
+
+            if (gTransform) {
+                let gTransformValues = gTransform.split("(")[1].split(")")[0].split(",");
+                gOffsetX = parseFloat(gTransformValues[0]);
+                gOffsetY = parseFloat(gTransformValues[1]);
+            }
+
+            let boundingBox = gParent.getBoundingClientRect();
             if (event.clientX >= boundingBox.left && event.clientX <= boundingBox.right && event.clientY >= boundingBox.top && event.clientY <= boundingBox.bottom) {
-                if (this.closestPointWithinDistance(stroke, currentPoint, currentPoint.pressure * this.radius)) {
-                    undoStack.push(new DrawingAction(stroke, this.drawArea!, true))
-                    stroke.remove();
+                if (this.closestPointWithinDistance(stroke, currentPoint, currentPoint.pressure * this.radius, gOffsetX, gOffsetY)) {
+                    undoStack.push(new DrawingAction(gParent, this.drawArea!, true))
+                    gParent.remove();
                 }
             }
         }
@@ -66,7 +79,7 @@ export class EraserTool extends DrawingTool {
         }
     }
 
-    closestPointWithinDistance(pathNode: SVGPathElement, point: PenPoint, checkDistance: number) {
+    closestPointWithinDistance(pathNode: SVGPathElement, point: PenPoint, checkDistance: number, offsetX: number, offsetY: number) {
         let pathLength = pathNode.getTotalLength(),
             bestLength: number = 0,
             bestDistance = Infinity;
@@ -113,8 +126,8 @@ export class EraserTool extends DrawingTool {
         return false;
 
         function distance2(p: DOMPoint) {
-            let dx = p.x - point.x,
-                dy = p.y - point.y;
+            let dx = (p.x + offsetX) - point.x,
+                dy = (p.y + offsetY) - point.y;
             return dx * dx + dy * dy;
         }
     }

@@ -35,7 +35,6 @@
     import { onMount, setContext } from "svelte";
     import type { Editor } from "@tiptap/core";
     import ColorPicker from "svelte-awesome-color-picker";
-    import ColorPickerWrapper from "../NotePage/ColorPickerWrapper.svelte";
     import { type Writable, writable } from "svelte/store";
     import { AnchorSide } from "../../AnchorSide";
     import ToolbarButton from "./ToolbarButton.svelte";
@@ -210,9 +209,6 @@
         window.addEventListener("pointerdown", (event) => {
             if (toolbar && !colorPickerWrapper.contains(event.target as Node)) {
                 colorPickerShown = false;
-
-                event.preventDefault();
-                event.stopPropagation();
             }
         });
     }

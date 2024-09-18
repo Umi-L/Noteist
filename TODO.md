@@ -18,7 +18,6 @@
 -   [ ] dragging behavior is odd on mobile for notes
 -   [ ] can drag notes to the same folder
 -   [x] change pointer listener to click listener on editor to make mobile scrolling less bleh
-
 ## Core Functionality
 
 -   [x] save settings

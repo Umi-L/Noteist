@@ -9,18 +9,22 @@ export class PenTool extends DrawingTool {
     points: PenPoint[] = [];
     currentSVGElement: SVGElement | null = null;
     drawArea: SVGElement | null = null;
+    gParent: SVGGElement | null = null;
 
     startDrawing(strokes: Array<SVGElement>, drawArea: SVGElement, event: PointerEvent, color: string, undoStack: Array<Action>, redoStack: Array<Action>) {
         this.points = [];
         this.currentSVGElement = null;
         this.drawArea = drawArea;
 
+        this.gParent = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         this.currentSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         this.currentSVGElement.setAttribute('fill', color);
 
-        drawArea.appendChild(this.currentSVGElement);
-        strokes.push(this.currentSVGElement);
-        undoStack.push(new DrawingAction(this.currentSVGElement, this.drawArea, false));
+        this.gParent.appendChild(this.currentSVGElement);
+
+        drawArea.appendChild(this.gParent);
+        strokes.push(this.gParent);
+        undoStack.push(new DrawingAction(this.gParent, this.drawArea, false));
 
         let currentPoint = new PenPoint(event, drawArea, event.pressure);
         this.points.push(currentPoint);
@@ -52,7 +56,6 @@ export class PenTool extends DrawingTool {
         }));
 
         this.currentSVGElement!.setAttribute('d', stroke);
-
     }
 
     getSvgPathFromStroke(points: number[][]): string {
