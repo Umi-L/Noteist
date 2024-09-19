@@ -59,9 +59,11 @@ export class EraserTool extends DrawingTool {
                 gOffsetY = parseFloat(gTransformValues[1]);
             }
 
+
+            let pointMatrix = this.getSVGTransformMatrix(gParent)
             let boundingBox = gParent.getBoundingClientRect();
             if (event.clientX >= boundingBox.left && event.clientX <= boundingBox.right && event.clientY >= boundingBox.top && event.clientY <= boundingBox.bottom) {
-                if (this.closestPointWithinDistance(stroke, currentPoint, currentPoint.pressure * this.radius, gOffsetX, gOffsetY)) {
+                if (this.closestPointWithinDistance(stroke, currentPoint, currentPoint.pressure * this.radius, pointMatrix)) {
                     undoStack.push(new DrawingAction(gParent, this.drawArea!, true))
                     gParent.remove();
                 }
@@ -79,7 +81,7 @@ export class EraserTool extends DrawingTool {
         }
     }
 
-    closestPointWithinDistance(pathNode: SVGPathElement, point: PenPoint, checkDistance: number, offsetX: number, offsetY: number) {
+    closestPointWithinDistance(pathNode: SVGPathElement, point: PenPoint, checkDistance: number, pointMatrix: { matrix: SVGMatrix, centerOffsets: { x: number, y: number } }) {
         let pathLength = pathNode.getTotalLength(),
             bestLength: number = 0,
             bestDistance = Infinity;
@@ -87,6 +89,14 @@ export class EraserTool extends DrawingTool {
         let checkDistance2 = checkDistance * checkDistance;
 
         let step = pathLength / 50; // Adjust the initial step size as needed
+
+        const distance2 = (p: DOMPoint) => {
+            let pTransformed = this.getTransformedSVGPoint(p, pointMatrix);
+            let dx = pTransformed.x - point.x;
+            let dy = pTransformed.y - point.y;
+
+            return dx * dx + dy * dy;
+        }
 
         // Linear scan with adaptive step size for coarse approximation
         for (let scan, scanLength = 0, scanDistance; scanLength <= pathLength; scanLength += step) {
@@ -102,6 +112,7 @@ export class EraserTool extends DrawingTool {
         // Binary search for precise estimate
         let precision = step / 2;
         while (precision > 0.5) {
+
             let beforeLength: number = bestLength - precision;
             let afterLength: number = bestLength + precision;
             let before = pathNode.getPointAtLength(beforeLength);
@@ -124,12 +135,6 @@ export class EraserTool extends DrawingTool {
         }
 
         return false;
-
-        function distance2(p: DOMPoint) {
-            let dx = (p.x + offsetX) - point.x,
-                dy = (p.y + offsetY) - point.y;
-            return dx * dx + dy * dy;
-        }
     }
 
 }

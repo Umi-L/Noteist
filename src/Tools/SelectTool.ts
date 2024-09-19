@@ -73,23 +73,26 @@ export class SelectTool extends DrawingTool {
             // check for bounding box intersection
             if (this.bboxIntersect(checkingBounds!, compareRect)) {
 
-                let gTransform = compareG.getAttribute("transform")
-
-                let gOffsetX = 0;
-                let gOffsetY = 0;
-
-                if (gTransform) {
-                    let gTransformValues = gTransform.split("(")[1].split(")")[0].split(",");
-                    gOffsetX = parseFloat(gTransformValues[0]);
-                    gOffsetY = parseFloat(gTransformValues[1]);
-                }
+                let pointMatrix = this.getSVGTransformMatrix(compareG);
 
                 let gChild = compareG.children[0] as SVGElement;
 
                 // if the child is a path, then we can sample the points
                 if (gChild instanceof SVGGeometryElement) {
 
-                    let points = this.samplePathPoints(gChild, gOffsetX, gOffsetY);
+                    let points = this.samplePathPoints(gChild, pointMatrix);
+
+                    // // debug draw the points
+                    // let debugPoints = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    // points.forEach((point) => {
+                    //     let debugPoint = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    //     debugPoint.setAttribute('cx', point.x.toString());
+                    //     debugPoint.setAttribute('cy', point.y.toString());
+                    //     debugPoint.setAttribute('r', "2");
+                    //     debugPoint.setAttribute('fill', "red");
+                    //     debugPoints.appendChild(debugPoint);
+                    // });
+                    // this.drawArea?.appendChild(debugPoints);
 
                     // check for path intersection
                     for (let i = 0; i < points.length; i++) {
@@ -130,11 +133,14 @@ export class SelectTool extends DrawingTool {
             a.y + a.height > b.y);
     }
 
-    samplePathPoints(path: SVGGeometryElement, gOffsetX: number, gOffsetY: number) {
+    samplePathPoints(path: SVGGeometryElement, pointMatrix: { matrix: SVGMatrix, centerOffsets: { x: number, y: number } }) {
         const pathLength = path.getTotalLength()
         const points = []
-        for (let i = 0; i < pathLength; i += 10)
-            points.push(path.getPointAtLength(i).matrixTransform(new DOMMatrix().translate(gOffsetX, gOffsetY)))
+        for (let i = 0; i < pathLength; i += 10) {
+            let point: DOMPoint | SVGPoint = path.getPointAtLength(i)
+
+            points.push(this.getTransformedSVGPoint(point, pointMatrix))
+        }
         return points
     }
 }

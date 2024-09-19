@@ -8,6 +8,7 @@
         type OnDragStart,
         type OnScale,
     } from "svelte-moveable";
+    import { getGroupBoundingBoxRelativeToParent } from "../../utils/boundingBoxUtils";
 
     export let usingMoveable: boolean;
     export let moveableKey: number;
@@ -20,7 +21,7 @@
     const throttleDragRotate = 0;
     const resizable = false;
     const scalable = true;
-    const keepRatio = false;
+    const keepRatio = true;
     const throttleResize = 0;
     const renderDirections = ["nw", "n", "ne", "w", "e", "sw", "s", "se"];
     const rotatable = false;
@@ -115,9 +116,31 @@
         }
     }
 
-    function scaleGroup(e: OnScale[]) {
+    function scaleGroup(e: OnScale[], targets: (HTMLElement | SVGElement)[]) {
+        // let relativeBox = getGroupBoundingBoxRelativeToParent(targets);
+        // let center = {
+        //     x: relativeBox.x + relativeBox.width / 2,
+        //     y: relativeBox.y + relativeBox.height / 2,
+        // };
+
         for (const event of e) {
-            scale(event);
+            console.log("scale", e);
+
+            if (event.target instanceof SVGElement) {
+                let transform = getSVGTransform(event.target);
+
+                transform.scale.x *= event.delta[0];
+                transform.scale.y *= event.delta[1];
+
+                // TODO make the element stay centered when scaling
+
+                setSVGTransformCoordinates(event.target, transform);
+            } else {
+                console.error(
+                    "scale target is not an SVGElement",
+                    event.target,
+                );
+            }
         }
     }
 
@@ -218,8 +241,8 @@
         on:scaleGroupStart={({ detail: { events } }) => {
             scaleGroupStart(events);
         }}
-        on:scaleGroup={({ detail: { events } }) => {
-            scaleGroup(events);
+        on:scaleGroup={({ detail: { events, targets } }) => {
+            scaleGroup(events, targets);
         }}
         on:scaleGroupEnd={({ detail: { events } }) => {
             scaleGroupEnd(events);
