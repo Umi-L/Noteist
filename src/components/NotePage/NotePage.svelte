@@ -73,36 +73,57 @@
             }
         });
 
+        function applyZoom(amount: number, centerX: number, centerY: number) {
+            let zoomOriginX =
+                (centerX -
+                    noteScrollbarWrapper.getBoundingClientRect().left +
+                    noteScrollbarWrapper.scrollLeft) /
+                zoom;
+
+            let zoomOriginY =
+                (centerY -
+                    noteScrollbarWrapper.getBoundingClientRect().top +
+                    noteScrollbarWrapper.scrollTop) /
+                zoom;
+
+            zoom += amount;
+
+            if (zoom < 1) {
+                zoom = 1;
+            }
+
+            if (zoom > 3) {
+                zoom = 3;
+            }
+
+            let newScrollLeft =
+                zoomOriginX * zoom -
+                (centerX - noteScrollbarWrapper.getBoundingClientRect().left);
+            let newScrollTop =
+                zoomOriginY * zoom -
+                (centerY - noteScrollbarWrapper.getBoundingClientRect().top);
+
+            // set the new scroll position
+            noteScrollbarWrapper.scrollLeft = newScrollLeft;
+            noteScrollbarWrapper.scrollTop = newScrollTop;
+        }
+
         noteScrollbarWrapper.addEventListener(
             "wheel",
             (event) => {
                 if (event.ctrlKey) {
-                    let zoomOrigin =
-                        event.clientX - note.getBoundingClientRect().left;
-
-                    // if deltay is approximately 0, return
+                    // if the deltaY is less than 0.1, return
                     if (Math.abs(event.deltaY) < 0.1) {
                         return;
                     }
 
                     event.preventDefault();
 
-                    zoom += event.deltaY * -0.01;
-
-                    if (zoom < 1) {
-                        zoom = 1;
-                    }
-
-                    if (zoom > 3) {
-                        zoom = 3;
-                    }
-
-                    // calculate the new scroll position
-                    let newScrollPosition =
-                        (note.scrollLeft + zoomOrigin) * zoom - zoomOrigin;
-
-                    // set the new scroll position
-                    noteScrollbarWrapper.scrollLeft = newScrollPosition;
+                    applyZoom(
+                        event.deltaY * -0.01,
+                        event.clientX,
+                        event.clientY,
+                    );
                 }
             },
             { passive: false },
@@ -147,15 +168,13 @@
                     touch1.clientY - touch2.clientY,
                 );
 
-                zoom += (distance - startDistance) * 0.005;
+                // get midpoint of the two touches
+                const midX = (touch1.clientX + touch2.clientX) / 2;
+                const midY = (touch1.clientY + touch2.clientY) / 2;
 
-                if (zoom < 1) {
-                    zoom = 1;
-                }
+                let amount = (distance - startDistance) * 0.0005;
 
-                if (zoom > 3) {
-                    zoom = 3;
-                }
+                applyZoom(amount, midX, midY);
             },
             { passive: false },
         );
