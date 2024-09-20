@@ -118,14 +118,19 @@
         document.addEventListener("pointermove", handlePointerMove);
         document.addEventListener("pointerup", handlePointerUp);
 
-        // on two finger tap
+        let timeSinceLastTouchStart = Date.now();
+
+        // on touchstart
         drawArea.addEventListener("touchstart", (event) => {
+            timeSinceLastTouchStart = Date.now();
+        });
+
+        // on two finger tap
+        drawArea.addEventListener("touchend", (event) => {
             // if two finger tap
             if (event.touches.length == 2) {
-                // remove last stroke
-                if (strokes.length > 0) {
-                    strokes[strokes.length - 1].remove();
-                    strokes.pop();
+                if (Date.now() - timeSinceLastTouchStart < 300) {
+                    undo();
                 }
             }
         });

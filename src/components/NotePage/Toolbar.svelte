@@ -16,6 +16,7 @@
         TextItalic,
         TextStrikethrough,
         TextUnderline,
+        X,
     } from "phosphor-svelte";
     import {
         boldMode,
@@ -51,11 +52,10 @@
 
     let handle: HTMLDivElement;
     let toolbar: HTMLDivElement;
-    let colorPickerWrapper: HTMLDivElement;
+    let colorPickerWrapper: HTMLDialogElement;
 
     let isDragging = false;
     let isVertical = writable(false);
-    let colorPickerShown = false;
 
     let toolbarSide: AnchorSide | null = AnchorSide.Bottom;
 
@@ -70,11 +70,6 @@
     });
 
     setContext("vertical", isVertical);
-
-    let colorPickerAnchorSide: Writable<AnchorSide> = writable(
-        AnchorSide.Bottom
-    );
-    setContext("colorPickerAnchorSide", colorPickerAnchorSide);
 
     let editor: Editor | null = null;
     currentEditor.subscribe((value) => {
@@ -128,18 +123,7 @@
 
             isVertical.set(
                 Math.abs(centerX - parentRect.width / 2) >
-                    Math.abs(centerY - parentRect.height / 2)
-            );
-
-            colorPickerAnchorSide.set(
-                centerX > parentRect.width / 2
-                    ? AnchorSide.Right
-                    : AnchorSide.Left
-            );
-            colorPickerAnchorSide.set(
-                centerY > parentRect.height / 2
-                    ? AnchorSide.Bottom
-                    : AnchorSide.Top
+                    Math.abs(centerY - parentRect.height / 2),
             );
         }
     }
@@ -168,7 +152,6 @@
                     centerY > parentRect.height / 2
                         ? AnchorSide.Bottom
                         : AnchorSide.Top;
-                colorPickerAnchorSide.set(side);
                 toolbarSide = side;
 
                 isVertical.set(false);
@@ -182,7 +165,6 @@
                         ? AnchorSide.Right
                         : AnchorSide.Left;
 
-                colorPickerAnchorSide.set(side);
                 toolbarSide = side;
 
                 isVertical.set(true);
@@ -205,12 +187,6 @@
         handle.addEventListener("mousedown", start);
         window.addEventListener("mousemove", move);
         window.addEventListener("mouseup", end);
-
-        window.addEventListener("pointerdown", (event) => {
-            if (toolbar && !colorPickerWrapper.contains(event.target as Node)) {
-                colorPickerShown = false;
-            }
-        });
     }
 
     onMount(() => {
@@ -218,7 +194,7 @@
             // set css variable for toolbar width
             toolbar.style.setProperty(
                 "--toolbar-width",
-                `${toolbar.offsetWidth}px`
+                `${toolbar.offsetWidth}px`,
             );
         }
 
@@ -306,21 +282,28 @@
     });
 </script>
 
-<div
-    class="color-picker-wrapper"
-    class:hidden={!colorPickerShown}
-    bind:this={colorPickerWrapper}
->
-    <ColorPicker
-        label=""
-        isDialog={false}
-        bind:hex={drawColor}
-        on:input={(event) => {
-            if (event.detail.color)
-                currentDrawColor.set(event.detail.color.toHex());
-        }}
-    />
-</div>
+<dialog class="modal color-picker-wrapper" bind:this={colorPickerWrapper}>
+    <div class="modal-box">
+        <form method="dialog">
+            <button
+                class="btn btn-sm btn-circle btn-ghost absolute right-1 top-1"
+                ><X /></button
+            >
+        </form>
+        <ColorPicker
+            label=""
+            isDialog={false}
+            bind:hex={drawColor}
+            on:input={(event) => {
+                if (event.detail.color)
+                    currentDrawColor.set(event.detail.color.toHex());
+            }}
+        />
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
 <div
     class="toolbar"
     bind:this={toolbar}
@@ -462,7 +445,7 @@
 
     <ToolbarButton
         pressedCallback={() => {
-            colorPickerShown = !colorPickerShown;
+            colorPickerWrapper.showModal();
         }}
         buttonType="btn btn-sm btn-square"
         noBaseClasses={true}
@@ -569,30 +552,16 @@
         transition: 0.2s ease-out;
     }
 
+    .modal-box {
+        width: auto !important;
+    }
+
     .color-picker-wrapper {
-        position: absolute;
-        z-index: 1000;
-
-        width: 100%;
-        height: 100%;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
         --cp-bg-color: var(--muted);
         --cp-border-color: var(--border);
         --cp-text-color: var(--foreground);
         --cp-input-color: var(--double-muted);
         --cp-button-hover-color: var(--muted-foreground);
-    }
-
-    .color-picker-wrapper * {
-        pointer-events: all !important;
-    }
-
-    :global(.color-picker) {
-        pointer-events: all;
     }
 
     .hidden {

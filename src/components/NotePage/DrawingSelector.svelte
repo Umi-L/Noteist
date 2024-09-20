@@ -31,6 +31,7 @@
     const minHeight = 0;
     const maxWidth = 0;
     const maxHeight = 0;
+    const dragArea = true;
     let moveableRef = null;
 
     // --- Dragging ---
@@ -219,7 +220,7 @@
         {rotatable}
         {throttleRotate}
         {rotationPosition}
-        dragArea={true}
+        {dragArea}
         on:dragGroupStart={({ detail: { events } }) => {
             dragGroupStart(events);
         }}

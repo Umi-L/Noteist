@@ -36,33 +36,36 @@
     // to be ran when the note begins to exist
     function onNoteExists() {
         // get the amount the user has scrolled
-        noteHeight = note.scrollHeight;
-        minNoteHeight = note.scrollHeight;
+        noteHeight = window.innerHeight;
+        minNoteHeight = window.innerHeight;
 
         // on user scrolling
-        note.addEventListener("scroll", () => {
+        noteScrollbarWrapper.addEventListener("scroll", () => {
             // if within noteBottomPadding of the bottom
             if (
-                note.scrollTop + note.clientHeight >=
-                note.scrollHeight - noteBottomPadding
+                noteScrollbarWrapper.scrollTop +
+                    noteScrollbarWrapper.clientHeight >=
+                noteScrollbarWrapper.scrollHeight - noteBottomPadding
             ) {
                 // add the amount of space required to keep the bottom padding at noteBottomPadding
                 noteHeight +=
-                    note.scrollTop +
-                    note.clientHeight -
-                    (note.scrollHeight - noteBottomPadding);
+                    noteScrollbarWrapper.scrollTop +
+                    noteScrollbarWrapper.clientHeight -
+                    (noteScrollbarWrapper.scrollHeight - noteBottomPadding);
             }
 
             // if the user has scrolled up away from the bottom
             if (
-                note.scrollTop + note.clientHeight <
-                note.scrollHeight - noteBottomPadding
+                noteScrollbarWrapper.scrollTop +
+                    noteScrollbarWrapper.clientHeight <
+                noteScrollbarWrapper.scrollHeight - noteBottomPadding
             ) {
                 // remove the amount of space required to keep the bottom padding at noteBottomPadding
                 noteHeight -=
-                    note.scrollHeight -
+                    noteScrollbarWrapper.scrollHeight -
                     noteBottomPadding -
-                    (note.scrollTop + note.clientHeight);
+                    (noteScrollbarWrapper.scrollTop +
+                        noteScrollbarWrapper.clientHeight);
             }
 
             if (noteHeight < minNoteHeight) {
@@ -102,7 +105,7 @@
                     noteScrollbarWrapper.scrollLeft = newScrollPosition;
                 }
             },
-            { passive: false }
+            { passive: false },
         );
 
         let startDistance = 0;
@@ -121,10 +124,10 @@
 
                 startDistance = Math.hypot(
                     touch1.clientX - touch2.clientX,
-                    touch1.clientY - touch2.clientY
+                    touch1.clientY - touch2.clientY,
                 );
             },
-            { passive: false }
+            { passive: false },
         );
 
         noteScrollbarWrapper.addEventListener(
@@ -141,7 +144,7 @@
 
                 const distance = Math.hypot(
                     touch1.clientX - touch2.clientX,
-                    touch1.clientY - touch2.clientY
+                    touch1.clientY - touch2.clientY,
                 );
 
                 zoom += (distance - startDistance) * 0.005;
@@ -154,7 +157,7 @@
                     zoom = 3;
                 }
             },
-            { passive: false }
+            { passive: false },
         );
     }
 
@@ -177,7 +180,7 @@
         minNoteHeight = Math.max(
             note.clientHeight,
             lowestEditorPoint,
-            $lowestDrawingPoint
+            $lowestDrawingPoint,
         );
 
         if (noteHeight < minNoteHeight) {
@@ -352,9 +355,6 @@
         align-items: center;
 
         width: 100%;
-        height: 100%;
-
-        overflow: auto;
 
         position: relative;
 
@@ -469,8 +469,7 @@
         height: 100%;
         width: 100%;
 
-        overflow-x: auto;
-        overflow-y: hidden;
+        overflow: auto;
 
         position: relative;
     }

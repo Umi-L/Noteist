@@ -84,7 +84,6 @@ export interface ToastData {
     };
 }
 
-// TODO implement this
 export let addToast: (data: ToastData) => void = (data) => {
     console.error("addToast not implemented", data);
 };
